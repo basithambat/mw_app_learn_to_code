@@ -1,0 +1,12 @@
+SHA-1 Fingerprint (Debug Keystore)
+====================================
+
+64:F5:AD:AF:34:5C:96:FD:55:AC:05:EA:D8:12:61:AF:E1:13:E1:69
+
+Package Name: com.safwanambat.whatsay
+
+Instructions:
+1. Go to Firebase Console → Project Settings → Your apps → Android app
+2. Add this SHA-1 fingerprint
+3. Download google-services.json
+4. Place at: android/app/google-services.json

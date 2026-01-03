@@ -1,0 +1,7 @@
+Starting project at /Users/basith/Documents/whatsay-app-main
+› Port 8081 is running this app in another window
+  /Users/basith/Documents/whatsay-app-main (pid 84239)
+Input is required, but 'npx expo' is in non-interactive mode.
+Required input:
+> Use port 8082 instead?
+› Skipping dev server

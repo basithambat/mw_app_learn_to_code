@@ -1,0 +1,222 @@
+import { getEnv } from '../config/env';
+import axios from 'axios';
+
+export interface RewriteResult {
+  rewrittenTitle: string;
+  rewrittenSubtext: string;
+}
+
+/**
+ * LLM Service with cost-optimized providers
+ * Primary: Gemini 2.0 Flash (best cost/quality)
+ * Fallback: Mistral Small 3.1 (cheapest)
+ */
+export class LLMService {
+  private googleApiKey?: string;
+  private mistralApiKey?: string;
+  private openaiKey?: string;
+
+  constructor() {
+    const env = getEnv() as any;
+    this.googleApiKey = env.GOOGLE_API_KEY;
+    this.mistralApiKey = env.MISTRAL_API_KEY;
+    this.openaiKey = env.OPENAI_API_KEY;
+  }
+
+  async rewriteContent(
+    title: string,
+    summary: string,
+    retryCount = 0
+  ): Promise<RewriteResult> {
+    const prompt = `Rewrite this news item to be catchy and concise. Keep the core meaning but make it more engaging.
+
+Title: ${title}
+Summary: ${summary}
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "rewrittenTitle": "catchy rewritten title",
+  "rewrittenSubtext": "engaging rewritten summary"
+}`;
+
+    try {
+      // Primary: Gemini 2.0 Flash (best cost/quality ratio)
+      if (this.googleApiKey) {
+        return await this.callGemini(prompt);
+      }
+      
+      // Fallback 1: Mistral Small (cheapest)
+      if (this.mistralApiKey) {
+        return await this.callMistral(prompt);
+      }
+      
+      // Fallback 2: OpenAI (if available)
+      if (this.openaiKey) {
+        return await this.callOpenAI(prompt);
+      }
+      
+      // No API keys - use mock
+      console.warn('No LLM API keys found, using mock rewrite');
+      return this.mockRewrite(title, summary);
+      
+    } catch (error) {
+      // Retry with fallback
+      if (retryCount < 1) {
+        console.warn(`LLM call failed, retrying with fallback...`);
+        if (this.mistralApiKey && !this.googleApiKey) {
+          return this.mockRewrite(title, summary);
+        }
+        return await this.rewriteContent(title, summary, retryCount + 1);
+      }
+      throw error;
+    }
+  }
+
+  private async callGemini(prompt: string): Promise<RewriteResult> {
+    if (!this.googleApiKey) {
+      throw new Error('Google API key not set');
+    }
+
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${this.googleApiKey}`,
+      {
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 200,
+          responseMimeType: 'application/json'
+        }
+      },
+      {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 30000
+      }
+    );
+
+    const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error('No response from Gemini');
+    }
+
+    return this.parseJSONResponse(text);
+  }
+
+  private async callMistral(prompt: string): Promise<RewriteResult> {
+    if (!this.mistralApiKey) {
+      throw new Error('Mistral API key not set');
+    }
+
+    const response = await axios.post(
+      'https://api.mistral.ai/v1/chat/completions',
+      {
+        model: 'mistral-small-2409', // Cheapest option
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 200,
+        response_format: { type: 'json_object' }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${this.mistralApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      }
+    );
+
+    const text = response.data.choices?.[0]?.message?.content;
+    if (!text) {
+      throw new Error('No response from Mistral');
+    }
+
+    return this.parseJSONResponse(text);
+  }
+
+  private async callOpenAI(prompt: string): Promise<RewriteResult> {
+    if (!this.openaiKey) {
+      throw new Error('OpenAI API key not set');
+    }
+
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-3.5-turbo', // Cheaper than GPT-4
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 200,
+        response_format: { type: 'json_object' }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${this.openaiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      }
+    );
+
+    const text = response.data.choices?.[0]?.message?.content;
+    if (!text) {
+      throw new Error('No response from OpenAI');
+    }
+
+    return this.parseJSONResponse(text);
+  }
+
+  private parseJSONResponse(text: string): RewriteResult {
+    // Try to extract JSON from response (handles markdown code blocks)
+    let jsonText = text.trim();
+    
+    // Remove markdown code blocks if present
+    jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    
+    try {
+      const parsed = JSON.parse(jsonText);
+      
+      // Validate structure
+      if (!parsed.rewrittenTitle || !parsed.rewrittenSubtext) {
+        throw new Error('Invalid JSON structure');
+      }
+      
+      return {
+        rewrittenTitle: parsed.rewrittenTitle.trim(),
+        rewrittenSubtext: parsed.rewrittenSubtext.trim()
+      };
+    } catch (error) {
+      // If JSON parsing fails, try to extract from text
+      const titleMatch = jsonText.match(/"rewrittenTitle":\s*"([^"]+)"/);
+      const subtextMatch = jsonText.match(/"rewrittenSubtext":\s*"([^"]+)"/);
+      
+      if (titleMatch && subtextMatch) {
+        return {
+          rewrittenTitle: titleMatch[1],
+          rewrittenSubtext: subtextMatch[1]
+        };
+      }
+      
+      throw new Error(`Failed to parse LLM response: ${text.substring(0, 100)}`);
+    }
+  }
+
+  private mockRewrite(title: string, summary: string): RewriteResult {
+    // Simple fallback if no API keys
+    return {
+      rewrittenTitle: title, // Keep original if no LLM
+      rewrittenSubtext: summary.substring(0, 200)
+    };
+  }
+}

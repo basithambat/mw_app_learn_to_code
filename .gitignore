@@ -1,0 +1,90 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+build/
+dist/
+
+# Misc
+.DS_Store
+*.pem
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Expo
+.expo/
+.expo-shared/
+
+# Android
+android/app/build/
+android/.gradle/
+android/local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# iOS
+ios/build/
+ios/Pods/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+
+# Ingestion Platform
+ingestion-platform/node_modules/
+ingestion-platform/dist/
+ingestion-platform/.env
+ingestion-platform/.env.*
+ingestion-platform/*.log
+
+# Docker
+docker-compose.override.yml
+
+# Backup files
+*.bak
+*.bak1
+*.bak2
+*.bak3
+*.bak4
+*.bak5
+*.bak6
+*.bak7
+*.bak8
+*.bak9
+*.bak10
+*.bak11
+*.bak12
+*.bak13

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>892528727267-fureil15ns3h1qnhn4n2t9vud1d6mrsp.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.892528727267-fureil15ns3h1qnhn4n2t9vud1d6mrsp</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>892528727267-k9t8flu0dl5o3apv9qr2lnjr4bppf0q4.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCC_n0oJRZMZCK9ezvsMtAft0JgdVQ3FOg</string>
+	<key>GCM_SENDER_ID</key>
+	<string>892528727267</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.safwanambat.whatsay</string>
+	<key>PROJECT_ID</key>
+	<string>whatsay-app-c3627</string>
+	<key>STORAGE_BUCKET</key>
+	<string>whatsay-app-c3627.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:892528727267:ios:9c2cd51fb5bd9c8b0021d6</string>
+</dict>
+</plist>

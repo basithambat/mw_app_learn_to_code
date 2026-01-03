@@ -1,0 +1,41 @@
+{
+  "cli": {
+    "version": ">= 11.0.3",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "ios": {
+        "buildConfiguration": "Release",
+        "image": "latest",
+        "resourceClass": "m-medium",
+        "autoIncrement": true,
+        "simulator": false
+      }
+    },
+    "androidapk": {
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "safwanambat@gmail.com",
+        "ascAppId": "6737504537",
+        "appleTeamId": "HDLYD4QM4F"
+      }
+    }
+  }
+}

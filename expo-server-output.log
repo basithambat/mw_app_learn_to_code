@@ -1,0 +1,222 @@
+Starting project at /Users/basith/Documents/whatsay-app-main
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+transform[stderr]: (node:2709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:2708) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:2711) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:2712) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:2710) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:2713) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:2715) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:2714) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+λ Bundled 64770ms node_modules/expo-router/node/render.js (1575 modules)
+λ Bundled 64861ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:17:54)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:18:29)
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:245:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:29:27)
+λ  WARN  RNGoogleSignIn: you are calling a not-implemented method on web platform. Web support is only available to sponsors. 
+If you are a sponsor, please follow the installation instructions carefully to obtain the implementation. 
+  logNotImplementedError (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:10:11)
+  Object.configure (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:30:3)
+  factory (app/login/loginScreen.tsx:18:14)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:18:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:502:1)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:17:54)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:18:29)
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:245:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:29:27)
+λ  WARN  RNGoogleSignIn: you are calling a not-implemented method on web platform. Web support is only available to sponsors. 
+If you are a sponsor, please follow the installation instructions carefully to obtain the implementation. 
+  logNotImplementedError (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:10:11)
+  Object.configure (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:30:3)
+  factory (app/login/loginScreen.tsx:18:14)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:18:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:502:1)
+Error storing data ReferenceError: window is not defined
+    at getValue (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:52)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:12)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:98:28)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:87:7)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Error storing data ReferenceError: window is not defined
+    at getValue (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:52)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:12)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:98:28)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:87:7)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 81242ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 81482ms node_modules/expo-router/entry.js (1460 modules)
+Web Bundled 11722ms node_modules/expo-router/entry.js (1469 modules)
+ LOG  [web] Logs will appear in the browser console
+λ Bundled 119ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:17:54)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:18:29)
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:245:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:29:27)
+λ  WARN  RNGoogleSignIn: you are calling a not-implemented method on web platform. Web support is only available to sponsors. 
+If you are a sponsor, please follow the installation instructions carefully to obtain the implementation. 
+  logNotImplementedError (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:10:11)
+  Object.configure (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:30:3)
+  factory (app/login/loginScreen.tsx:18:14)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:18:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:502:1)
+Web Bundled 1776ms node_modules/expo-router/entry.js (1 module)
+Error storing data ReferenceError: window is not defined
+    at getValue (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:52)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:12)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:98:28)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:87:7)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 179ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+λ Bundled 103ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:17:54)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:18:29)
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:245:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:29:27)
+λ  WARN  RNGoogleSignIn: you are calling a not-implemented method on web platform. Web support is only available to sponsors. 
+If you are a sponsor, please follow the installation instructions carefully to obtain the implementation. 
+  logNotImplementedError (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:10:11)
+  Object.configure (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:30:3)
+  factory (app/login/loginScreen.tsx:18:14)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:18:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:502:1)
+Error storing data ReferenceError: window is not defined
+    at getValue (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:52)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:12)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:98:28)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:87:7)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 803ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 107ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+λ Bundled 4334ms node_modules/expo-router/node/render.js (1 module)
+Web Bundled 6923ms node_modules/expo-router/entry.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:17:54)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:18:29)
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:245:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:29:27)
+λ  WARN  RNGoogleSignIn: you are calling a not-implemented method on web platform. Web support is only available to sponsors. 
+If you are a sponsor, please follow the installation instructions carefully to obtain the implementation. 
+  logNotImplementedError (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:10:11)
+  Object.configure (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:30:3)
+  factory (app/login/loginScreen.tsx:18:14)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:18:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:502:1)
+Error storing data ReferenceError: window is not defined
+    at getValue (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:52)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:12)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:98:28)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:87:7)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1491ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+λ Bundled 136ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:17:54)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:18:29)
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:245:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:29:27)
+λ  WARN  RNGoogleSignIn: you are calling a not-implemented method on web platform. Web support is only available to sponsors. 
+If you are a sponsor, please follow the installation instructions carefully to obtain the implementation. 
+  logNotImplementedError (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:10:11)
+  Object.configure (node_modules/@react-native-google-signin/google-signin/lib/commonjs/signIn/GoogleSignin.web.js:30:3)
+  factory (app/login/loginScreen.tsx:18:14)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:18:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:502:1)
+Error storing data ReferenceError: window is not defined
+    at getValue (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:52)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:12)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:98:28)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:87:7)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1438ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 117ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console

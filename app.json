@@ -1,0 +1,109 @@
+{
+  "expo": {
+    "name": "whatsay",
+    "slug": "whatsay",
+    "version": "1.0.4",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splashScreen.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.safwanambat.whatsay",
+      "buildNumber": "8",
+      "infoPlist": {
+        "CFBundleIconName": "AppIcon",
+        "UIBackgroundModes": [],
+        "NSCameraUsageDescription": "This app needs access to the camera to take photos.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to photos.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSExceptionDomains": {
+            "whatsay-backend-loadbalancer-45970015.us-east-2.elb.amazonaws.com": {
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSExceptionRequiresForwardSecrecy": false,
+              "NSExceptionMinimumTLSVersion": "TLSv1.1"
+            }
+          }
+        },
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to provide personalized services."
+      },
+      "icon": "./assets/images/icon.png",
+      "requireFullScreen": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "icons": {
+        "app": {
+          "ios": {
+            "120": "./assets/ios-icons/icon-120x120.png",
+            "180": "./assets/ios-icons/icon-180x180.png",
+            "76": "./assets/ios-icons/icon-76x76.png",
+            "152": "./assets/ios-icons/icon-152x152.png",
+            "167": "./assets/ios-icons/icon-167x167.png",
+            "1024": "./assets/ios-icons/icon-1024x1024.png"
+          }
+        }
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/splashScreen.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "VIBRATE",
+        "INTERNET",
+        "ACCESS_FINE_LOCATION",
+      "ACCESS_COARSE_LOCATION"
+      ],
+      "package": "com.safwanambat.whatsay",
+      "versionCode": 2,
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos."
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      "expo-router",
+      "expo-font",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.892528727267-fureil15ns3h1qnhn4n2t9vud1d6mrsp"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Whatsay to use your location."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "36e03653-504c-4109-8021-77b24410fdb5"
+      }
+    }
+  }
+}
