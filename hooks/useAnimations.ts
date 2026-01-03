@@ -1,5 +1,5 @@
 import { useRef, useMemo, useCallback, useEffect } from 'react';
-import { Animated, Easing, PanResponder, PanResponderGestureState, Dimensions, Platform } from 'react-native';
+import { Animated, Easing, PanResponder, PanResponderGestureState, Dimensions, Platform, InteractionManager } from 'react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -17,6 +17,15 @@ const SWIPE_THRESHOLD = 100;
 const ANIMATION_CONFIG = {
   duration: Platform.select({ ios: 250, android: 300 }),
   easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+};
+// Optimized spring config for smoother animations - Airbnb style (Snappy & Fluid)
+const SPRING_CONFIG = {
+  damping: 30,
+  stiffness: 350,
+  mass: 1,
+  overshootClamping: false,
+  restDisplacementThreshold: 0.01,
+  restSpeedThreshold: 0.01,
 };
 
 export const useNewsItemAnimations = (isCommentSectionOpen: boolean, onClose: () => void) => {
@@ -39,27 +48,26 @@ export const useNewsItemAnimations = (isCommentSectionOpen: boolean, onClose: ()
       useNativeDriver: true,
       easing: ANIMATION_CONFIG.easing,
     }).start(() => {
-      onClose();
-      requestAnimationFrame(() => {
+      // Use InteractionManager to defer reset until animations complete
+      InteractionManager.runAfterInteractions(() => {
         animatedValues.modalY.setValue(0);
+        onClose();
       });
     });
   }, [animatedValues.modalY, onClose]);
 
   const panResponder = useMemo(() => {
-    let lastGestureTime = 0;
-    const GESTURE_DELAY = 1000 / 60;
-
     return PanResponder.create({
       onMoveShouldSetPanResponder: (_, { dy, dx }) => {
-        const now = Date.now();
-        if (now - lastGestureTime < GESTURE_DELAY) return false;
-        lastGestureTime = now;
+        // Optimized: Remove throttling - let native driver handle it
         return Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 5 && !isCommentSectionOpen;
       },
       onPanResponderMove: Animated.event(
         [null, { dy: animatedValues.modalY }],
-        { useNativeDriver: true }
+        { 
+          useNativeDriver: true,
+          listener: undefined, // Remove listener to avoid JS thread overhead
+        }
       ),
       onPanResponderRelease: (_, gestureState) => {
         if (!isCommentSectionOpen) {
@@ -67,18 +75,18 @@ export const useNewsItemAnimations = (isCommentSectionOpen: boolean, onClose: ()
         }
       },
     });
-  }, [isCommentSectionOpen, animatedValues.modalY]);
+  }, [isCommentSectionOpen, animatedValues.modalY, handlePanResponderRelease]);
 
   const handlePanResponderRelease = useCallback((gestureState: PanResponderGestureState) => {
     if (!isCommentSectionOpen) {
       if (gestureState.dy > SWIPE_THRESHOLD || gestureState.vy > 5) {
         closeModal();
       } else {
+        // Use optimized spring config for smoother bounce-back
         Animated.spring(animatedValues.modalY, {
           toValue: 0,
           useNativeDriver: true,
-          tension: 65,
-          friction: 10,
+          ...SPRING_CONFIG,
         }).start();
       }
     }
@@ -105,19 +113,21 @@ export const useNewsItemAnimations = (isCommentSectionOpen: boolean, onClose: ()
     ];
 
     const dragIndicatorAnimation = Animated.sequence([
-      // First spring: Bounce up higher with less friction for more "bounce"
+      // First spring: Optimized for smoother initial movement
       Animated.spring(animatedValues.dragIndicator, {
-        toValue: isCommentSectionOpen ? -12 : 14, // Increased initial bounce height
+        toValue: isCommentSectionOpen ? -12 : 14,
         useNativeDriver: true,
-        tension: 4000,  // Increased tension for faster initial movement
-        friction: 30,   // Reduced friction for more bounce
+        damping: 15,
+        stiffness: 300,
+        mass: 0.8,
       }),
-      // Second spring: Settle to final position with more dampening
+      // Second spring: Optimized settling animation
       Animated.spring(animatedValues.dragIndicator, {
-        toValue: isCommentSectionOpen ? -2 : 12,  // Final resting position
+        toValue: isCommentSectionOpen ? -2 : 12,
         useNativeDriver: true,
-        tension: 20,   // Lower tension for smoother settling
-        friction: 3,   // Moderate friction for gentle settling
+        damping: 20,
+        stiffness: 200,
+        mass: 1,
       })
     ]);
 

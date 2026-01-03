@@ -1,7 +1,8 @@
 // components/TermsModal/index.tsx
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView, Linking } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import Constants from 'expo-constants';
 
 interface TermsModalProps {
   isVisible: boolean;
@@ -73,6 +74,13 @@ const TermsModal: React.FC<TermsModalProps> = ({ isVisible, onClose, onAccept })
               Accept
             </Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Build Number */}
+        <View className="items-center mt-4">
+          <Text className="text-[10px] text-gray-400 font-geist">
+            v{Constants.expoConfig?.version || '2.2'} • Build {Platform.OS === 'ios' ? Constants.expoConfig?.ios?.buildNumber || '10' : Constants.expoConfig?.android?.versionCode || '4'}
+          </Text>
         </View>
       </View>
     </View>

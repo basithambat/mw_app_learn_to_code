@@ -162,10 +162,14 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
         };
     };
 
-    const { containerHeight, containerPadding, marginBottom } = getStackDimensions();
-    const visibleArticles = articles.slice(0, isTablet ? 4 : 3);
-    
-    // Calculate consumed/unconsumed counts
+    const onSwipeCard = useCallback((item: any, direction: 'left' | 'right') => {
+        handleSwipe(item, direction);
+        translateX.value = 0;
+        activeIndex.value = 0;
+    }, [handleSwipe, translateX, activeIndex]);
+
+    return (
+        <View style={{ 
     const totalCards = articles.length;
     const consumedCards = Array.from(consumedArticleIds).filter(id => 
         articles.some(article => article.id === id)
@@ -220,16 +224,19 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
                     {category.name}
                 </Text>
             </View>
-            <View style={[
-                styles.cardContainer,
-                {
-                    width: SCREEN_WIDTH,
-                    minHeight: containerHeight,
-                    paddingTop: visibleArticles.length === 1 ? 12 : 24, // Reduced padding
-                    paddingBottom: Math.max(8, rotationExtension + 4), // Minimal bottom padding
-                    marginBottom: marginBottom,
-                }
-            ]}>
+            <View 
+                style={[
+                    styles.cardContainer,
+                    {
+                        width: SCREEN_WIDTH,
+                        minHeight: containerHeight,
+                        paddingTop: visibleArticles.length === 1 ? 12 : 24, // Reduced padding
+                        paddingBottom: Math.max(8, rotationExtension + 4), // Minimal bottom padding
+                        marginBottom: marginBottom,
+                    }
+                ]}
+                pointerEvents="box-none"
+            >
                 {visibleArticles.map((item, itemIndex) => {
                     return (
                         <Card
@@ -244,11 +251,7 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
                             activeIndex={activeIndex}
                             translateX={translateX}
                             categoryIndex={category.index}
-                            onSwipe={(direction) => {
-                                handleSwipe(item, direction);
-                                translateX.value = 0;
-                                activeIndex.value = 0;
-                            }}
+                            onSwipe={(direction) => onSwipeCard(item, direction)}
                             onPress={() => handleItemPress(category.id, item.id)}
                         />
                     )

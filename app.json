@@ -2,7 +2,7 @@
   "expo": {
     "name": "whatsay",
     "slug": "whatsay",
-    "version": "1.0.4",
+    "version": "2.8",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.safwanambat.whatsay",
-      "buildNumber": "8",
+      "buildNumber": "16",
       "infoPlist": {
         "CFBundleIconName": "AppIcon",
         "UIBackgroundModes": [],
@@ -63,7 +63,7 @@
       "ACCESS_COARSE_LOCATION"
       ],
       "package": "com.safwanambat.whatsay",
-      "versionCode": 2,
+      "versionCode": 10,
     },
     "web": {
       "bundler": "metro",

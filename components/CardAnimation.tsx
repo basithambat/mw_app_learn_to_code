@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { StyleSheet, Text, View, Image, useWindowDimensions, TouchableOpacity, ViewStyle, ImageStyle, TextStyle } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -68,58 +68,97 @@ export const Card: React.FC<CardProps> = ({
     runOnJS(onSwipe)(direction);
   }, [onSwipe]);
 
-  const panGesture = Gesture.Pan()
-    .activeOffsetX([-10, 10])
-    .onUpdate((event) => {
-      if (isFirst) {
-        translateX.value = event.translationX;
-      }
-    })
-    .onEnd((event) => {
-      if (isFirst) {
-        if (Math.abs(event.velocityX) > 400 || Math.abs(translateX.value) > SCREEN_WIDTH * 0.4) {
-          translateX.value = withTiming(Math.sign(translateX.value) * SCREEN_WIDTH);
-          const direction = translateX.value > 0 ? 'right' : 'left';
-          removeCard(direction);
-        } else {
-          translateX.value = withTiming(0);
+  const handlePress = useCallback(() => {
+    'worklet';
+    runOnJS(onPress)();
+  }, [onPress]);
+
+  const panGesture = useMemo(() => {
+    const pan = Gesture.Pan()
+      .activeOffsetX([-10, 10])
+      .failOffsetY([-10, 10])
+      .onUpdate((event) => {
+        if (isFirst) {
+          translateX.value = event.translationX;
         }
-      }
-    });
+      })
+      .onEnd((event) => {
+        if (isFirst) {
+          if (Math.abs(event.velocityX) > 400 || Math.abs(translateX.value) > SCREEN_WIDTH * 0.4) {
+            const direction = translateX.value > 0 ? 'right' : 'left';
+            translateX.value = withSpring(
+              Math.sign(translateX.value) * SCREEN_WIDTH,
+              {
+                damping: 15,
+                stiffness: 150,
+                mass: 0.5,
+              }
+            );
+            removeCard(direction);
+          } else {
+            translateX.value = withSpring(0, {
+              damping: 20,
+              stiffness: 200,
+            });
+          }
+        }
+      });
+
+    const tap = Gesture.Tap()
+      .onEnd(() => {
+        if (isFirst && Math.abs(translateX.value) < 5) {
+          // Only trigger tap if card hasn't moved much (not a swipe)
+          handlePress();
+        }
+      });
+
+    return Gesture.Race(pan, tap);
+  }, [isFirst, translateX, removeCard, SCREEN_WIDTH, handlePress]);
+
+  // Pre-calculate static transform values to avoid recalculating on every frame
+  const staticTranslateY = useMemo(() => index * 1, [index]);
+  const staticTranslateX = useMemo(() => index * 20, [index]);
+  const staticOpacity = useMemo(() => {
+    // Calculate opacity based on index position
+    const maxIndex = Math.min(totalCards - 1, 3);
+    if (index <= 1) return 1;
+    if (index >= maxIndex) return 0.5;
+    // Linear interpolation between 1 and 0.5
+    return 1 - ((index - 1) / (maxIndex - 1)) * 0.5;
+  }, [index, totalCards]);
 
   const animatedCardStyle = useAnimatedStyle(() => {
+    'worklet';
     const scale = interpolate(
       activeIndex.value,
       [index - 1, index, index + 1],
-      [0.95, 1, 1.05]
+      [0.95, 1, 1.05],
+      'clamp'
     );
 
     const translateY = interpolate(
       activeIndex.value,
       [index - 1, index, index + 1],
-      [-18, 0, 0]
+      [-18, 0, 0],
+      'clamp'
     );
 
     const rotate = interpolate(
       isFirst ? translateX.value : activeIndex.value,
       isFirst ? [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2] : [index - 1, index, index + 1],
-      isFirst ? rotationValues.first : rotationValues.rest
+      isFirst ? rotationValues.first : rotationValues.rest,
+      'clamp'
     );
 
     if (!isFirst) {
       return {
         transform: [
           { scale },
-          { translateY },
+          { translateY: translateY + staticTranslateY },
           { rotate: `${rotate}deg` },
-          { translateY: withTiming(index * 1, { duration: 300 }) },
-          { translateX: withTiming(index * 20, { duration: 300 }) },
+          { translateX: staticTranslateX },
         ],
-        opacity: interpolate(
-          index,
-          [1, Math.min(totalCards - 1, 3)],
-          [1, 0.5]
-        ),
+        opacity: staticOpacity,
       };
     }
 
@@ -129,28 +168,43 @@ export const Card: React.FC<CardProps> = ({
         { rotate: `${rotate}deg` },
       ],
     };
-  });
+  }, [isFirst, index, activeIndex, translateX, SCREEN_WIDTH, rotationValues, staticTranslateY, staticTranslateX, staticOpacity]);
+
+  // Subtle parallax effect for the image
+  const animatedImageStyle = useAnimatedStyle(() => {
+    'worklet';
+    if (!isFirst) return {};
+    
+    const parallaxX = interpolate(
+      translateX.value,
+      [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+      [-30, 0, 30], // Shift image 30px opposite to movement
+      'clamp'
+    );
+    
+    return {
+      transform: [{ translateX: parallaxX }]
+    };
+  }, [isFirst, translateX, SCREEN_WIDTH]);
 
   return (
     <GestureDetector gesture={panGesture}>
-      <TouchableOpacity activeOpacity={0.95} onPress={onPress}>
-        <Animated.View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }, animatedCardStyle]}>
-          {card.image ? (
-            <Image source={{ uri: card.image }} style={styles.cardImage} />
-          ) : (
-            <View style={[styles.cardImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
-              <Text style={{ color: '#9CA3AF', fontSize: 14 }}>No Image</Text>
-            </View>
-          )}
-          <LinearGradient
-            colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)']}
-            style={styles.gradient}
-          >
-            <View style={StyleSheet.absoluteFill} />
-          </LinearGradient>
-          <Text style={styles.cardTitle}>{card.title}</Text>
-        </Animated.View>
-      </TouchableOpacity>
+      <Animated.View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }, animatedCardStyle]}>
+        {card.image ? (
+          <Animated.Image source={{ uri: card.image }} style={[styles.cardImage, animatedImageStyle]} />
+        ) : (
+          <View style={[styles.cardImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
+            <Text style={{ color: '#9CA3AF', fontSize: 14 }}>No Image</Text>
+          </View>
+        )}
+        <LinearGradient
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)']}
+          style={styles.gradient}
+        >
+          <View style={StyleSheet.absoluteFill} />
+        </LinearGradient>
+        <Text style={styles.cardTitle}>{card.title}</Text>
+      </Animated.View>
     </GestureDetector>
   );
 };

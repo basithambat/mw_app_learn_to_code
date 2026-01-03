@@ -13,6 +13,7 @@ import {
     Platform,
     TouchableOpacity
 } from 'react-native';
+import { GestureDetector } from 'react-native-gesture-handler';
 import Reanimated from 'react-native-reanimated';
 import CommentSectionModal from '@/components/comment/commentSectionModal';
 import { getAllCategories } from '@/api/apiCategories';
@@ -62,17 +63,64 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
     const { animatedValues } = useNewsItemAnimations(isCommentModalVisible, onClose);
     const [activeArticle, setActiveArticle] = useState(initialArticleId);
-    const currentIndexRef = useRef(0); // Always start at 0 since we reorder the array
-
-    // Reorder items to put the selected article first
-    const reorderedItems = useMemo(() => {
-        const selectedIndex = items.findIndex((item: any) => item.id == initialArticleId);
-        if (selectedIndex === -1) return items;
-
-        const reordered = [...items];
-        const [selectedItem] = reordered.splice(selectedIndex, 1);
-        return [selectedItem, ...reordered];
+    
+    // Calculate initial index based on the ID
+    const initialIndex = useMemo(() => {
+        const index = items.findIndex((item: any) => item.id == initialArticleId);
+        return index >= 0 ? index : 0;
     }, [items, initialArticleId]);
+
+    const currentIndexRef = useRef(initialIndex); 
+
+    // Reset currentIndexRef when initialArticleId changes (component reopened with different article)
+    useEffect(() => {
+        if (!isVisible) {
+            // Reset state when component becomes invisible
+            setIsCommentModalVisible(false);
+            return;
+        }
+        
+        // Component is visible - reset all state
+        currentIndexRef.current = initialIndex;
+        setActiveArticle(initialArticleId);
+        setIsCommentModalVisible(false); // Reset comment modal state
+        
+        // Ensure FlatList scrolls to correct position when reopened
+        if (flatListRef.current) {
+            // Use multiple attempts to ensure scroll works
+            const scrollToCorrectPosition = () => {
+                try {
+                    flatListRef.current?.scrollToIndex({
+                        index: initialIndex,
+                        animated: false
+                    });
+                } catch (error) {
+                    // Fallback to scrollToOffset if scrollToIndex fails
+                    try {
+                        flatListRef.current?.scrollToOffset({
+                            offset: initialIndex * SCREEN_DIMENSIONS.width,
+                            animated: false
+                        });
+                    } catch (offsetError) {
+                        // If both fail, try again after a delay
+                        setTimeout(() => {
+                            flatListRef.current?.scrollToOffset({
+                                offset: initialIndex * SCREEN_DIMENSIONS.width,
+                                animated: false
+                            });
+                        }, 200);
+                    }
+                }
+            };
+            
+            // Try immediately
+            requestAnimationFrame(() => {
+                scrollToCorrectPosition();
+                // Also try after a short delay to ensure FlatList is ready
+                setTimeout(scrollToCorrectPosition, 100);
+            });
+        }
+    }, [initialArticleId, initialIndex, isVisible]);
 
     const handleCommentModalClose = () => {
         setIsCommentModalVisible(false);
@@ -91,23 +139,33 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         })();
     }, []);
 
-    const { panResponder, scrollEnabled, animatedStyle } = useCombinedSwipe({
-        data: reorderedItems,
+    const { panGesture, scrollEnabled, animatedStyle } = useCombinedSwipe({
+        data: items,
         currentIndex: currentIndexRef.current,
         onSwipeLeft: (index) => {
-            // Optional: programmatic scroll if needed, but FlatList handles it natively
-            if (flatListRef.current && !isCommentModalVisible && index < reorderedItems.length) {
+            // Navigate to next item (swipe left = next)
+            const nextIndex = currentIndexRef.current + 1;
+            if (flatListRef.current && !isCommentModalVisible && nextIndex < items.length) {
+                currentIndexRef.current = nextIndex;
+                if (items[nextIndex]) {
+                    setActiveArticle(items[nextIndex].id);
+                }
                 flatListRef.current.scrollToIndex({
-                    index,
+                    index: nextIndex,
                     animated: true
                 });
             }
         },
         onSwipeRight: (index) => {
-            // Optional: programmatic scroll if needed, but FlatList handles it natively
-            if (flatListRef.current && !isCommentModalVisible && index >= 0) {
+            // Navigate to previous item (swipe right = previous)
+            const prevIndex = currentIndexRef.current - 1;
+            if (flatListRef.current && !isCommentModalVisible && prevIndex >= 0) {
+                currentIndexRef.current = prevIndex;
+                if (items[prevIndex]) {
+                    setActiveArticle(items[prevIndex].id);
+                }
                 flatListRef.current.scrollToIndex({
-                    index,
+                    index: prevIndex,
                     animated: true
                 });
             }
@@ -126,16 +184,27 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     });
 
     const handleScroll = useCallback((event: any) => {
-        const slideIndex = Math.round(event.nativeEvent.contentOffset.x / SCREEN_DIMENSIONS.width);
-        currentIndexRef.current = slideIndex;
-        setActiveArticle(reorderedItems[slideIndex].id);
-    }, [reorderedItems]);
+        if (!isVisible) return; // Don't update if component is not visible
+        
+        const offsetX = event.nativeEvent.contentOffset.x;
+        const slideIndex = Math.round(offsetX / SCREEN_DIMENSIONS.width);
+        
+        // Clamp index to valid range
+        const validIndex = Math.max(0, Math.min(slideIndex, items.length - 1));
+        
+        if (validIndex !== currentIndexRef.current) {
+            currentIndexRef.current = validIndex;
+            if (items[validIndex]) {
+                setActiveArticle(items[validIndex].id);
+            }
+        }
+    }, [items, isVisible]);
 
     const handleUpButtonPress = () => {
         setIsCommentModalVisible(true);
     };
 
-    const renderScreen = ({ item }: { item: any }) => {
+    const renderScreen = useCallback(({ item }: { item: any }) => {
         const category = categories.find((cat: CategoryType) => cat.id === item.category_id);
         const imageWrapperStyle = {
             ...IMAGE_WRAPPER_STYLE,
@@ -150,17 +219,21 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                     backgroundColor: isCommentModalVisible ? '#F3F4F6' : 'white', 
                     transform: [{ scale: animatedValues.scale }] 
                 }]}
-                {...panResponder.panHandlers}
+                collapsable={false} // Prevent view collapsing for smoother animations
+                pointerEvents={isCommentModalVisible ? 'none' : 'auto'} // Allow touches to pass through when comment modal is open
             >
-                <Animated.View style={[
-                    imageWrapperStyle,
-                    {
-                        width: animatedValues.imageSize.interpolate({
-                            inputRange: [54, 100],
-                            outputRange: ['54%', '100%'],
-                        }),
-                    }
-                ]}>
+                <GestureDetector gesture={!isCommentModalVisible ? panGesture : undefined}>
+                    <Animated.View 
+                        style={[
+                            imageWrapperStyle,
+                            {
+                                width: animatedValues.imageSize.interpolate({
+                                    inputRange: [54, 100],
+                                    outputRange: ['54%', '100%'],
+                                }),
+                            }
+                        ]}
+                    >
                     {item.image_url ? (
                         <StyledImage 
                             source={{ uri: item.image_url }} 
@@ -208,17 +281,19 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                             <View className='h-[4px] w-[24px] rounded-full bg-[#FFFFFF]/20' />
                         )}
                     </Animated.View>
-                </Animated.View>
+                </GestureDetector>
 
-                <Animated.View style={{
-                    opacity: animatedValues.contentOpacity,
-                    transform: [{
-                        translateY: animatedValues.contentOpacity.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [50, 0],
-                        })
-                    }],
-                }}>
+                <Animated.View 
+                    style={{
+                        opacity: animatedValues.contentOpacity,
+                        transform: [{
+                            translateY: animatedValues.contentOpacity.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [50, 0],
+                            })
+                        }],
+                    }}
+                >
                     <StyledView className="p-[16px]">
                         <Text className="text-[20px] font-domine mb-[12px]">
                             {item.title}
@@ -243,6 +318,32 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                     </StyledView>
                 </Animated.View>
 
+                {/* Pagination Indicators - Story Style */}
+                {!isCommentModalVisible && (
+                    <View style={{
+                        position: 'absolute',
+                        top: 60,
+                        left: 10,
+                        right: 10,
+                        flexDirection: 'row',
+                        height: 3,
+                        justifyContent: 'center',
+                        gap: 4
+                    }}>
+                        {items.map((_, idx) => (
+                            <View 
+                                key={idx}
+                                style={{
+                                    flex: 1,
+                                    height: '100%',
+                                    backgroundColor: idx === currentIndexRef.current ? 'white' : 'rgba(255,255,255,0.3)',
+                                    borderRadius: 2
+                                }}
+                            />
+                        ))}
+                    </View>
+                )}
+
                 {!isCommentModalVisible && (
                     <TouchableOpacity 
                         className="absolute bottom-[40px] self-center bg-[#F7F7F7] rounded-full px-[20px] py-[8px]"
@@ -254,7 +355,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                 )}
             </Animated.View>
         );
-    };
+    }, [isCommentModalVisible, categories, animatedValues]);
 
     const getItemLayout = useCallback((_: any, index: number) => ({
         length: SCREEN_DIMENSIONS.width,
@@ -270,7 +371,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
             ]}>
                 <FlatList
                     ref={flatListRef}
-                    data={reorderedItems}
+                    data={items}
                     renderItem={renderScreen}
                     keyExtractor={(item) => item.id.toString()}
                     horizontal
@@ -278,20 +379,43 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                     showsHorizontalScrollIndicator={false}
                     getItemLayout={getItemLayout}
                     onMomentumScrollEnd={handleScroll}
-                    initialScrollIndex={0} // Always start at 0 since we reordered the array
-                    scrollEventThrottle={16}
-                    scrollEnabled={scrollEnabled && !isCommentModalVisible}
-                    decelerationRate="fast"
+                    initialScrollIndex={initialIndex}
+                    scrollEventThrottle={16} // Optimized to 16ms (60fps) to reduce bridge traffic
+                    scrollEnabled={!isCommentModalVisible && isVisible} // Disable only when comment modal is open or component not visible
+                    maintainVisibleContentPosition={null} // Allow free scrolling
+                    disableScrollViewPanResponder={false} // Ensure FlatList can handle its own gestures
+                    decelerationRate="fast" // Standard "paging" feel
                     snapToInterval={SCREEN_DIMENSIONS.width}
                     snapToAlignment='center'
-                    removeClippedSubviews={false}
+                    removeClippedSubviews={Platform.OS === 'android'} // Improve memory on Android
+                    bounces={false} // Disable bounce for smoother feel
+                    overScrollMode="never" // Android: prevent over-scroll glow
+                    directionalLockEnabled={true} // iOS: lock to one direction
+                    disableIntervalMomentum={true} // Smoother snap behavior
+                    windowSize={3} // Optimize memory: only render current + 1 offscreen
+                    maxToRenderPerBatch={1} // Only render 1 item at a time
+                    initialNumToRender={1} // Only render initial item
+                    updateCellsBatchingPeriod={50}
                     onScrollToIndexFailed={(info) => {
                         // Fallback: scroll to offset if scrollToIndex fails
-                        const wait = new Promise(resolve => setTimeout(resolve, 500));
+                        const wait = new Promise(resolve => setTimeout(resolve, 100));
                         wait.then(() => {
-                            flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+                            const offset = info.averageItemLength * info.index;
+                            flatListRef.current?.scrollToOffset({ offset, animated: false });
+                            // Update ref after scroll
+                            currentIndexRef.current = info.index;
+                            if (items[info.index]) {
+                                setActiveArticle(items[info.index].id);
+                            }
                         });
                     }}
+                    onScroll={(event) => {
+                        // Real-time scroll tracking for better responsiveness
+                        if (isVisible && !isCommentModalVisible) {
+                            handleScroll(event);
+                        }
+                    }}
+                    nestedScrollEnabled={true} // Allow nested scrolling
                 />
             </Animated.View>
             <CommentSectionModal

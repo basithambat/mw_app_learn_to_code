@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Platform } from "react-native";
 import { router, Href } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Constants from 'expo-constants';
 import { useSelector, useDispatch } from "react-redux";
 import { loggedInUserDataSelector } from "@/redux/slice/userSlice";
 import { AuthPayload } from "@/types/UserTypes";
@@ -115,6 +116,13 @@ const ProfileScreen = () => {
             <Text className="text-gray-400">→</Text>
           </TouchableOpacity>
         ))}
+      </View>
+
+      {/* Build Number */}
+      <View className="items-center mt-auto mb-8">
+        <Text className="text-[12px] text-gray-400 font-geist">
+          v{Constants.expoConfig?.version || '2.2'} • Build {Platform.OS === 'ios' ? Constants.expoConfig?.ios?.buildNumber || '10' : Constants.expoConfig?.android?.versionCode || '4'}
+        </Text>
       </View>
 
     </SafeAreaView>

@@ -3,8 +3,9 @@ import { Stack, SplashScreen } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
-import { useEffect } from "react";
-import { View } from 'react-native';
+import { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { AuthProvider } from '@/config/authContext';
 import { FirebaseAuthProvider } from '@/config/firebaseAuthContext';
 import { Provider } from 'react-redux';
@@ -25,6 +26,9 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 export default function RootLayout() {
+  // Track splash screen visibility for version display
+  const [splashVisible, setSplashVisible] = useState(true);
+  
   // Load fonts with error handling - make it completely non-blocking
   const [fontsLoaded, error] = useFonts(FONTS);
 
@@ -65,11 +69,15 @@ export default function RootLayout() {
 
         // Always hide splash - don't wait for fonts if there's an error
         if (fontsLoaded || error) {
+          // Hide version overlay first, then native splash
+          setSplashVisible(false);
+          await new Promise(resolve => setTimeout(resolve, 100)); // Small fade delay
           await SplashScreen.hideAsync();
         }
       } catch (e) {
         console.error('Error hiding splash screen:', e);
         // Force hide splash even on error
+        setSplashVisible(false);
         try {
           await SplashScreen.hideAsync();
         } catch {}
@@ -83,7 +91,20 @@ export default function RootLayout() {
   // App will use system fonts as fallback
   if (!fontsLoaded && !error) {
     // Show empty view briefly while fonts load
-    return <View style={{ flex: 1 }} />;
+    return (
+      <View style={{ flex: 1 }}>
+        {splashVisible && (
+          <View style={styles.versionOverlay}>
+            <Text style={styles.versionText}>
+              v{Constants.expoConfig?.version || '2.2'}
+            </Text>
+            <Text style={styles.buildText}>
+              Build {Platform.OS === 'ios' ? Constants.expoConfig?.ios?.buildNumber || '10' : Constants.expoConfig?.android?.versionCode || '4'}
+            </Text>
+          </View>
+        )}
+      </View>
+    );
   }
 
   // Even if there's an error, continue - fonts are optional
@@ -96,6 +117,17 @@ export default function RootLayout() {
           <AuthProvider>
             <SafeAreaProvider>
               <GestureHandlerRootView style={{ flex: 1 }}>
+                {/* Temporary version overlay on splash screen */}
+                {splashVisible && (
+                  <View style={styles.versionOverlay} pointerEvents="none">
+                    <Text style={styles.versionText}>
+                      v{Constants.expoConfig?.version || '2.2'}
+                    </Text>
+                    <Text style={styles.buildText}>
+                      Build {Platform.OS === 'ios' ? Constants.expoConfig?.ios?.buildNumber || '10' : Constants.expoConfig?.android?.versionCode || '4'}
+                    </Text>
+                  </View>
+                )}
                 <Stack
                 screenOptions={{
                   headerShown: false,
@@ -149,3 +181,28 @@ export default function RootLayout() {
     </Provider>
   );
 }
+
+const styles = StyleSheet.create({
+  versionOverlay: {
+    position: 'absolute',
+    bottom: 60,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+  },
+  versionText: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 4,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+  buildText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#666666',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+  },
+});

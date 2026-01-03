@@ -25,6 +25,10 @@ const Loader: React.FC = () => {
               transform: [{ scale: 2 }], // Scale up the animation
             }}
             resizeMode="cover"
+            hardwareAccelerationAndroid={true}
+            renderMode="AUTOMATIC"
+            speed={1}
+            cacheStrategy="strong"
           />
         </View>
         

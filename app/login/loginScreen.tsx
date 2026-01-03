@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   ImageBackground,
   Alert,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Constants from 'expo-constants';
 import { signInWithGoogle } from '@/services/firebaseAuth';
 import { useFirebaseAuth } from '@/config/firebaseAuthContext';
 
@@ -50,7 +52,7 @@ const LoginScreen = () => {
           <Text className="text-2xl text-black">←</Text>
         </TouchableOpacity>
 
-        <View className="flex-1 items-center mt-[372px]">
+        <View className="flex-1 items-center justify-center">
           <View className="mb-[66px] items-center">
             <Text className="font-domine text-[28px] mb-2 text-center text-black">
               News curated
@@ -75,7 +77,7 @@ const LoginScreen = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="w-full bg-white rounded-[12px] py-4 px-6 flex-row items-center justify-center"
+            className="w-full bg-white rounded-[12px] py-4 px-6 flex-row items-center justify-center mb-4"
             onPress={() => {
               router.replace({
                 pathname: '/login/mobile'
@@ -91,6 +93,19 @@ const LoginScreen = () => {
               Continue with Phone
             </Text>
           </TouchableOpacity>
+
+          {/* Build Number - Below buttons */}
+          <View className="mt-4 items-center">
+            <Text 
+              className="text-[10px] font-geist text-center" 
+              style={{ 
+                color: '#666666',
+                opacity: 0.8
+              }}
+            >
+              v{Constants.expoConfig?.version || '2.3'} • Build {Platform.OS === 'ios' ? Constants.expoConfig?.ios?.buildNumber || '11' : Constants.expoConfig?.android?.versionCode || '5'}
+            </Text>
+          </View>
         </View>
       </SafeAreaView>
     </ImageBackground>

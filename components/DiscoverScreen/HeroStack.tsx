@@ -3,8 +3,8 @@
  * Today Edition card stack with swipe gestures
  */
 
-import React, { useCallback } from 'react';
-import { StyleSheet, Text, View, Image, useWindowDimensions, TouchableOpacity } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { StyleSheet, Text, View, Image, useWindowDimensions } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -52,58 +52,89 @@ export const HeroStack: React.FC<HeroStackProps> = ({
       {visibleItems.map((item, index) => {
         const isFirst = index === 0;
 
-        const panGesture = Gesture.Pan()
-          .activeOffsetX([-10, 10])
-          .onUpdate((event) => {
-            if (isFirst) {
-              translateX.value = event.translationX;
-            }
-          })
-          .onEnd((event) => {
-            if (isFirst) {
-              if (Math.abs(event.velocityX) > 400 || Math.abs(translateX.value) > SCREEN_WIDTH * 0.4) {
-                translateX.value = withTiming(Math.sign(translateX.value) * SCREEN_WIDTH);
-                const direction = translateX.value > 0 ? 'right' : 'left';
-                removeCard(item, direction);
-              } else {
-                translateX.value = withTiming(0);
+        const handlePress = useCallback(() => {
+          'worklet';
+          runOnJS(onPress)(item);
+        }, [onPress, item]);
+
+        const panGesture = useMemo(() => {
+          const pan = Gesture.Pan()
+            .activeOffsetX([-10, 10])
+            .failOffsetY([-10, 10])
+            .onUpdate((event) => {
+              if (isFirst) {
+                translateX.value = event.translationX;
               }
-            }
-          });
+            })
+            .onEnd((event) => {
+              if (isFirst) {
+                if (Math.abs(event.velocityX) > 400 || Math.abs(translateX.value) > SCREEN_WIDTH * 0.4) {
+                  const direction = translateX.value > 0 ? 'right' : 'left';
+                  translateX.value = withSpring(
+                    Math.sign(translateX.value) * SCREEN_WIDTH,
+                    {
+                      damping: 15,
+                      stiffness: 150,
+                      mass: 0.5,
+                    }
+                  );
+                  removeCard(item, direction);
+                } else {
+                  translateX.value = withSpring(0, {
+                    damping: 20,
+                    stiffness: 200,
+                  });
+                }
+              }
+            });
+
+          const tap = Gesture.Tap()
+            .onEnd(() => {
+              if (isFirst && Math.abs(translateX.value) < 5) {
+                handlePress();
+              }
+            });
+
+          return Gesture.Race(pan, tap);
+        }, [isFirst, translateX, removeCard, item, SCREEN_WIDTH, handlePress]);
 
         const animatedCardStyle = useAnimatedStyle(() => {
+          'worklet';
           const scale = interpolate(
             activeIndex.value,
             [index - 1, index, index + 1],
-            [0.95, 1, 1.05]
+            [0.95, 1, 1.05],
+            'clamp'
           );
 
           const translateY = interpolate(
             activeIndex.value,
             [index - 1, index, index + 1],
-            [-18, 0, 0]
+            [-18, 0, 0],
+            'clamp'
           );
 
           const rotate = interpolate(
             isFirst ? translateX.value : activeIndex.value,
             isFirst ? [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2] : [index - 1, index, index + 1],
-            isFirst ? [-10, 0, 10] : [3, 0, -3]
+            isFirst ? [-10, 0, 10] : [3, 0, -3],
+            'clamp'
           );
 
           if (!isFirst) {
+            const staticTranslateY = index * 1;
+            const staticTranslateX = index * 20;
+            const maxIndex = Math.min(visibleItems.length - 1, 3);
+            const staticOpacity = index <= 1 ? 1 : index >= maxIndex ? 0.5 : 1 - ((index - 1) / (maxIndex - 1)) * 0.5;
+            
             return {
               transform: [
                 { scale },
-                { translateY },
+                { translateY: translateY + staticTranslateY },
                 { rotate: `${rotate}deg` },
-                { translateY: withTiming(index * 1, { duration: 300 }) },
-                { translateX: withTiming(index * 20, { duration: 300 }) },
+                { translateX: staticTranslateX },
               ],
-              opacity: interpolate(
-                index,
-                [1, Math.min(visibleItems.length - 1, 3)],
-                [1, 0.5]
-              ),
+              opacity: staticOpacity,
             };
           }
 
@@ -119,8 +150,7 @@ export const HeroStack: React.FC<HeroStackProps> = ({
 
         return (
           <GestureDetector key={item.storyId} gesture={panGesture}>
-            <TouchableOpacity activeOpacity={0.95} onPress={() => onPress(item)}>
-              <Animated.View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }, animatedCardStyle]}>
+            <Animated.View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }, animatedCardStyle]}>
                 {imageUrl ? (
                   <Image source={{ uri: imageUrl }} style={styles.cardImage} />
                 ) : (
@@ -136,7 +166,6 @@ export const HeroStack: React.FC<HeroStackProps> = ({
                 </LinearGradient>
                 <Text style={styles.cardTitle}>{item.title}</Text>
               </Animated.View>
-            </TouchableOpacity>
           </GestureDetector>
         );
       }).reverse()}

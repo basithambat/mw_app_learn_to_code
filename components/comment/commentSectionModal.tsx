@@ -376,6 +376,13 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({ postId, isVis
                     </View>
                   ) : null
                 }
+                removeClippedSubviews={Platform.OS === 'android'}
+                maxToRenderPerBatch={10}
+                updateCellsBatchingPeriod={50}
+                initialNumToRender={10}
+                windowSize={10}
+                getItemLayout={undefined}
+                scrollEventThrottle={16}
               />
             </NativeViewGestureHandler>
 
@@ -421,6 +428,10 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({ postId, isVis
                           }}
                           // Find more Lottie files at https://lottiefiles.com/featured
                           source={require('@/assets/animations/loading.json')}
+                          hardwareAccelerationAndroid={true}
+                          renderMode="AUTOMATIC"
+                          speed={1}
+                          cacheStrategy="strong"
                         />
                       </ImageBackground>
                       :

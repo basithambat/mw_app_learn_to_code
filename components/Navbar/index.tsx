@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Image, View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import Constants from 'expo-constants';
 import menuIcon from '@/assets/iconMenu.webp';
 import { useSelector } from "react-redux";
 import { loggedInUserDataSelector } from '@/redux/slice/userSlice';
@@ -46,8 +47,10 @@ const NavBar = () => {
           )}
         </TouchableOpacity>
         <Text className="font-domine text-2xl text-black">Discover</Text>
-        <View className="w-9 h-9">
-          {/* <Image source={searchIcon} className="w-9 h-9 hidden" resizeMode="contain" /> */}
+        <View className="items-end">
+          <Text className="text-[10px] text-gray-400 font-geist">
+            v{Constants.expoConfig?.version || '2.2'}
+          </Text>
         </View>
       </View>
 
