@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
+import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { WillsModule } from './wills/wills.module';
@@ -15,6 +17,7 @@ import { AssetsModule } from './assets/assets.module';
 import { AssistantModule } from './assistant/assistant.module';
 import { LegalAidModule } from './legal-aid/legal-aid.module';
 import { ValidationModule } from './validation/validation.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -22,6 +25,13 @@ import { ValidationModule } from './validation/validation.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute
+        limit: 10, // 10 requests per minute
+      },
+    ]),
+    CommonModule,
     AuthModule,
     UsersModule,
     WillsModule,
@@ -34,6 +44,7 @@ import { ValidationModule } from './validation/validation.module';
     AssistantModule,
     LegalAidModule,
     ValidationModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

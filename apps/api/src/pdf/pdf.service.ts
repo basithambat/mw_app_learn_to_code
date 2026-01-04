@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalLawService } from '../personal-law/personal-law.service';
+import { PersonalLaw } from '@prisma/client';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -70,11 +71,15 @@ export class PdfService {
 
     // Generate PDF
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595, 842]); // A4 size
+    let page = pdfDoc.addPage([595, 842]); // A4 size
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const fontSize = 11;
+    const lineHeight = 15;
+    const margin = 50;
+    const maxWidth = 495;
     let yPosition = 800;
+    const bottomMargin = 80; // Space for footer/watermark
 
     // Helper function to add text
     const addText = (text: string, x: number, y: number, isBold = false, size = fontSize) => {
@@ -87,7 +92,17 @@ export class PdfService {
       });
     };
 
-    // Helper function to add paragraph
+    // Helper function to check if new page is needed
+    const checkNewPage = (requiredSpace: number) => {
+      if (yPosition - requiredSpace < bottomMargin) {
+        page = pdfDoc.addPage([595, 842]);
+        yPosition = 800;
+        return true;
+      }
+      return false;
+    };
+
+    // Helper function to add paragraph with automatic page breaks
     const addParagraph = (text: string, x: number, startY: number, maxWidth: number) => {
       const words = text.split(' ');
       let currentLine = '';
@@ -98,8 +113,13 @@ export class PdfService {
         const width = font.widthOfTextAtSize(testLine, fontSize);
 
         if (width > maxWidth && currentLine) {
+          // Check if we need a new page
+          if (y - lineHeight < bottomMargin) {
+            page = pdfDoc.addPage([595, 842]);
+            y = 800;
+          }
           addText(currentLine, x, y);
-          y -= 15;
+          y -= lineHeight;
           currentLine = word;
         } else {
           currentLine = testLine;
@@ -107,25 +127,42 @@ export class PdfService {
       }
 
       if (currentLine) {
+        if (y - lineHeight < bottomMargin) {
+          page = pdfDoc.addPage([595, 842]);
+          y = 800;
+        }
         addText(currentLine, x, y);
-        y -= 15;
+        y -= lineHeight;
       }
 
       return y;
     };
 
     // Title
-    addText('LAST WILL AND TESTAMENT', 50, yPosition, true, 16);
+    addText('LAST WILL AND TESTAMENT', margin, yPosition, true, 18);
+    yPosition -= 25;
+    
+    // Subtitle with personal law
+    const personalLawLabel = this.personalLawService.getTemplateType(will.personalLaw).toUpperCase();
+    addText(`(Governed by ${personalLawLabel} Personal Law)`, margin, yPosition, false, 10);
     yPosition -= 30;
 
     // Personal Declaration
-    addText('PERSONAL DECLARATION', 50, yPosition, true, 14);
+    checkNewPage(60);
+    addText('PERSONAL DECLARATION', margin, yPosition, true, 14);
     yPosition -= 20;
 
     const profile = will.profile;
     if (profile) {
-      const declaration = `I, ${profile.fullName || 'the Testator'}, being of sound mind and memory, do hereby declare this to be my Last Will and Testament, and I hereby revoke all former wills and codicils made by me.`;
-      yPosition = addParagraph(declaration, 50, yPosition, 495) - 10;
+      const fullName = profile.fullName || 'the Testator';
+      const dob = profile.dateOfBirth 
+        ? new Date(profile.dateOfBirth).toLocaleDateString('en-IN', { 
+            year: 'numeric', month: 'long', day: 'numeric' 
+          })
+        : '';
+      
+      const declaration = `I, ${fullName}${dob ? `, born on ${dob}` : ''}, being of sound mind and memory, and not acting under any coercion, undue influence, or fraud, do hereby declare this to be my Last Will and Testament, and I hereby revoke all former wills, codicils, and testamentary dispositions made by me.`;
+      yPosition = addParagraph(declaration, margin, yPosition, maxWidth) - 10;
     }
 
     // Revocation Clause
@@ -184,24 +221,65 @@ export class PdfService {
 
     // Schedule of Assets
     if (will.assets && will.assets.length > 0) {
+      checkNewPage(60);
       yPosition -= 20;
-      addText('SCHEDULE OF ASSETS', 50, yPosition, true, 14);
+      addText('SCHEDULE OF ASSETS', margin, yPosition, true, 14);
       yPosition -= 20;
 
       for (const asset of will.assets) {
-        const assetText = `${asset.title || 'Asset'} (${asset.category}) - ${asset.ownershipType}`;
-        addText(assetText, 50, yPosition);
-        yPosition -= 15;
+        if (yPosition - lineHeight * 3 < bottomMargin) {
+          page = pdfDoc.addPage([595, 842]);
+          yPosition = 800;
+        }
+        
+        const assetTitle = asset.title || 'Unnamed Asset';
+        const category = asset.category || 'OTHER';
+        const ownershipType = asset.ownershipType || 'SELF_ACQUIRED';
+        const ownershipShare = asset.ownershipShare ? ` (${asset.ownershipShare}% share)` : '';
+        
+        addText(`${assetTitle}`, margin, yPosition, true, 12);
+        yPosition -= lineHeight;
+        addText(`Category: ${category} | Ownership: ${ownershipType}${ownershipShare}`, margin + 10, yPosition, false, 10);
+        yPosition -= lineHeight;
+        
+        if (asset.description) {
+          yPosition = addParagraph(asset.description, margin + 10, yPosition, maxWidth - 10) - 5;
+        }
+        
+        yPosition -= 10;
       }
     }
 
-    // Special handling for Muslim wills
-    if (will.personalLaw === 'MUSLIM') {
+    // Personal Law Specific Sections
+    checkNewPage(80);
+    yPosition -= 20;
+    
+    if (will.personalLaw === PersonalLaw.MUSLIM) {
+      addText('WASIYYAT (BEQUEST) - ISLAMIC LAW', margin, yPosition, true, 14);
       yPosition -= 20;
-      addText('WASIYYAT (BEQUEST)', 50, yPosition, true, 14);
+      const wasiyyatText = 'This will contains bequests (Wasiyyat) as per Islamic Personal Law (Sharia). Under Muslim law, bequests to non-heirs are limited to 1/3 of the estate. The remaining 2/3 of the estate must be distributed to Quranic heirs (spouse, children, parents, siblings) according to Islamic inheritance rules. If bequests to non-heirs exceed 1/3, the excess requires consent from all heirs after the testator\'s death, or it may be invalid.';
+      yPosition = addParagraph(wasiyyatText, margin, yPosition, maxWidth) - 10;
+    } else if (will.personalLaw === PersonalLaw.HINDU) {
+      addText('GOVERNING LAW - HINDU SUCCESSION ACT, 1956', margin, yPosition, true, 14);
       yPosition -= 20;
-      const wasiyyatText = 'This will contains bequests as per Islamic law (Wasiyyat). Bequests to non-heirs are limited to 1/3 of the estate. The remainder shall be distributed according to Islamic inheritance rules.';
-      yPosition = addParagraph(wasiyyatText, 50, yPosition, 495) - 10;
+      
+      // Check for ancestral/HUF assets
+      const hasAncestralAssets = will.assets?.some((a: any) => 
+        a.ownershipType === 'ANCESTRAL' || a.ownershipType === 'HUF'
+      );
+      
+      if (hasAncestralAssets) {
+        const hinduDisclaimer = 'IMPORTANT: This will contains ancestral or HUF (Hindu Undivided Family) property. Under Hindu Succession Act, 1956, you can only will your coparcenary share of such property, not the entire property. Other coparceners have rights to their shares. Self-acquired property can be freely distributed.';
+        yPosition = addParagraph(hinduDisclaimer, margin, yPosition, maxWidth) - 10;
+      } else {
+        const hinduText = 'This will is governed by Hindu Succession Act, 1956. Self-acquired property can be freely distributed according to the terms of this will.';
+        yPosition = addParagraph(hinduText, margin, yPosition, maxWidth) - 10;
+      }
+    } else if (will.personalLaw === PersonalLaw.CHRISTIAN) {
+      addText('GOVERNING LAW - INDIAN SUCCESSION ACT, 1925', margin, yPosition, true, 14);
+      yPosition -= 20;
+      const christianText = 'This will is governed by Indian Succession Act, 1925. The testator has the right to freely distribute self-acquired property. Ancestral property can only be willed as the testator\'s share.';
+      yPosition = addParagraph(christianText, margin, yPosition, maxWidth) - 10;
     }
 
     // Witness Declaration
@@ -233,9 +311,10 @@ export class PdfService {
     yPosition -= 20;
     addText(`Date: ${new Date().toLocaleDateString()}`, 50, yPosition);
 
-    // Watermark
+    // Add footer with watermark and page numbers
     const pages = pdfDoc.getPages();
-    for (const page of pages) {
+    pages.forEach((page, index) => {
+      // Watermark
       page.drawText('Legally created with mywasiyat', {
         x: 200,
         y: 50,
@@ -244,7 +323,25 @@ export class PdfService {
         color: rgb(0.8, 0.8, 0.8),
         opacity: 0.5,
       });
-    }
+      
+      // Page number
+      page.drawText(`Page ${index + 1} of ${pages.length}`, {
+        x: 500,
+        y: 30,
+        size: 9,
+        font,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+      
+      // Generated date
+      page.drawText(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, {
+        x: margin,
+        y: 30,
+        size: 9,
+        font,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+    });
 
     // Save PDF
     const pdfBytes = await pdfDoc.save();

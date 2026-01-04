@@ -1,9 +1,20 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class ApiException implements Exception {
+  final String message;
+  final int? statusCode;
+  final dynamic data;
+
+  ApiException(this.message, {this.statusCode, this.data});
+
+  @override
+  String toString() => message;
+}
+
 class ApiClient {
   late Dio _dio;
-  static const String baseUrl = 'http://localhost:3000';
+  static const String baseUrl = 'http://localhost:3000/api'; // Updated to include /api prefix
 
   ApiClient() {
     _dio = Dio(BaseOptions(
@@ -25,6 +36,30 @@ class ApiClient {
         return handler.next(options);
       },
       onError: (error, handler) {
+        // Handle error responses
+        if (error.response != null) {
+          final statusCode = error.response!.statusCode;
+          final data = error.response!.data;
+          
+          String message = 'An error occurred';
+          if (data is Map<String, dynamic>) {
+            message = data['message'] ?? 
+                     (data['errors'] is List && (data['errors'] as List).isNotEmpty
+                         ? (data['errors'] as List).first.toString()
+                         : message);
+          } else if (data is String) {
+            message = data;
+          }
+
+          return handler.reject(
+            DioException(
+              requestOptions: error.requestOptions,
+              response: error.response,
+              type: DioExceptionType.badResponse,
+              error: ApiException(message, statusCode: statusCode, data: data),
+            ),
+          );
+        }
         return handler.next(error);
       },
     ));
@@ -44,5 +79,15 @@ class ApiClient {
 
   Future<Response> delete(String path) {
     return _dio.delete(path);
+  }
+
+  // Helper method to extract data from response
+  dynamic extractData(Response response) {
+    final data = response.data;
+    // Backend returns {success: true, data: ...} format
+    if (data is Map<String, dynamic> && data.containsKey('data')) {
+      return data['data'];
+    }
+    return data;
   }
 }
