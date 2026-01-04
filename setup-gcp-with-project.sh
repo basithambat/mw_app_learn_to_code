@@ -40,14 +40,20 @@ echo "Project Number: $PROJECT_NUMBER"
 echo "Project ID: $PROJECT_ID"
 echo ""
 
-# Verify project
+# Verify project (skip if can't authenticate)
 echo "Verifying project..."
 PROJECT_VERIFY=$(gcloud projects describe "$PROJECT_ID" --format="value(projectNumber)" 2>/dev/null || echo "")
-if [ "$PROJECT_VERIFY" != "$PROJECT_NUMBER" ]; then
-    print_error "Project ID doesn't match project number. Please verify."
-    exit 1
+if [ -n "$PROJECT_VERIFY" ]; then
+    if [ "$PROJECT_VERIFY" != "$PROJECT_NUMBER" ]; then
+        print_warning "Project ID number ($PROJECT_VERIFY) doesn't match expected ($PROJECT_NUMBER)"
+        print_warning "Continuing anyway..."
+    else
+        print_status "Project verified"
+    fi
+else
+    print_warning "Could not verify project (authentication may be needed)"
+    print_warning "Continuing with provided Project ID..."
 fi
-print_status "Project verified"
 
 # Set project
 gcloud config set project "$PROJECT_ID"

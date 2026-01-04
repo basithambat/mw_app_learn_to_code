@@ -46,6 +46,18 @@ const feedQuerySchema = z.object({
 
 // Routes
 
+// Health check endpoint
+app.get('/health', async () => {
+  try {
+    // Quick DB check
+    await prisma.$queryRaw`SELECT 1`;
+    return { status: 'healthy', timestamp: new Date().toISOString() };
+  } catch (error) {
+    app.log.error('Health check failed:', error);
+    throw new Error('Unhealthy');
+  }
+});
+
 // GET /api/sources
 app.get('/api/sources', async () => {
   const adapters = getAllAdapters();
