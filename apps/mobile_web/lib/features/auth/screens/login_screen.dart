@@ -18,6 +18,28 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isOtpSent = false;
   bool _isLoading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill mock credentials for easy testing
+    _phoneController.text = '7042063370';
+    // Auto-send OTP for mock credentials
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _autoLoginWithMock();
+    });
+  }
+
+  Future<void> _autoLoginWithMock() async {
+    // Auto-login with mock credentials
+    setState(() {
+      _isOtpSent = true;
+      _otpController.text = '278823';
+    });
+    // Optionally auto-verify after a short delay
+    // await Future.delayed(const Duration(milliseconds: 500));
+    // _verifyOtp();
+  }
+
   Future<void> _sendOtp() async {
     if (_phoneController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -54,7 +76,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
-      await _authService.verifyOtp(_phoneController.text, _otpController.text);
+      // Use mock login if credentials match, otherwise use real API
+      await _authService.verifyOtpWithMock(_phoneController.text, _otpController.text);
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
       }

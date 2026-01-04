@@ -39,6 +39,7 @@ class PersonCard extends StatelessWidget {
         side: BorderSide(color: AppTheme.borderColor.withOpacity(0.12)),
       ),
       child: Container(
+        width: double.infinity,
         height: 64.0, // Empty card height
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(
@@ -79,6 +80,7 @@ class PersonCard extends StatelessWidget {
         side: BorderSide(color: AppTheme.borderColor.withOpacity(0.12)),
       ),
       child: Container(
+        width: double.infinity,
         height: height,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(

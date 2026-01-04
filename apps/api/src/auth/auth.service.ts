@@ -168,4 +168,35 @@ export class AuthService {
 
     return user;
   }
+
+  /**
+   * Development: Mock login that creates/finds user and returns JWT token
+   * Bypasses OTP verification for development/testing
+   */
+  async mockLogin(phone: string) {
+    // Find or create user
+    let user = await this.prisma.user.findUnique({
+      where: { phone },
+    });
+
+    if (!user) {
+      user = await this.usersService.create({
+        phone,
+      });
+    }
+
+    // Generate JWT token
+    const payload = { sub: user.id, phone: user.phone };
+    const accessToken = this.jwtService.sign(payload);
+
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        email: user.email,
+        fullName: user.fullName,
+      },
+    };
+  }
 }

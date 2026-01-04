@@ -30,7 +30,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // If onboarding just completed, mark step 1 as completed
+    // If onboarding just completed, update step status immediately
     if (widget.onboardingCompleted && _will != null && !_isLoading) {
       if (_will!['stepBasicInfo'] != 'COMPLETED') {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -41,10 +41,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
         });
       }
+      // Also reload will data to get the latest step status from backend (for API mode)
+      if (!_will!['id'].toString().startsWith('demo-')) {
+        _loadWill();
+      }
     }
   }
 
+  @override
+  void didUpdateWidget(DashboardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload will data when widget updates (e.g., returning from another screen)
+    if (oldWidget.onboardingCompleted != widget.onboardingCompleted) {
+      _loadWill();
+    }
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    // Reload will data when hot reload happens
+    _loadWill();
+  }
+
+
   Future<void> _loadWill() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     try {
       final wills = await _willService.getAllWills();
       if (wills.isNotEmpty) {
@@ -72,11 +97,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             'id': 'demo-will-id',
             'title': 'My Will',
             'personalLaw': 'UNKNOWN',
-            'stepBasicInfo': 'NOT_STARTED',
+            'stepBasicInfo': widget.onboardingCompleted ? 'COMPLETED' : 'NOT_STARTED',
             'stepFamily': 'NOT_STARTED',
             'stepArrangements': 'NOT_STARTED',
             'stepAssets': 'NOT_STARTED',
           };
+        } else {
+          // Preserve existing step status, but update if onboarding just completed
+          if (widget.onboardingCompleted && _will!['stepBasicInfo'] != 'COMPLETED') {
+            _will!['stepBasicInfo'] = 'COMPLETED';
+          }
         }
         _isLoading = false;
       });
@@ -117,6 +147,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  String _getCTAButtonText() {
+    final currentIndex = _getCurrentStepIndex();
+    if (currentIndex >= 4) {
+      return 'View Will';
+    }
+    final nextStepTitle = _getNextStepTitle();
+    if (nextStepTitle == 'Complete') {
+      return 'View Will';
+    }
+    return 'Get Started';
+  }
+
   void _handleGetStarted() async {
     final currentIndex = _getCurrentStepIndex();
     final willId = _will?['id'];
@@ -132,12 +174,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
         // Update step status in demo mode
         if (result != null && result['stepCompleted'] == 'stepBasicInfo') {
-          setState(() {
-            _will?['stepBasicInfo'] = 'COMPLETED';
-          });
-          // Force rebuild to update button text
           if (mounted) {
-            setState(() {});
+            setState(() {
+              _will?['stepBasicInfo'] = 'COMPLETED';
+            });
+            // Reload will to ensure state is synced
+            if (!willId.toString().startsWith('demo-')) {
+              _loadWill();
+            }
           }
         }
         break;
@@ -194,9 +238,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (mounted) {
       if (willId.toString().startsWith('demo-')) {
         // In demo mode, state is already updated by the result handling above
-        setState(() {}); // Trigger rebuild to reflect changes
+        // Force rebuild to update UI (bottom panel, progress bar, CTA)
+        setState(() {});
       } else {
-        _loadWill(); // Reload from API for real data
+        // Reload from API for real data - this will trigger setState in _loadWill
+        _loadWill();
       }
     }
   }
@@ -679,9 +725,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       height: 56,
                       child: ElevatedButton(
                         key: const Key('dashboard_get_started_elevated_button'),
-                        onPressed: _handleGetStarted,
+                        onPressed: currentStepIndex >= 4 ? null : _handleGetStarted,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.lightGray,
+                          backgroundColor: currentStepIndex >= 4 
+                              ? AppTheme.lightGray.withOpacity(0.5)
+                              : AppTheme.lightGray,
                           foregroundColor: AppTheme.textPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -690,11 +738,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                         ),
                         child: Text(
-                          'Get Started',
+                          _getCTAButtonText(),
                           style: GoogleFonts.frankRuhlLibre(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: AppTheme.textPrimary,
+                            color: currentStepIndex >= 4 
+                                ? AppTheme.textPrimary.withOpacity(0.5)
+                                : AppTheme.textPrimary,
                           ),
                         ),
                       ),

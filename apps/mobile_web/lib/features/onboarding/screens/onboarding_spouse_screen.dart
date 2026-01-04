@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/secondary_button.dart';
 import '../../../core/widgets/placeholder_image.dart';
+import '../../../core/widgets/smart_image.dart';
 
 /// Onboarding Spouse Screen - Matches React OnboardingSpouse component
 /// Screen 3: Yes/No question with image and radio buttons
@@ -118,19 +119,12 @@ class _OnboardingSpouseScreenState extends State<OnboardingSpouseScreen> {
                       height: screenHeight * 0.28,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          'assets/images/onboarding/couple.jpg',
+                        child: SmartImage(
+                          imagePath: 'assets/images/onboarding/couple.jpg',
                           width: double.infinity,
                           height: screenHeight * 0.28,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return PlaceholderImage(
-                              width: double.infinity,
-                              height: screenHeight * 0.28,
-                              type: 'couple',
-                              borderRadius: BorderRadius.circular(8),
-                            );
-                          },
+                          placeholderType: 'couple',
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),

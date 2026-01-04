@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/secondary_button.dart';
 import '../../../core/widgets/placeholder_image.dart';
+import '../../../core/widgets/smart_image.dart';
 
 /// Onboarding Children Screen - Matches React OnboardingChildren component
 /// Screen 4: Yes/No question with image and radio buttons
@@ -118,19 +119,12 @@ class _OnboardingChildrenScreenState extends State<OnboardingChildrenScreen> {
                       height: screenHeight * 0.28,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          'assets/images/onboarding/family.jpg',
+                        child: SmartImage(
+                          imagePath: 'assets/images/onboarding/family.jpg',
                           width: double.infinity,
                           height: screenHeight * 0.28,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return PlaceholderImage(
-                              width: double.infinity,
-                              height: screenHeight * 0.28,
-                              type: 'family',
-                              borderRadius: BorderRadius.circular(8),
-                            );
-                          },
+                          placeholderType: 'family',
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),

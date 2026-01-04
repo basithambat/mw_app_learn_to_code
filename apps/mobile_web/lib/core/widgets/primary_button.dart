@@ -27,7 +27,7 @@ class PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width ?? (isFullWidth ? 320.0 : null), // w-80 from React
+      width: width ?? (isFullWidth ? double.infinity : null), // Full width when isFullWidth is true
       height: height ?? 56.0, // h-14 from React
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/placeholder_image.dart';
+import '../../../core/widgets/smart_image.dart';
 
 /// Onboarding DOB Screen - Matches React OnboardingDOB component
 /// Screen 2: Date of birth with calendar image and scrollable date picker
@@ -188,22 +189,12 @@ class _OnboardingDOBScreenState extends State<OnboardingDOBScreen> {
                     SizedBox(
                       width: double.infinity,
                       height: screenHeight * 0.28, // ~200px on 720px screen
-                      child: ClipRRect(
+                      child: SmartImage(
+                        imagePath: 'assets/images/onboarding/calendar.jpg',
+                        width: double.infinity,
+                        height: screenHeight * 0.28,
+                        placeholderType: 'calendar',
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          'assets/images/onboarding/calendar.jpg',
-                          width: double.infinity,
-                          height: screenHeight * 0.28,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return PlaceholderImage(
-                              width: double.infinity,
-                              height: screenHeight * 0.28,
-                              type: 'calendar',
-                              borderRadius: BorderRadius.circular(8),
-                            );
-                          },
-                        ),
                       ),
                     ),
                     const SizedBox(height: 24),

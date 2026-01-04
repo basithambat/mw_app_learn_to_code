@@ -205,17 +205,23 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         }
       }
 
-      // Navigate to dashboard
+      // Navigate to dashboard with completion flag
       if (mounted) {
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.dashboard,
+          arguments: {'onboardingCompleted': true},
         );
       }
     } catch (e) {
       // Even if API fails, navigate to dashboard (demo mode)
       // In demo mode, we'll pass a flag to dashboard to mark step 1 as completed
+      // Also mark step as completed in demo will if it exists
       if (mounted) {
+        // For demo mode, ensure step is marked as completed before navigation
+        if (_willId != null && _willId!.startsWith('demo-')) {
+          // In demo mode, the step completion is handled by the dashboard flag
+        }
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.dashboard,

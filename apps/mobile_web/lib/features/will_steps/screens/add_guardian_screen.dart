@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/people_service.dart';
@@ -25,10 +27,12 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _peopleService = PeopleService();
+  final _imagePicker = ImagePicker();
   DateTime? _dateOfBirth;
   String? _relationship;
   Set<String> _selectedChildrenIds = {};
   String? _photoUrl;
+  File? _photo;
   bool _isLoading = false;
 
   @override

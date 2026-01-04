@@ -35,6 +35,20 @@ class ArrangementsService {
     }
   }
 
+  Future<List<dynamic>> getExecutors(String willId) async {
+    try {
+      final response = await _apiClient.get('/wills/$willId/executor');
+      final data = _apiClient.extractData(response) ?? response.data;
+      if (data is List) return data;
+      if (data is Map && data['executorAssignments'] != null) {
+        return data['executorAssignments'] is List ? data['executorAssignments'] : [];
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<List<dynamic>> getWitnesses(String willId) async {
     try {
       final response = await _apiClient.get('/wills/$willId/witnesses');

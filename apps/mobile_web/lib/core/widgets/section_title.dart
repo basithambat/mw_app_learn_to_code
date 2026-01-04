@@ -34,15 +34,12 @@ class SectionTitle extends StatelessWidget {
           ),
           if (description != null) ...[
             const SizedBox(height: 8),
-            SizedBox(
-              width: 312, // w-80 from React
-              child: Text(
-                description!,
-                style: GoogleFonts.lato(
-                  fontSize: 14,
-                  color: AppTheme.textSecondary,
-                  height: 1.43, // 20px line-height
-                ),
+            Text(
+              description!,
+              style: GoogleFonts.lato(
+                fontSize: 14,
+                color: AppTheme.textSecondary,
+                height: 1.43, // 20px line-height
               ),
             ),
           ],

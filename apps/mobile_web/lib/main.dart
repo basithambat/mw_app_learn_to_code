@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routes/app_routes.dart';
+import 'features/auth/services/auth_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Auto-login with mock credentials on app startup
+  final authService = AuthService();
+  await authService.mockLogin();
+  
   runApp(const MywasiyatApp());
 }
 

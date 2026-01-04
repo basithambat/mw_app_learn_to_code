@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/secondary_button.dart';
 import '../../../core/widgets/placeholder_image.dart';
+import '../../../core/widgets/smart_image.dart';
 
 /// Onboarding Minors Screen - Matches React OnboardingMinors component
 /// Screen 5: Yes/No question with image and radio buttons
@@ -118,19 +119,12 @@ class _OnboardingMinorsScreenState extends State<OnboardingMinorsScreen> {
                       height: screenHeight * 0.28,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          'assets/images/onboarding/child.jpg',
+                        child: SmartImage(
+                          imagePath: 'assets/images/onboarding/child.jpg',
                           width: double.infinity,
                           height: screenHeight * 0.28,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return PlaceholderImage(
-                              width: double.infinity,
-                              height: screenHeight * 0.28,
-                              type: 'child',
-                              borderRadius: BorderRadius.circular(8),
-                            );
-                          },
+                          placeholderType: 'child',
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),

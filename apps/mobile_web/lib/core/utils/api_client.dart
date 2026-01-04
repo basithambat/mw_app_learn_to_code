@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 
 class ApiException implements Exception {
   final String message;
@@ -39,29 +39,75 @@ class ApiClient {
       },
     ));
 
+    // Add logging interceptor for debugging
+    _dio.interceptors.add(LogInterceptor(
+      requestHeader: true,
+      requestBody: true,
+      responseBody: true,
+      responseHeader: false,
+      error: true,
+      logPrint: (obj) {
+        if (kIsWeb) {
+          print(obj);
+        } else {
+          debugPrint(obj.toString());
+        }
+      },
+    ));
+
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final prefs = await SharedPreferences.getInstance();
         final token = prefs.getString('auth_token');
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
+          if (kIsWeb) {
+            print('🔑 Token attached to request: ${token.substring(0, 20)}...');
+          } else {
+            debugPrint('🔑 Token attached to request: ${token.substring(0, 20)}...');
+          }
+        } else {
+          if (kIsWeb) {
+            print('⚠️ No auth token found in SharedPreferences');
+          } else {
+            debugPrint('⚠️ No auth token found in SharedPreferences');
+          }
         }
         return handler.next(options);
       },
       onError: (error, handler) {
-        // Handle error responses
+        // Enhanced error handling with better logging
         if (error.response != null) {
           final statusCode = error.response!.statusCode;
           final data = error.response!.data;
           
+          // Log detailed error information
+          if (kIsWeb) {
+            print('❌ API Error - Status: $statusCode');
+            print('❌ Response Data: $data');
+            print('❌ Request Path: ${error.requestOptions.path}');
+            print('❌ Request Headers: ${error.requestOptions.headers}');
+          } else {
+            debugPrint('❌ API Error - Status: $statusCode');
+            debugPrint('❌ Response Data: $data');
+            debugPrint('❌ Request Path: ${error.requestOptions.path}');
+            debugPrint('❌ Request Headers: ${error.requestOptions.headers}');
+          }
+          
           String message = 'An error occurred';
           if (data is Map<String, dynamic>) {
             message = data['message'] ?? 
+                     data['error'] ??
                      (data['errors'] is List && (data['errors'] as List).isNotEmpty
                          ? (data['errors'] as List).first.toString()
                          : message);
           } else if (data is String) {
             message = data;
+          }
+          
+          // Special handling for 401 Unauthorized
+          if (statusCode == 401) {
+            message = 'Unauthorized: Please login again. ${message.isNotEmpty ? "($message)" : ""}';
           }
 
           return handler.reject(
@@ -72,6 +118,14 @@ class ApiClient {
               error: ApiException(message, statusCode: statusCode, data: data),
             ),
           );
+        } else {
+          // Network or other errors
+          String message = error.message ?? 'Network error occurred';
+          if (kIsWeb) {
+            print('❌ Network Error: $message');
+          } else {
+            debugPrint('❌ Network Error: $message');
+          }
         }
         return handler.next(error);
       },

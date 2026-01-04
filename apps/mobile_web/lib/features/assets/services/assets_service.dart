@@ -25,6 +25,10 @@ class AssetsService {
     }
   }
 
+  Future<Map<String, dynamic>> createAsset(String willId, Map<String, dynamic> data) async {
+    return addAsset(willId, data);
+  }
+
   Future<Map<String, dynamic>> updateAsset(String willId, String assetId, Map<String, dynamic> data) async {
     try {
       final response = await _apiClient.patch('/wills/$willId/assets/$assetId', data: data);

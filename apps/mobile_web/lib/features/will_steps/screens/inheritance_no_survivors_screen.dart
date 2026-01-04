@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/inheritance_service.dart';
+import 'add_charity_friend_screen.dart';
 
 class InheritanceNoSurvivorsScreen extends StatefulWidget {
   final String? willId;
@@ -230,11 +231,44 @@ class _InheritanceNoSurvivorsScreenState extends State<InheritanceNoSurvivorsScr
                     const SizedBox(height: 16),
                     // Add another button
                     OutlinedButton(
-                      onPressed: () {
-                        // TODO: Show dialog to add charity or friend
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Add charity/friend coming soon')),
+                      onPressed: () async {
+                        final type = await showDialog<String>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Add beneficiary'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  leading: const Icon(Icons.favorite),
+                                  title: const Text('Charity'),
+                                  onTap: () => Navigator.pop(context, 'charity'),
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.person),
+                                  title: const Text('Friend'),
+                                  onTap: () => Navigator.pop(context, 'friend'),
+                                ),
+                              ],
+                            ),
+                          ),
                         );
+                        if (type != null && mounted) {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddCharityFriendScreen(
+                                willId: widget.willId,
+                                type: type,
+                              ),
+                            ),
+                          );
+                          if (result != null && mounted) {
+                            setState(() {
+                              _beneficiaries.add(result);
+                            });
+                          }
+                        }
                       },
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: AppTheme.primaryColor),

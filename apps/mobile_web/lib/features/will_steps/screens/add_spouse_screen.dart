@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/people_service.dart';
+import '../../auth/services/auth_service.dart';
 
 class AddSpouseScreen extends StatefulWidget {
   final String? willId;
@@ -23,9 +26,12 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _peopleService = PeopleService();
+  final _authService = AuthService();
+  final _imagePicker = ImagePicker();
   DateTime? _dateOfBirth;
   String? _relationship; // 'HUSBAND' or 'WIFE'
   String? _photoUrl;
+  File? _photo;
   bool _isLoading = false;
 
   @override
@@ -48,11 +54,21 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
   }
 
   Future<void> _pickPhoto() async {
-    // TODO: Implement photo picker
-    // For now, just show a message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Photo picker coming soon')),
-    );
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        setState(() {
+          _photo = File(image.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick photo: ${e.toString()}')),
+      );
+    }
   }
 
   Future<void> _save() async {
@@ -70,15 +86,39 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
       return;
     }
 
+    // Check authentication before making request
+    final isAuthenticated = await _authService.isAuthenticated();
+    if (!isAuthenticated) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please login to save spouse information'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
+      // Convert relationship to backend enum format
+      String relationshipEnum = 'SPOUSE'; // Default to SPOUSE
+      if (_relationship == 'HUSBAND' || _relationship == 'WIFE') {
+        relationshipEnum = 'SPOUSE'; // Backend uses SPOUSE for both
+      }
+      
       final data = {
         'fullName': _nameController.text,
         'dateOfBirth': DateFormat('yyyy-MM-dd').format(_dateOfBirth!),
-        'relationship': _relationship,
+        'relationship': relationshipEnum,
         if (_photoUrl != null) 'photoUrl': _photoUrl,
       };
+      
+      print('📤 Saving spouse with data: $data');
+      print('📤 WillId: ${widget.willId}');
 
       if (widget.existingSpouse != null && widget.willId != null) {
         await _peopleService.updatePerson(
@@ -88,15 +128,71 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
         );
       } else if (widget.willId != null) {
         await _peopleService.addPerson(widget.willId!, data);
+      } else {
+        // Demo mode - just return success
+        if (mounted) {
+          Navigator.pop(context, {'saved': true});
+        }
+        return;
       }
 
       if (mounted) {
         Navigator.pop(context, {'saved': true});
       }
     } catch (e) {
+      // Log full error for debugging
+      print('❌ Error saving spouse: $e');
+      if (e.toString().contains('DioException')) {
+        print('❌ DioException details: ${e.toString()}');
+      }
+      
       if (mounted) {
+        String errorMessage = 'Failed to save spouse';
+        
+        // Better error message extraction
+        if (e.toString().contains('DioException')) {
+          // Check for ApiException with status code
+          if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+            errorMessage = 'Unauthorized: Please login again to continue';
+          } else if (e.toString().contains('403') || e.toString().contains('Forbidden')) {
+            errorMessage = 'Access denied: You don\'t have permission to perform this action';
+          } else if (e.toString().contains('404') || e.toString().contains('Not Found')) {
+            errorMessage = 'Will not found. Please create a will first.';
+          } else if (e.toString().contains('400') || e.toString().contains('Bad Request')) {
+            // Extract validation error message
+            final errorStr = e.toString();
+            if (errorStr.contains('Only one spouse')) {
+              errorMessage = 'Only one spouse can be added to a will';
+            } else if (errorStr.contains('message:')) {
+              final match = RegExp(r'message:\s*([^\n]+)').firstMatch(errorStr);
+              if (match != null) {
+                errorMessage = match.group(1) ?? errorMessage;
+              }
+            } else {
+              errorMessage = 'Invalid data. Please check all fields.';
+            }
+          } else if (e.toString().contains('500') || e.toString().contains('Internal Server Error')) {
+            errorMessage = 'Server error: Please try again later';
+          } else {
+            // Try to extract meaningful error from exception
+            final errorStr = e.toString();
+            if (errorStr.contains('message:')) {
+              final match = RegExp(r'message:\s*([^\n]+)').firstMatch(errorStr);
+              if (match != null) {
+                errorMessage = match.group(1) ?? errorMessage;
+              }
+            }
+          }
+        } else {
+          errorMessage = e.toString();
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
         );
       }
     } finally {

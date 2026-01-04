@@ -8,6 +8,8 @@ import '../../../core/widgets/primary_button.dart';
 import '../../../core/routes/app_routes.dart';
 import '../services/people_service.dart';
 import 'add_child_screen.dart';
+import 'add_mother_screen.dart';
+import 'add_others_screen.dart';
 import 'add_guardian_screen.dart';
 import 'understand_modal.dart';
 
@@ -299,205 +301,251 @@ class _FamilyScreenState extends State<FamilyScreen> {
     final hasSpouse = spouse != null;
     final hasChildren = children.isNotEmpty;
     final hasMother = mother != null;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final padding = EdgeInsets.symmetric(horizontal: screenWidth * 0.05); // 5% padding
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Status Bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 24,
-            child: Container(
-              color: Colors.black.withOpacity(0.05),
-            ),
-          ),
-          // Decorative Element
-          Positioned(
-            top: 0,
-            right: 0,
-            child: Container(
-              width: 120,
-              height: 120,
-              color: AppTheme.primaryLight,
-            ),
-          ),
-          // Back Button
-          Positioned(
-            left: 16,
-            top: 40,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Color(0xFF323232)),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          // Title Section
-          const SectionTitle(
-            title: 'Family & Inheritance',
-            description:
-                'These are usually the ones who you want to own the assets once you are no more',
-            padding: EdgeInsets.only(left: 20, top: 88, right: 20),
-          ),
-          // Spouse Card
-          Positioned(
-            left: 20,
-            top: 200,
-            width: 320,
-            child: hasSpouse
-                ? PersonCard(
-                    name: spouse['fullName'],
-                    relationship: 'Spouse',
-                    photoUrl: spouse['photoUrl'],
-                    onEdit: () async {
-                      final result = await Navigator.pushNamed(
-                        context,
-                        AppRoutes.addSpouse,
-                        arguments: {
-                          'willId': widget.willId,
-                          'existingSpouse': spouse,
-                        },
-                      );
-                      if (result != null && (result as Map)['saved'] == true) {
-                        _loadPeople();
-                      }
-                    },
-                  )
-                : PersonCard(
-                    name: 'Spouse',
-                    isEmpty: true,
-                    height: 64,
-                    onAdd: () async {
-                      final result = await Navigator.pushNamed(
-                        context,
-                        AppRoutes.addSpouse,
-                        arguments: {
-                          'willId': widget.willId,
-                        },
-                      );
-                      if (result != null && (result as Map)['saved'] == true) {
-                        _loadPeople();
-                      }
-                    },
-                  ),
-          ),
-          // Children Card
-          Positioned(
-            left: 20,
-            top: 292,
-            width: 320,
-            child: hasChildren
-                ? PersonCard(
-                    name: 'Children',
-                    relationship: '${children.length} ${children.length == 1 ? 'child' : 'children'}',
-                    onEdit: () async {
-                      // Show children list modal or navigate to children management
-                      _showChildrenCountModal();
-                    },
-                  )
-                : PersonCard(
-                    name: 'Children',
-                    isEmpty: true,
-                    height: 64,
-                    onAdd: () {
-                      _showChildrenCountModal();
-                    },
-                  ),
-          ),
-          // Mother Card with explanation
-          Positioned(
-            left: 20,
-            top: 371,
-            width: 320,
-            child: InfoCard(
-              explanation:
-                  'Mothers are suppose to have a share in son\'s property as per law',
-              child: hasMother
-                  ? PersonCard(
-                      name: mother['fullName'],
-                      relationship: 'Mother',
-                      photoUrl: mother['photoUrl'],
-                      onEdit: () {
-                        // TODO: Navigate to edit mother
-                      },
-                    )
-                  : PersonCard(
-                      name: 'Mother',
-                      isEmpty: true,
-                      height: 64,
-                      onAdd: () {
-                        // TODO: Navigate to add mother
-                      },
-                    ),
-            ),
-          ),
-          // Others Card with explanation
-          Positioned(
-            left: 20,
-            top: 515,
-            width: 320,
-            child: InfoCard(
-              explanation:
-                  'Can be one who you want to have some share in your assets & properties',
-              child: PersonCard(
-                name: 'Others (Optional)',
-                isEmpty: true,
-                height: 64,
-                onAdd: () {
-                  // TODO: Navigate to add others
-                },
+      body: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          child: Stack(
+            children: [
+              // Decorative Element
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  width: screenWidth * 0.3,
+                  height: screenWidth * 0.3,
+                  color: AppTheme.primaryLight,
+                ),
               ),
-            ),
-          ),
-          // Footer with link and button
-          Positioned(
-            left: 20,
-            bottom: 80,
-            width: 320,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => UnderstandModal(),
-                    );
-                  },
-                  child: Text(
-                    'Understand what is counted for distribution here',
-                    style: GoogleFonts.lato(
-                      fontSize: 14,
-                      color: AppTheme.primaryColor,
-                      decoration: TextDecoration.underline,
+              // Main Content
+              SingleChildScrollView(
+                padding: EdgeInsets.zero,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  // Back Button and Title Section
+                  Padding(
+                    padding: padding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 8),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.arrow_back, color: Color(0xFF323232)),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const SizedBox(height: 16),
+                        const SectionTitle(
+                          title: 'Family & Inheritance',
+                          description:
+                              'These are usually the ones who you want to own the assets once you are no more',
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 24),
+                  // Spouse Card
+                  Padding(
+                    padding: padding,
+                    child: hasSpouse
+                        ? PersonCard(
+                            name: spouse['fullName'],
+                            relationship: 'Spouse',
+                            photoUrl: spouse['photoUrl'],
+                            onEdit: () async {
+                              final result = await Navigator.pushNamed(
+                                context,
+                                AppRoutes.addSpouse,
+                                arguments: {
+                                  'willId': widget.willId,
+                                  'existingSpouse': spouse,
+                                },
+                              );
+                              if (result != null && (result as Map)['saved'] == true) {
+                                _loadPeople();
+                              }
+                            },
+                          )
+                        : PersonCard(
+                            name: 'Spouse',
+                            isEmpty: true,
+                            height: 64,
+                            onAdd: () async {
+                              final result = await Navigator.pushNamed(
+                                context,
+                                AppRoutes.addSpouse,
+                                arguments: {
+                                  'willId': widget.willId,
+                                },
+                              );
+                              if (result != null && (result as Map)['saved'] == true) {
+                                _loadPeople();
+                              }
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Children Card
+                  Padding(
+                    padding: padding,
+                    child: hasChildren
+                        ? PersonCard(
+                            name: 'Children',
+                            relationship: '${children.length} ${children.length == 1 ? 'child' : 'children'}',
+                            onEdit: () async {
+                              _showChildrenCountModal();
+                            },
+                          )
+                        : PersonCard(
+                            name: 'Children',
+                            isEmpty: true,
+                            height: 64,
+                            onAdd: () {
+                              _showChildrenCountModal();
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Mother Card with explanation
+                  Padding(
+                    padding: padding,
+                    child: InfoCard(
+                      explanation:
+                          'Mothers are suppose to have a share in son\'s property as per law',
+                      child: hasMother
+                          ? PersonCard(
+                              name: mother['fullName'],
+                              relationship: 'Mother',
+                              photoUrl: mother['photoUrl'],
+                              onEdit: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AddMotherScreen(
+                                      willId: widget.willId,
+                                      existingMother: mother,
+                                    ),
+                                  ),
+                                );
+                                if (result == true && mounted) {
+                                  await _loadPeople();
+                                }
+                              },
+                            )
+                          : PersonCard(
+                              name: 'Mother',
+                              isEmpty: true,
+                              height: 64,
+                              onAdd: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AddMotherScreen(
+                                      willId: widget.willId,
+                                    ),
+                                  ),
+                                );
+                                if (result == true && mounted) {
+                                  await _loadPeople();
+                                }
+                              },
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Others Card with explanation
+                  Padding(
+                    padding: padding,
+                    child: InfoCard(
+                      explanation:
+                          'Can be one who you want to have some share in your assets & properties',
+                      child: PersonCard(
+                        name: 'Others (Optional)',
+                        isEmpty: true,
+                        height: 64,
+                        onAdd: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AddOthersScreen(
+                                willId: widget.willId,
+                              ),
+                            ),
+                          );
+                          if (result == true && mounted) {
+                            await _loadPeople();
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Footer with link and button
+                  Padding(
+                    padding: padding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => UnderstandModal(),
+                            );
+                          },
+                          child: Text(
+                            'Understand what is counted for distribution here',
+                            style: GoogleFonts.lato(
+                              fontSize: 14,
+                              color: AppTheme.primaryColor,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: PrimaryButton(
+                            text: 'Decide who gets how much',
+                            onPressed: _canContinue() ? () async {
+                              final result = await Navigator.pushNamed(
+                                context, 
+                                AppRoutes.inheritance, 
+                                arguments: widget.willId,
+                              );
+                              // If inheritance is completed, mark family step as completed and return
+                              if (result != null && (result as Map)['stepCompleted'] == 'stepInheritance') {
+                                if (mounted) {
+                                  Navigator.pop(context, {'stepCompleted': 'stepFamily'});
+                                }
+                              }
+                            } : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Bottom padding for safe scrolling
+                  SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                PrimaryButton(
-                  text: 'Decide who gets how much',
-                  onPressed: _canContinue() ? () async {
-                    final result = await Navigator.pushNamed(
-                      context, 
-                      AppRoutes.inheritance, 
-                      arguments: widget.willId,
-                    );
-                    // If inheritance is completed, mark family step as completed and return
-                    if (result != null && (result as Map)['stepCompleted'] == 'stepInheritance') {
-                      if (mounted) {
-                        Navigator.pop(context, {'stepCompleted': 'stepFamily'});
-                      }
-                    }
-                  } : null,
-                  width: 320,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
