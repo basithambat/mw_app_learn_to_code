@@ -1,0 +1,19 @@
+{
+  "name": "mywasiyat",
+  "version": "1.0.0",
+  "description": "Digital will creation platform for India",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "cd apps/api && npm run start:dev",
+    "build:api": "cd apps/api && npm run build",
+    "test:api": "cd apps/api && npm test"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

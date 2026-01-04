@@ -1,0 +1,495 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Seed script configuration
+// Run with: npm run prisma:seed
+
+//
+// Enums
+//
+
+enum WillStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+enum PersonalLaw {
+  HINDU
+  MUSLIM
+  CHRISTIAN
+  UNKNOWN
+}
+
+enum StepStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  NEEDS_ATTENTION
+}
+
+enum RelationshipType {
+  SELF
+  SPOUSE
+  SON
+  DAUGHTER
+  MOTHER
+  FATHER
+  BROTHER
+  SISTER
+  OTHER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum AssetCategory {
+  REAL_ESTATE
+  VEHICLE
+  GADGET
+  JEWELLERY
+  BUSINESS
+  INVESTMENT
+  LIABILITY
+  BANK_ACCOUNT
+  INSURANCE
+  OTHER
+}
+
+enum OwnershipType {
+  SELF_ACQUIRED
+  JOINT
+  INHERITED
+  ANCESTRAL
+  HUF
+  GIFTED
+}
+
+enum ScenarioType {
+  USER_DIES_FIRST
+  SPOUSE_DIES_FIRST
+  NO_ONE_SURVIVES
+}
+
+enum WitnessStatus {
+  PENDING
+  INVITED
+  CONFIRMED
+}
+
+enum SignatureType {
+  DRAWN
+  UPLOADED
+}
+
+enum ConsentVideoStatus {
+  NOT_RECORDED
+  RECORDED
+  VERIFIED
+}
+
+enum LegalAidRequestType {
+  WILL_REVIEW
+  CONSULTATION_CALL
+  REGISTRATION_GUIDANCE
+  DOCUMENT_CHECKLIST
+}
+
+enum LegalAidRequestStatus {
+  CREATED
+  PAID
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum MessageSenderType {
+  USER
+  LAWYER
+  SYSTEM
+  ASSISTANT
+}
+
+enum SyncProvider {
+  EXPERIAN
+  CRIF
+  CIBIL
+  OTHER
+}
+
+//
+// Models
+//
+
+model User {
+  id        String   @id @default(cuid())
+  phone     String?  @unique
+  email     String?  @unique
+  fullName  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  acceptedTosAt     DateTime?
+  acceptedPrivacyAt DateTime?
+
+  wills            Will[]
+  auditLogs        AuditLog[]
+  legalAidRequests LegalAidRequest[]
+  assistantThreads AssistantThread[]
+}
+
+model Will {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  status WillStatus @default(DRAFT)
+
+  // Step tracking
+  stepBasicInfo    StepStatus @default(NOT_STARTED)
+  stepFamily       StepStatus @default(NOT_STARTED)
+  stepArrangements StepStatus @default(NOT_STARTED)
+  stepAssets       StepStatus @default(NOT_STARTED)
+  stepLegalReview  StepStatus @default(NOT_STARTED)
+
+  // Core
+  title       String? // "Rishabh Sharma's will"
+  personalLaw PersonalLaw @default(UNKNOWN)
+
+  previousWillExists Boolean @default(false)
+
+  declarationAcceptedAt DateTime?
+  legalHeirsConfirmedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile                WillProfile?
+  people                 WillPerson[]
+  scenarios              InheritanceScenario[]
+  guardianAssignments    GuardianAssignment[]
+  executorAssignments    ExecutorAssignment[]
+  witnesses              Witness[]
+  signature              Signature?
+  consentVideo           ConsentVideo?
+  assets                 Asset[]
+  pdfVersions            WillPdfVersion[]
+  legalAidRequests       LegalAidRequest[]
+  auditLogs              AuditLog[]
+  assistantThreads       AssistantThread[]
+  creditBureauConsents   CreditBureauConsent[]
+  investmentSyncConsents InvestmentSyncConsent[]
+}
+
+model WillProfile {
+  id     String @id @default(cuid())
+  willId String @unique
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  fullName      String?
+  gender        Gender?
+  dateOfBirth   DateTime?
+  maritalStatus String? // "MARRIED" / "SINGLE" etc (keep string for flexibility)
+  religionLabel String? // user-facing string
+  personalLaw   PersonalLaw @default(UNKNOWN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WillPerson {
+  id     String @id @default(cuid())
+  willId String
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  fullName     String
+  relationship RelationshipType
+  gender       Gender?
+  dateOfBirth  DateTime?
+  isMinor      Boolean          @default(false)
+
+  email String?
+  phone String?
+
+  // Personal law classification
+  isHeir        Boolean? // computed for Muslim flows
+  isBeneficiary Boolean  @default(false) // if included in any allocation
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Reverse relations
+  guardianOf          GuardianAssignment[] @relation("GuardianOfChild")
+  guardianAs          GuardianAssignment[] @relation("GuardianPerson")
+  alternateGuardianAs GuardianAssignment[] @relation("AlternateGuardianPerson")
+  executorAssignments ExecutorAssignment[]
+}
+
+model GuardianAssignment {
+  id     String @id @default(cuid())
+  willId String
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  childPersonId String
+  child         WillPerson @relation("GuardianOfChild", fields: [childPersonId], references: [id], onDelete: Cascade)
+
+  guardianPersonId String
+  guardian         WillPerson @relation("GuardianPerson", fields: [guardianPersonId], references: [id], onDelete: Cascade)
+
+  alternateGuardianPersonId String?
+  alternateGuardian         WillPerson? @relation("AlternateGuardianPerson", fields: [alternateGuardianPersonId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InheritanceScenario {
+  id     String @id @default(cuid())
+  willId String
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  type  ScenarioType
+  title String?
+  notes String?
+
+  // Allocation stored as JSON:
+  // { allocations: [{ personId, percentage }], rules: {...} }
+  allocationJson Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([willId, type])
+}
+
+model ExecutorAssignment {
+  id     String @id @default(cuid())
+  willId String
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  personId String
+  person   WillPerson @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  isPrimary Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Witness {
+  id     String @id @default(cuid())
+  willId String
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  fullName    String
+  email       String?
+  phone       String?
+  addressLine String?
+
+  status WitnessStatus @default(PENDING)
+
+  // Validity checks
+  isBeneficiaryConflict Boolean @default(false)
+  isExecutorConflict    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Signature {
+  id     String @id @default(cuid())
+  willId String @unique
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  type     SignatureType
+  fileUrl  String?
+  drawnSvg String? // store SVG string if drawn
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ConsentVideo {
+  id     String @id @default(cuid())
+  willId String @unique
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  status     ConsentVideoStatus @default(NOT_RECORDED)
+  videoUrl   String?
+  transcript String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Asset {
+  id     String @id @default(cuid())
+  willId String
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  category    AssetCategory
+  title       String?
+  description String?
+
+  ownershipType  OwnershipType @default(SELF_ACQUIRED)
+  ownershipShare Float? // optional percentage of ownership (0-100)
+  estimatedValue Float?
+  currency       String        @default("INR")
+
+  metadataJson   Json? // flexible fields for each asset type
+  transferToJson Json? // { beneficiaries: [{ personId, percentage }] } OR { allHeirs: true }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WillPdfVersion {
+  id     String @id @default(cuid())
+  willId String
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  versionNumber Int
+  fileUrl       String
+  fileHash      String
+  generatedAt   DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  @@unique([willId, versionNumber])
+}
+
+//
+// Legal Aid + Assistant
+//
+
+model LegalAidRequest {
+  id     String  @id @default(cuid())
+  willId String?
+  will   Will?   @relation(fields: [willId], references: [id], onDelete: SetNull)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type   LegalAidRequestType
+  status LegalAidRequestStatus @default(CREATED)
+
+  title String?
+  notes String?
+
+  priceInr Int?
+  paidAt   DateTime?
+
+  assignedLawyerId String? // later link to Lawyer model
+  scheduledAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages LegalAidMessage[]
+}
+
+model LegalAidMessage {
+  id        String          @id @default(cuid())
+  requestId String
+  request   LegalAidRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  senderType MessageSenderType
+  message    String
+
+  createdAt DateTime @default(now())
+}
+
+model AssistantThread {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  willId String?
+  will   Will?   @relation(fields: [willId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages AssistantMessage[]
+}
+
+model AssistantMessage {
+  id       String          @id @default(cuid())
+  threadId String
+  thread   AssistantThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  senderType  MessageSenderType
+  message     String
+  contextJson Json?
+
+  createdAt DateTime @default(now())
+}
+
+//
+// Sync Consents (Phase 2, but placeholders now)
+//
+
+model CreditBureauConsent {
+  id     String @id @default(cuid())
+  willId String
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  provider       SyncProvider
+  consentGiven   Boolean      @default(false)
+  consentGivenAt DateTime?
+
+  email String?
+  pan   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InvestmentSyncConsent {
+  id     String @id @default(cuid())
+  willId String
+  will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+
+  consentGiven   Boolean   @default(false)
+  consentGivenAt DateTime?
+
+  email String?
+  pan   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//
+// Audit Log
+//
+
+model AuditLog {
+  id     String  @id @default(cuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  willId String?
+  will   Will?   @relation(fields: [willId], references: [id], onDelete: SetNull)
+
+  action     String
+  entityType String?
+  entityId   String?
+  beforeJson Json?
+  afterJson  Json?
+
+  createdAt DateTime @default(now())
+}

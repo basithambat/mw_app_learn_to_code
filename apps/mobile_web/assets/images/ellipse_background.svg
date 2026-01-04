@@ -1,0 +1,10 @@
+<svg width="895" height="895" viewBox="0 0 895 895" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Placeholder ellipse - Replace with actual Figma asset -->
+  <ellipse cx="447" cy="447" rx="447" ry="447" fill="url(#ellipseGradient)" opacity="0.3"/>
+  <defs>
+    <radialGradient id="ellipseGradient" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="rgba(15,54,31,0.8)"/>
+      <stop offset="100%" stop-color="rgba(22,79,45,0.4)"/>
+    </radialGradient>
+  </defs>
+</svg>

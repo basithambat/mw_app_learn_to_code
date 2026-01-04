@@ -1,0 +1,7 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Placeholder logo - Replace with actual Figma asset -->
+  <!-- White circle with stylized 'm' symbol (smaller version) -->
+  <circle cx="24" cy="24" r="24" fill="white"/>
+  <path d="M15 15 L15 33 M24 15 L24 33 M33 15 L33 33" stroke="#0F361F" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M15 15 L24 24 L33 15" stroke="#0F361F" stroke-width="2" fill="none"/>
+</svg>

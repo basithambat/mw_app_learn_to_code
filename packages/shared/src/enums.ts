@@ -1,0 +1,170 @@
+// User and Auth Enums
+export enum AuthProvider {
+  PHONE = 'PHONE',
+  GOOGLE = 'GOOGLE',
+  FACEBOOK = 'FACEBOOK',
+}
+
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+}
+
+export enum MaritalStatus {
+  SINGLE = 'SINGLE',
+  MARRIED = 'MARRIED',
+  ENGAGED = 'ENGAGED',
+  DIVORCED = 'DIVORCED',
+  SEPARATED = 'SEPARATED',
+  WIDOWED = 'WIDOWED',
+}
+
+export enum Religion {
+  HINDU = 'HINDU',
+  JAIN = 'JAIN',
+  BUDDHIST = 'BUDDHIST',
+  SIKH = 'SIKH',
+  MUSLIM = 'MUSLIM',
+  CHRISTIAN = 'CHRISTIAN',
+}
+
+export enum MuslimSect {
+  SUNNI = 'SUNNI',
+  SHIA = 'SHIA',
+  OTHER = 'OTHER',
+}
+
+// Will Enums
+export enum WillStatus {
+  DRAFT = 'DRAFT',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+}
+
+export enum WillStep {
+  BASIC_INFO = 'BASIC_INFO',
+  FAMILY_INHERITANCE = 'FAMILY_INHERITANCE',
+  WILL_ARRANGEMENTS = 'WILL_ARRANGEMENTS',
+  ACCOUNTS_PROPERTIES = 'ACCOUNTS_PROPERTIES',
+}
+
+export enum StepStatus {
+  NOT_STARTED = 'NOT_STARTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+}
+
+// Person and Relationship Enums
+export enum RelationshipToTestator {
+  SELF = 'SELF',
+  SPOUSE = 'SPOUSE',
+  CHILD = 'CHILD',
+  MOTHER = 'MOTHER',
+  FATHER = 'FATHER',
+  SIBLING = 'SIBLING',
+  OTHER = 'OTHER',
+}
+
+export enum PersonRole {
+  TESTATOR = 'TESTATOR',
+  SPOUSE = 'SPOUSE',
+  CHILD = 'CHILD',
+  MOTHER = 'MOTHER',
+  FATHER = 'FATHER',
+  GUARDIAN = 'GUARDIAN',
+  EXECUTOR = 'EXECUTOR',
+  BENEFICIARY = 'BENEFICIARY',
+  HEIR = 'HEIR',
+}
+
+// Inheritance Scenario Enums
+export enum InheritanceScenarioType {
+  USER_DIES_FIRST = 'USER_DIES_FIRST',
+  SPOUSE_DIES_FIRST = 'SPOUSE_DIES_FIRST',
+  NO_ONE_SURVIVES = 'NO_ONE_SURVIVES',
+}
+
+// Asset Enums
+export enum AssetCategory {
+  REAL_ESTATE = 'REAL_ESTATE',
+  VEHICLE = 'VEHICLE',
+  GADGET = 'GADGET',
+  JEWELLERY = 'JEWELLERY',
+  BUSINESS = 'BUSINESS',
+  INVESTMENT = 'INVESTMENT',
+  LIABILITY = 'LIABILITY',
+  OTHER = 'OTHER',
+}
+
+export enum AssetOwnershipType {
+  SOLE = 'SOLE',
+  JOINT = 'JOINT',
+  ANCESTRAL = 'ANCESTRAL',
+  INHERITED = 'INHERITED',
+  NOT_SURE = 'NOT_SURE',
+}
+
+// Witness Enums
+export enum WitnessStatus {
+  INVITED = 'INVITED',
+  ACCEPTED = 'ACCEPTED',
+  SIGNED = 'SIGNED',
+  DECLINED = 'DECLINED',
+}
+
+// Signature Enums
+export enum SignatureType {
+  UPLOAD = 'UPLOAD',
+  DIGITAL_DRAW = 'DIGITAL_DRAW',
+}
+
+// Financial Sync Enums
+export enum SyncJobType {
+  CREDIT_BUREAU = 'CREDIT_BUREAU',
+  INVESTMENT = 'INVESTMENT',
+}
+
+export enum SyncJobStatus {
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
+// Legal Aid Enums
+export enum LegalAidRequestType {
+  WILL_REVIEW = 'WILL_REVIEW',
+  CONSULTATION = 'CONSULTATION',
+  REGISTRATION_GUIDANCE = 'REGISTRATION_GUIDANCE',
+  DOCUMENT_CHECKLIST = 'DOCUMENT_CHECKLIST',
+}
+
+export enum LegalAidRequestStatus {
+  CREATED = 'CREATED',
+  PAID = 'PAID',
+  ASSIGNED = 'ASSIGNED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum MessageSender {
+  USER = 'USER',
+  AGENT = 'AGENT',
+}
+
+// Audit Log Enums
+export enum AuditEventType {
+  WILL_CREATED = 'WILL_CREATED',
+  WILL_UPDATED = 'WILL_UPDATED',
+  WILL_VERSIONED = 'WILL_VERSIONED',
+  PDF_GENERATED = 'PDF_GENERATED',
+  PERSON_ADDED = 'PERSON_ADDED',
+  PERSON_UPDATED = 'PERSON_UPDATED',
+  ASSET_ADDED = 'ASSET_ADDED',
+  ASSET_UPDATED = 'ASSET_UPDATED',
+  WITNESS_ADDED = 'WITNESS_ADDED',
+  EXECUTOR_ASSIGNED = 'EXECUTOR_ASSIGNED',
+  SIGNATURE_UPLOADED = 'SIGNATURE_UPLOADED',
+}
