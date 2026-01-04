@@ -38,16 +38,38 @@ gcloud config set project "$PROJECT_ID" 2>/dev/null || true
 
 # Check if old resources exist in us-central1
 echo "Checking for existing resources in us-central1..."
+US_RESOURCES_FOUND=0
+
 if gcloud sql instances describe "$DB_INSTANCE" --project="$PROJECT_ID" &>/dev/null; then
     OLD_REGION=$(gcloud sql instances describe "$DB_INSTANCE" --project="$PROJECT_ID" --format="value(region)" 2>/dev/null)
     if [ "$OLD_REGION" != "$REGION" ]; then
-        print_warning "Cloud SQL exists in $OLD_REGION, will need to recreate in $REGION"
-        print_warning "⚠️  This will require data migration if you have existing data"
-        read -p "Continue? (y/N): " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
-        fi
+        print_warning "⚠️  Cloud SQL exists in $OLD_REGION"
+        print_warning "⚠️  You'll be charged for BOTH regions if you don't delete the old one!"
+        US_RESOURCES_FOUND=1
+    fi
+fi
+
+if gcloud redis instances describe "$REDIS_INSTANCE" --region=us-central1 --project="$PROJECT_ID" &>/dev/null; then
+    print_warning "⚠️  Redis exists in us-central1"
+    print_warning "⚠️  You'll be charged for BOTH regions if you don't delete the old one!"
+    US_RESOURCES_FOUND=1
+fi
+
+if [ $US_RESOURCES_FOUND -eq 1 ]; then
+    echo ""
+    print_warning "💰 COST WARNING: Keeping both regions will DOUBLE your costs!"
+    echo "   US resources: ~\$36/month"
+    echo "   Mumbai resources: ~\$36/month"
+    echo "   Total: ~\$72/month (vs ~\$36/month for Mumbai only)"
+    echo ""
+    echo "Recommended: Delete US resources first to avoid double charges"
+    echo "Run: ./cleanup-us-resources.sh"
+    echo ""
+    read -p "Continue anyway? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Cancelled. Delete US resources first, then run this script again."
+        exit 1
     fi
 fi
 
