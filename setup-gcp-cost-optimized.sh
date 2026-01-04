@@ -98,13 +98,15 @@ else
     echo ""
 fi
 
-# Create Redis - COST OPTIMIZED (1GB basic tier = ~$30/month, smallest available)
+# Create Redis - COST OPTIMIZED (1GB = MINIMUM SIZE AVAILABLE)
 echo ""
-echo "🔴 Creating Redis - MINIMAL SIZE (1GB basic tier)..."
+echo "🔴 Creating Redis - MINIMUM SIZE (1GB basic tier)..."
+echo "  Note: 1GB is the smallest available for GCP Memorystore Redis Basic tier"
+echo "  Pricing: ~\$35.77/month (1GB × \$0.049/GiB/hour)"
 if gcloud redis instances describe "$REDIS_INSTANCE" --region="$REGION" --project="$PROJECT_ID" &>/dev/null; then
     print_status "Redis instance already exists"
 else
-    echo "  Creating Redis 1GB basic tier (~10-15 min, ~\$30/month)..."
+    echo "  Creating Redis 1GB basic tier (~10-15 min)..."
     gcloud redis instances create "$REDIS_INSTANCE" \
         --size=1 \
         --region="$REGION" \
@@ -116,7 +118,7 @@ else
         print_warning "Make sure Memorystore for Redis API is enabled"
         exit 1
     }
-    print_status "Redis created (1GB basic tier - minimal cost)"
+    print_status "Redis created (1GB - MINIMUM SIZE, no smaller option available)"
 fi
 
 REDIS_HOST=$(gcloud redis instances describe "$REDIS_INSTANCE" --region="$REGION" --format="value(host)" --project="$PROJECT_ID" 2>/dev/null || echo "")
@@ -212,14 +214,19 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 echo "💰 COST BREAKDOWN (Monthly Estimates):"
 echo "  Cloud SQL (db-f1-micro):     \$0-7    (FREE TIER eligible)"
-echo "  Redis (1GB basic):            ~\$30    (minimal size)"
+echo "  Redis (1GB basic):            ~\$35.77 (MINIMUM SIZE - no smaller available)"
 echo "  Storage (10GB):               ~\$0.20  (Standard tier)"
 echo "  VPC Connector (1-2 instances): ~\$10-15 (minimal)"
 echo "  Secret Manager (6 secrets):  ~\$0.06  (minimal)"
 echo "  Cloud Run (when deployed):    \$0-10   (FREE TIER: 2M requests)"
 echo "  ─────────────────────────────────────────────"
-echo "  ESTIMATED TOTAL:              ~\$40-60/month"
-echo "  (With free tier usage:        ~\$30-40/month)"
+echo "  ESTIMATED TOTAL:              ~\$46-68/month"
+echo "  (With free tier usage:        ~\$36-48/month)"
+echo ""
+echo "💡 Redis Cost Note:"
+echo "  1GB is the absolute minimum for GCP Memorystore Redis"
+echo "  Alternative: Upstash Redis (serverless) ~\$0.20/100K commands"
+echo "  But requires code changes (BullMQ → Upstash Queue)"
 echo ""
 echo "📋 Created Resources:"
 echo "  ✓ Cloud SQL: $DB_INSTANCE (FREE TIER: db-f1-micro)"
