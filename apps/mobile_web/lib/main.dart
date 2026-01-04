@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routes/app_routes.dart';
 
@@ -16,7 +15,7 @@ class MywasiyatApp extends StatelessWidget {
       title: 'Mywasiyat',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.splash,
+      initialRoute: AppRoutes.dashboard, // Temporarily skip login/splash
       routes: AppRoutes.routes,
     );
   }

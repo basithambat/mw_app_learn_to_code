@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/routes/app_routes.dart';
 import '../services/assets_service.dart';
 
 class AssetsScreen extends StatefulWidget {
@@ -71,9 +72,10 @@ class _AssetsScreenState extends State<AssetsScreen> {
               )),
           const SizedBox(height: AppTheme.spacingM),
           PrimaryButton(
-            text: 'Add Asset',
+            text: 'Save & Continue',
             onPressed: () {
-              // Show add asset dialog
+              // Mark step as completed and return to dashboard
+              Navigator.pop(context, {'stepCompleted': 'stepAssets'});
             },
           ),
         ],

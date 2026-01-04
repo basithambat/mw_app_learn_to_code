@@ -37,6 +37,7 @@ async function bootstrap() {
   const corsOrigins = process.env.CORS_ORIGIN?.split(',') || [
     'http://localhost:8080',
     'http://localhost:3000',
+    'http://192.168.0.101:3000', // Local network IP for mobile devices
   ];
   app.enableCors({
     origin: corsOrigins,

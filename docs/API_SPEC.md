@@ -22,7 +22,7 @@ POST /auth/otp/send
 Content-Type: application/json
 
 {
-  "phone": "+919876543210"
+  "phone": "+91704206330"
 }
 ```
 
@@ -41,7 +41,7 @@ POST /auth/otp/verify
 Content-Type: application/json
 
 {
-  "phone": "+919876543210",
+  "phone": "+91704206330",
   "otp": "123456"
 }
 ```
@@ -52,7 +52,7 @@ Content-Type: application/json
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": "clx...",
-    "phone": "+919876543210",
+    "phone": "+91704206330",
     "email": null,
     "fullName": null
   }

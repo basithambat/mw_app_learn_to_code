@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/routes/app_routes.dart';
 import '../services/arrangements_service.dart';
 
 class ArrangementsScreen extends StatefulWidget {
@@ -92,9 +93,10 @@ class _ArrangementsScreenState extends State<ArrangementsScreen> {
           ),
           const SizedBox(height: AppTheme.spacingM),
           PrimaryButton(
-            text: 'Upload Signature',
+            text: 'Save & Continue',
             onPressed: () {
-              // Navigate to signature screen
+              // Mark step as completed and return to dashboard
+              Navigator.pop(context, {'stepCompleted': 'stepArrangements'});
             },
           ),
         ],

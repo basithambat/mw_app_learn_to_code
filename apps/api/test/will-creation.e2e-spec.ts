@@ -26,7 +26,7 @@ describe('Will Creation E2E', () => {
     it('should send OTP', () => {
       return request(app.getHttpServer())
         .post('/auth/otp/send')
-        .send({ phone: '+919876543210' })
+        .send({ phone: '+91704206330' })
         .expect(200)
         .expect((res) => {
           expect(res.body.success).toBe(true);
@@ -36,7 +36,7 @@ describe('Will Creation E2E', () => {
     it('should verify OTP and get token', async () => {
       const response = await request(app.getHttpServer())
         .post('/auth/otp/verify')
-        .send({ phone: '+919876543210', otp: '123456' })
+        .send({ phone: '+91704206330', otp: '123456' })
         .expect(200);
 
       authToken = response.body.accessToken;

@@ -7,10 +7,10 @@ async function main() {
 
   // Create a test user
   const user = await prisma.user.upsert({
-    where: { phone: '+919876543210' },
+    where: { phone: '+91704206330' },
     update: {},
     create: {
-      phone: '+919876543210',
+      phone: '+91704206330',
       email: 'test@mywasiyat.com',
       fullName: 'Test User',
       acceptedTosAt: new Date(),

@@ -12,7 +12,7 @@ class FloatingAssistantButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton.extended(
+    return FloatingActionButton(
       onPressed: () {
         Navigator.pushNamed(
           context,
@@ -22,18 +22,9 @@ class FloatingAssistantButton extends StatelessWidget {
       },
       backgroundColor: AppTheme.primaryColor,
       foregroundColor: Colors.white,
-      icon: const Icon(Icons.help_outline, size: 24),
-      label: const Text(
-        'Ask Wasiyat Guide',
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
-      ),
+      child: const Icon(Icons.help_outline, size: 24),
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusXL),
-      ),
+      shape: const CircleBorder(),
     );
   }
 }

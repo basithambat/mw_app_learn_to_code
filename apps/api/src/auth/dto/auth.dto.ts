@@ -2,7 +2,7 @@ import { IsString, IsNotEmpty, IsEmail, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SendOtpDto {
-  @ApiProperty({ example: '+919876543210', description: 'Phone number with country code' })
+  @ApiProperty({ example: '+91704206330', description: 'Phone number with country code' })
   @IsString()
   @IsNotEmpty()
   @Matches(/^\+?[1-9]\d{1,14}$/, { message: 'Invalid phone number format' })
@@ -10,7 +10,7 @@ export class SendOtpDto {
 }
 
 export class VerifyOtpDto {
-  @ApiProperty({ example: '+919876543210', description: 'Phone number with country code' })
+  @ApiProperty({ example: '+91704206330', description: 'Phone number with country code' })
   @IsString()
   @IsNotEmpty()
   @Matches(/^\+?[1-9]\d{1,14}$/, { message: 'Invalid phone number format' })

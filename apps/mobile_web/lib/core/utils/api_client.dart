@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ApiException implements Exception {
   final String message;
@@ -14,7 +15,19 @@ class ApiException implements Exception {
 
 class ApiClient {
   late Dio _dio;
-  static const String baseUrl = 'http://localhost:3000/api'; // Updated to include /api prefix
+  
+  // Use localhost for web, IP address for mobile devices
+  // Update this IP address to match your computer's local IP
+  // Find it with: ifconfig (Mac/Linux) or ipconfig (Windows)
+  static String get baseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:3000/api';
+    } else {
+      // For physical devices, use your computer's local IP address
+      // Change this to your actual local IP (e.g., 192.168.0.101)
+      return 'http://192.168.0.101:3000/api';
+    }
+  }
 
   ApiClient() {
     _dio = Dio(BaseOptions(

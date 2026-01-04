@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/primary_button.dart';
-import '../services/inheritance_service.dart';
+import '../services/people_service.dart';
+import 'inheritance_spouse_screen.dart';
+import 'inheritance_children_screen.dart';
+import 'inheritance_no_survivors_screen.dart';
+import 'inheritance_summary_screen.dart';
 
 class InheritanceScreen extends StatefulWidget {
   final String? willId;
@@ -13,29 +15,127 @@ class InheritanceScreen extends StatefulWidget {
 }
 
 class _InheritanceScreenState extends State<InheritanceScreen> {
-  final _inheritanceService = InheritanceService();
-  List<dynamic> _scenarios = [];
+  final _peopleService = PeopleService();
+  List<dynamic> _people = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadScenarios();
+    _loadPeople();
   }
 
-  Future<void> _loadScenarios() async {
+  Future<void> _loadPeople() async {
     if (widget.willId == null) {
       setState(() => _isLoading = false);
       return;
     }
     try {
-      final scenarios = await _inheritanceService.getScenarios(widget.willId!);
+      final people = await _peopleService.getPeople(widget.willId!);
       setState(() {
-        _scenarios = scenarios;
+        _people = people;
         _isLoading = false;
       });
+      // Start the flow automatically
+      if (mounted) {
+        _startInheritanceFlow();
+      }
     } catch (e) {
       setState(() => _isLoading = false);
+      // Even if API fails, start flow in demo mode
+      if (mounted) {
+        _startInheritanceFlow();
+      }
+    }
+  }
+
+  void _startInheritanceFlow() {
+    final spouse = _people.firstWhere(
+      (p) => p['relationship'] == 'SPOUSE',
+      orElse: () => null,
+    );
+    final children = _people.where((p) {
+      final rel = p['relationship']?.toString().toUpperCase() ?? '';
+      return rel == 'SON' || rel == 'DAUGHTER' || rel == 'CHILD';
+    }).map((p) => p as Map<String, dynamic>).toList();
+    final mother = _people.firstWhere(
+      (p) => p['relationship'] == 'MOTHER',
+      orElse: () => null,
+    );
+
+    // Navigate to spouse screen first
+    if (spouse != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => InheritanceSpouseScreen(
+            willId: widget.willId,
+            spouse: spouse,
+          ),
+        ),
+      ).then((result) {
+        if (result != null && (result as Map)['saved'] == true && mounted) {
+          // Navigate to children screen
+          if (children.isNotEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => InheritanceChildrenScreen(
+                  willId: widget.willId,
+                  children: children,
+                ),
+              ),
+            ).then((result) {
+              if (result != null && (result as Map)['saved'] == true && mounted) {
+                // Navigate to no survivors screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => InheritanceNoSurvivorsScreen(
+                      willId: widget.willId,
+                      mother: mother,
+                    ),
+                  ),
+                ).then((result) {
+                  if (result != null && (result as Map)['saved'] == true && mounted) {
+                    // Navigate to summary screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => InheritanceSummaryScreen(
+                          willId: widget.willId,
+                        ),
+                      ),
+                    );
+                  }
+                });
+              }
+            });
+          } else {
+            // No children, go directly to no survivors
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => InheritanceNoSurvivorsScreen(
+                  willId: widget.willId,
+                  mother: mother,
+                ),
+              ),
+            ).then((result) {
+              if (result != null && (result as Map)['saved'] == true && mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => InheritanceSummaryScreen(
+                      willId: widget.willId,
+                    ),
+                  ),
+                );
+              }
+            });
+          }
+        }
+      });
     }
   }
 
@@ -47,47 +147,8 @@ class _InheritanceScreenState extends State<InheritanceScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Inheritance Distribution')),
-      body: ListView(
-        padding: const EdgeInsets.all(AppTheme.spacingM),
-        children: [
-          Text(
-            'Distribution Scenarios',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: AppTheme.spacingM),
-          ...['USER_DIES_FIRST', 'SPOUSE_DIES_FIRST', 'NO_ONE_SURVIVES'].map((type) {
-            final scenario = _scenarios.firstWhere(
-              (s) => s['type'] == type,
-              orElse: () => null,
-            );
-            return Card(
-              child: ListTile(
-                title: Text(_getScenarioTitle(type)),
-                subtitle: scenario != null ? const Text('Configured') : const Text('Not configured'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  // Navigate to scenario editor
-                },
-              ),
-            );
-          }),
-        ],
-      ),
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
     );
-  }
-
-  String _getScenarioTitle(String type) {
-    switch (type) {
-      case 'USER_DIES_FIRST':
-        return 'If I die before my spouse';
-      case 'SPOUSE_DIES_FIRST':
-        return 'If my spouse dies before me';
-      case 'NO_ONE_SURVIVES':
-        return 'If no one from my family survives';
-      default:
-        return type;
-    }
   }
 }
