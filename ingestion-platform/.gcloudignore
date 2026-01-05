@@ -8,7 +8,13 @@ node_modules
 .DS_Store
 README.md
 *.md
-!SETUP*.md
 docker-compose.yml
 .vscode
 .idea
+dist
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage
+.nyc_output

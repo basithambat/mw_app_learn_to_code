@@ -34,9 +34,8 @@ COPY package*.json ./
 # Install production dependencies only
 RUN npm ci --only=production
 
-# Install Playwright browsers (optional, for fallback extraction)
-# This is optional but recommended if using Playwright fallback
-RUN npx playwright install chromium --with-deps || echo "Playwright install skipped (optional)"
+# Note: Playwright browsers not installed in container (too large)
+# Playwright will work if needed, but may be slower without pre-installed browsers
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
