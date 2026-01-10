@@ -8,9 +8,6 @@ import { ScrollView } from 'react-native-gesture-handler';
 import CategoryArticles from './CategoryArticles';
 import { getCategories } from '@/api/apiCategories';
 import useLocation from '@/hooks/useLocation';
-import { useRouter } from 'expo-router'; // Added
-import { getAllArticlesByCategories } from '@/api/apiArticles'; // Added
-import { CardStackFeed } from '@/components/home/CardStackFeed'; // Added
 import Animated, {
     useAnimatedScrollHandler,
     useAnimatedStyle,
@@ -46,7 +43,6 @@ const DiscoverScreen = () => {
     const { location, errorMsg } = useLocation();
     const scrollY = useSharedValue(0);
     const isRefreshing = useSharedValue(false);
-    const router = useRouter(); // Initialize router
 
     const loggedInUserData = useSelector(loggedInUserDataSelector);
 
@@ -59,104 +55,102 @@ const DiscoverScreen = () => {
         }
     };
 
-    const [articles, setArticles] = useState<any[]>([]);
-
     useEffect(() => {
         (async () => {
             const { from, to } = getLast48HoursRange();
+            // userId is optional - ingestion platform doesn't need it
             const userId: string = loggedInUserData?.user?.id as string || 'anonymous';
             try {
-                // Fetch all recent articles for the stack
-                // Note: We might want a dedicated endpoint for "Feed" later.
-                // For now, let's use a "General" or "All" fetch if available, 
-                // or just fetch categories and flatten them.
-                // Let's rely on getCategories for now and flatten content? 
-                // Or better: Use `getAllArticlesByCategories('all')` if supported?
-                // Looking at CategoryArticles.tsx, it uses `getAllArticlesByCategories`.
-
-                // Let's assume we can fetch a "Today" feed.
-                // If not, we'll fetch heavily populated categories.
-                // Simpler: Just fetch categories first (as before) then fetch articles for them?
-                // Or let's just use MOCK data or fetch for the first category to start.
-
+                console.log('[DiscoverScreen] Fetching categories...');
                 const response = await getCategories(from, to, userId);
-                setCategories(response);
-
-                // Flatten articles?
-                // Actually `CardStackFeed` needs a list of articles.
-                // Let's fetch articles for the first few categories to populate the stack.
-                // This is a temporary data bridge.
-
-                if (response.length > 0) {
-                    // Fetch for top 3 categories
-                    // This is pseudo-code logic adaptation.
-                    // Ideally we have `getFeed()`.
-                    // Let's just pass `categories` to CardStackFeed? 
-                    // No, it expects items.
-                    // I will quickly fetch articles for the first category to demonstrate.
-                    // In real app, we'd want a unified feed endpoint.
-
-                    // Placeholder: Fetching articles for first category
-                    // Import needed at top
-                }
+                console.log(`[DiscoverScreen] Got ${response.length} categories`);
+                const categoriesWithIndex = response.map((category: Omit<CategoryType, 'index'>, idx: number) => ({
+                    ...category,
+                    index: Number(idx)
+                }));
+                setCategories(categoriesWithIndex);
             } catch (error) {
                 console.error("[DiscoverScreen] Error fetching categories:", error);
+                // Set empty array on error to prevent hanging
+                setCategories([]);
             }
         })();
     }, [location]);
 
-    // NEW: Fetch ALL articles for the stack (Unified Feed)
-    useEffect(() => {
-        if (categories.length > 0) {
-            (async () => {
-                const { from, to } = getLast48HoursRange();
-                const allArticles: any[] = [];
-                // Fetch top 3 categories
-                for (const cat of categories.slice(0, 3)) {
-                    const catId = typeof cat.id === 'number' ? cat.id.toString() : cat.id;
-                    const arts = await getAllArticlesByCategories(catId, from, to);
-                    allArticles.push(...arts);
-                }
-                // Remove duplicates
-                const unique = Array.from(new Set(allArticles.map(a => a.id)))
-                    .map(id => allArticles.find(a => a.id === id));
-
-                setArticles(unique);
-            })();
-        }
-    }, [categories]);
-
-    const handleOpenArticle = (article: any) => {
-        router.push({
-            pathname: '/(news)/[slug]',
-            params: {
-                slug: article.id.toString(),
-                categoryId: (article.category_id || 'all').toString() // Ensure string
-            }
-        });
+    const handleGradientChange = () => {
+        setCurrentGradientIndex((prevIndex) => (prevIndex + 1) % GRADIENT_COLORS.length);
     };
 
-    const currentGradientColors = getCurrentGradientColors(); // Restored
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (event) => {
+            const offsetY = event.contentOffset.y;
+            scrollY.value = offsetY;
+
+            if (offsetY < -MAX_PULL_DISTANCE * 0.5) {
+                if (!isRefreshing.value) {
+                    isRefreshing.value = true;
+                    runOnJS(handleGradientChange)();
+                }
+            } else if (offsetY >= 0) {
+                isRefreshing.value = false;
+            }
+        },
+    });
+
+    const gradientStyle = useAnimatedStyle(() => {
+        const height = interpolate(
+            scrollY.value,
+            [-MAX_PULL_DISTANCE, 0],
+            [INITIAL_GRADIENT_HEIGHT + MAX_PULL_DISTANCE, INITIAL_GRADIENT_HEIGHT],
+            Extrapolate.CLAMP
+        );
+
+        const opacity = interpolate(
+            scrollY.value,
+            [-MAX_PULL_DISTANCE, 0],
+            [0.8, 0.3],
+            Extrapolate.CLAMP
+        );
+
+        return {
+            height,
+            opacity: withTiming(opacity, { duration: 150 }),
+            transform: [
+                {
+                    translateY: interpolate(
+                        scrollY.value,
+                        [-MAX_PULL_DISTANCE, 0, INITIAL_GRADIENT_HEIGHT],
+                        [0, 0, -INITIAL_GRADIENT_HEIGHT],
+                        Extrapolate.CLAMP
+                    )
+                }
+            ],
+        };
+    });
+
+    const currentGradientColors = getCurrentGradientColors();
 
     return (
         <View style={styles.container}>
             <View style={styles.gradientContainer}>
                 <AnimatedLinearGradient
                     colors={currentGradientColors}
-                    style={[styles.gradient, { height: INITIAL_GRADIENT_HEIGHT }]}
+                    style={[styles.gradient, gradientStyle]}
                 />
             </View>
-            {/* STACK RESTORED */}
-            {articles.length > 0 ? (
-                <CardStackFeed
-                    items={articles}
-                    onOpenArticle={handleOpenArticle}
-                />
-            ) : (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    {/* Placeholder loading */}
-                </View>
-            )}
+            <AnimatedScrollView
+                onScroll={scrollHandler}
+                scrollEventThrottle={16}
+                contentContainerStyle={styles.scrollViewContent}
+                bounces={true}
+            >
+                {categories.map((category: CategoryType, index: number) => (
+                    <CategoryArticles
+                        category={category}
+                        key={category.id}
+                    />
+                ))}
+            </AnimatedScrollView>
         </View>
     );
 };
