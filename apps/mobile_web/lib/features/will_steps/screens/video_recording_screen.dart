@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/arrangements_service.dart';
+import 'video_review_screen.dart';
 
 class VideoRecordingScreen extends StatefulWidget {
   final String? willId;
@@ -80,14 +81,21 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
       final XFile videoFile = await _controller!.stopVideoRecording();
       setState(() => _isRecording = false);
 
-      // Upload video
-      setState(() => _isUploading = true);
-      if (widget.willId != null && !widget.willId!.startsWith('demo-')) {
-        await _arrangementsService.uploadConsentVideo(widget.willId!, File(videoFile.path));
-      }
-
+      // Navigate to Review Screen
       if (mounted) {
-        Navigator.pop(context, true);
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VideoReviewScreen(
+              willId: widget.willId!,
+              videoFile: File(videoFile.path),
+            ),
+          ),
+        );
+
+        if (result == true && mounted) {
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       setState(() => _isRecording = false);

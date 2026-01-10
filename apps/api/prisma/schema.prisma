@@ -64,6 +64,7 @@ enum AssetCategory {
   LIABILITY
   BANK_ACCOUNT
   INSURANCE
+  DIGITAL
   OTHER
 }
 
@@ -144,6 +145,8 @@ model User {
   phone     String?  @unique
   email     String?  @unique
   fullName  String?
+  state     String?  // For Jurisdiction checks (e.g. Goa)
+  isPremium Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -199,6 +202,7 @@ model Will {
   creditBureauConsents   CreditBureauConsent[]
   investmentSyncConsents InvestmentSyncConsent[]
   consents               Consent[]
+  digitalAssets          DigitalAsset[]
 }
 
 model WillProfile {
@@ -357,6 +361,19 @@ model Consent {
   
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+}
+
+model DigitalAsset {
+  id          String @id @default(cuid())
+  willId      String
+  will        Will   @relation(fields: [willId], references: [id], onDelete: Cascade)
+  
+  platform    String // e.g., "Gmail"
+  identifier  String // e.g., "user@gmail.com"
+  accessType  String // ENUM: 'PASSWORD_MANAGER', 'PHYSICAL_VAULT'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Asset {

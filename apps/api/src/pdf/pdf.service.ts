@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalLawService } from '../personal-law/personal-law.service';
-import { PersonalLaw } from '@prisma/client';
+import { PersonalLaw, AssetCategory } from '@prisma/client';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -12,7 +12,7 @@ export class PdfService {
   constructor(
     private prisma: PrismaService,
     private personalLawService: PersonalLawService,
-  ) {}
+  ) { }
 
   async generatePdf(willId: string, userId: string) {
     // Verify will ownership
@@ -141,7 +141,7 @@ export class PdfService {
     // Title
     addText('LAST WILL AND TESTAMENT', margin, yPosition, true, 18);
     yPosition -= 25;
-    
+
     // Subtitle with personal law
     const personalLawLabel = this.personalLawService.getTemplateType(will.personalLaw).toUpperCase();
     addText(`(Governed by ${personalLawLabel} Personal Law)`, margin, yPosition, false, 10);
@@ -155,12 +155,12 @@ export class PdfService {
     const profile = will.profile;
     if (profile) {
       const fullName = profile.fullName || 'the Testator';
-      const dob = profile.dateOfBirth 
-        ? new Date(profile.dateOfBirth).toLocaleDateString('en-IN', { 
-            year: 'numeric', month: 'long', day: 'numeric' 
-          })
+      const dob = profile.dateOfBirth
+        ? new Date(profile.dateOfBirth).toLocaleDateString('en-IN', {
+          year: 'numeric', month: 'long', day: 'numeric'
+        })
         : '';
-      
+
       const declaration = `I, ${fullName}${dob ? `, born on ${dob}` : ''}, being of sound mind and memory, and not acting under any coercion, undue influence, or fraud, do hereby declare this to be my Last Will and Testament, and I hereby revoke all former wills, codicils, and testamentary dispositions made by me.`;
       yPosition = addParagraph(declaration, margin, yPosition, maxWidth) - 10;
     }
@@ -231,21 +231,21 @@ export class PdfService {
           page = pdfDoc.addPage([595, 842]);
           yPosition = 800;
         }
-        
+
         const assetTitle = asset.title || 'Unnamed Asset';
         const category = asset.category || 'OTHER';
         const ownershipType = asset.ownershipType || 'SELF_ACQUIRED';
         const ownershipShare = asset.ownershipShare ? ` (${asset.ownershipShare}% share)` : '';
-        
+
         addText(`${assetTitle}`, margin, yPosition, true, 12);
         yPosition -= lineHeight;
         addText(`Category: ${category} | Ownership: ${ownershipType}${ownershipShare}`, margin + 10, yPosition, false, 10);
         yPosition -= lineHeight;
-        
+
         if (asset.description) {
           yPosition = addParagraph(asset.description, margin + 10, yPosition, maxWidth - 10) - 5;
         }
-        
+
         yPosition -= 10;
       }
     }
@@ -253,7 +253,7 @@ export class PdfService {
     // Personal Law Specific Sections
     checkNewPage(80);
     yPosition -= 20;
-    
+
     if (will.personalLaw === PersonalLaw.MUSLIM) {
       addText('WASIYYAT (BEQUEST) - ISLAMIC LAW', margin, yPosition, true, 14);
       yPosition -= 20;
@@ -262,12 +262,12 @@ export class PdfService {
     } else if (will.personalLaw === PersonalLaw.HINDU) {
       addText('GOVERNING LAW - HINDU SUCCESSION ACT, 1956', margin, yPosition, true, 14);
       yPosition -= 20;
-      
+
       // Check for ancestral/HUF assets
-      const hasAncestralAssets = will.assets?.some((a: any) => 
+      const hasAncestralAssets = will.assets?.some((a: any) =>
         a.ownershipType === 'ANCESTRAL' || a.ownershipType === 'HUF'
       );
-      
+
       if (hasAncestralAssets) {
         const hinduDisclaimer = 'IMPORTANT: This will contains ancestral or HUF (Hindu Undivided Family) property. Under Hindu Succession Act, 1956, you can only will your coparcenary share of such property, not the entire property. Other coparceners have rights to their shares. Self-acquired property can be freely distributed.';
         yPosition = addParagraph(hinduDisclaimer, margin, yPosition, maxWidth) - 10;
@@ -280,6 +280,26 @@ export class PdfService {
       yPosition -= 20;
       const christianText = 'This will is governed by Indian Succession Act, 1925. The testator has the right to freely distribute self-acquired property. Ancestral property can only be willed as the testator\'s share.';
       yPosition = addParagraph(christianText, margin, yPosition, maxWidth) - 10;
+    }
+
+    // Digital Assets Mandate (IT Act Compliance)
+    const digitalAssets = will.assets.filter(a => a.category === AssetCategory.DIGITAL);
+
+    if (digitalAssets.length > 0) {
+      checkNewPage(150);
+      yPosition -= 20;
+      addText('DIGITAL ASSETS MANDATE', 50, yPosition, true, 14);
+      yPosition -= 20;
+
+      const mandateText = "I hereby authorize my Executor to access, manage, archive, or delete my digital accounts listed below. This authorization constitutes 'lawful consent' under Section 43 and Section 66 of the Information Technology Act, 2000, and is intended to override any Terms of Service (TOS) regarding non-transferability.";
+
+      yPosition = addParagraph(mandateText, 50, yPosition, 495) - 15;
+
+      for (const asset of digitalAssets) {
+        const assetLine = `• ${asset.title} (ID/Handle: ${asset.description || 'See Attached List'})`;
+        addText(assetLine, 60, yPosition);
+        yPosition -= 15;
+      }
     }
 
     // Witness Declaration
@@ -323,7 +343,7 @@ export class PdfService {
         color: rgb(0.8, 0.8, 0.8),
         opacity: 0.5,
       });
-      
+
       // Page number
       page.drawText(`Page ${index + 1} of ${pages.length}`, {
         x: 500,
@@ -332,7 +352,7 @@ export class PdfService {
         font,
         color: rgb(0.5, 0.5, 0.5),
       });
-      
+
       // Generated date
       page.drawText(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, {
         x: margin,

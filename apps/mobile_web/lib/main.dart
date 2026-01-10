@@ -3,12 +3,18 @@ import 'core/theme/app_theme.dart';
 import 'core/routes/app_routes.dart';
 import 'features/auth/services/auth_service.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    // Ignore error if .env file is missing
+  }
   
   // Auto-login with mock credentials on app startup
-  final authService = AuthService();
-  await authService.mockLogin();
+  // Auto-login removed. App will start from Splash -> Login
   
   runApp(const MywasiyatApp());
 }
@@ -22,7 +28,7 @@ class MywasiyatApp extends StatelessWidget {
       title: 'Mywasiyat',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.dashboard, // Temporarily skip login/splash
+      initialRoute: AppRoutes.splash,
       routes: AppRoutes.routes,
     );
   }

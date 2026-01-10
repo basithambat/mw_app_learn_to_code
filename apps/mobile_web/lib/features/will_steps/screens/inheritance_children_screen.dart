@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/inheritance_service.dart';
 import '../services/people_service.dart';
+import '../services/will_service.dart';
 
 class InheritanceChildrenScreen extends StatefulWidget {
   final String? willId;
@@ -21,8 +22,10 @@ class InheritanceChildrenScreen extends StatefulWidget {
 
 class _InheritanceChildrenScreenState extends State<InheritanceChildrenScreen> {
   final _inheritanceService = InheritanceService();
+  final _willService = WillService();
   Map<String, double> _percentages = {};
   bool _isLoading = false;
+  String? _personalLaw;
 
   @override
   void initState() {
@@ -32,7 +35,22 @@ class _InheritanceChildrenScreenState extends State<InheritanceChildrenScreen> {
     for (var child in widget.children) {
       _percentages[child['id'].toString()] = equalShare;
     }
-    _loadScenario();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (widget.willId == null) return;
+    try {
+       // 1. Fetch Personal Law
+       final will = await _willService.getWill(widget.willId!);
+       _personalLaw = will['personalLaw'];
+       
+       // 2. Load Scenario
+       await _loadScenario();
+       
+    } catch (e) {
+      print('Error loading data: $e');
+    }
   }
 
   Future<void> _loadScenario() async {
@@ -243,15 +261,35 @@ class _InheritanceChildrenScreenState extends State<InheritanceChildrenScreen> {
                                 ),
                               ],
                             ),
+                            if (_personalLaw == 'MUSLIM')
+                               Padding(
+                                 padding: const EdgeInsets.only(top: 4, bottom: 8),
+                                 child: Container(
+                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                   decoration: BoxDecoration(
+                                     color: Colors.green.withOpacity(0.1),
+                                     borderRadius: BorderRadius.circular(4),
+                                     border: Border.all(color: Colors.green),
+                                   ),
+                                   child: Text(
+                                     'Fixed by Law (Faraid)',
+                                     style: GoogleFonts.lato(
+                                       fontSize: 12,
+                                       color: Colors.green[800],
+                                       fontWeight: FontWeight.bold,
+                                     ),
+                                   ),
+                                 ),
+                               ),
                             const SizedBox(height: 12),
                             Slider(
                               value: percentage,
                               min: 0,
                               max: 100,
                               divisions: 100,
-                              activeColor: AppTheme.primaryColor,
+                              activeColor: _personalLaw == 'MUSLIM' ? Colors.grey : AppTheme.primaryColor,
                               inactiveColor: AppTheme.primaryLight,
-                              onChanged: (value) {
+                              onChanged: _personalLaw == 'MUSLIM' ? null : (value) {
                                 setState(() {
                                   _percentages[childId] = value;
                                 });

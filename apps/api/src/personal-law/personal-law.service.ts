@@ -25,7 +25,8 @@ export class PersonalLawService {
         profile: true,
         assets: true,
         people: true,
-        scenarios: true, // Ensure scenarios are loaded
+        scenarios: true,
+        user: true, // Include User to check State
       },
     });
 
@@ -33,7 +34,13 @@ export class PersonalLawService {
       throw new Error(`Will ${willId} not found`);
     }
 
+    // Jurisdiction Override: Goa
+    if (will.user?.state?.toUpperCase() === 'GOA') {
+      return this.validateGoaWill(will);
+    }
+
     switch (will.personalLaw) {
+
       case PersonalLaw.HINDU:
         return this.validateHinduWill(will);
       case PersonalLaw.MUSLIM:
@@ -51,73 +58,72 @@ export class PersonalLawService {
     }
   }
 
-  private validateHinduWill(will: any): PersonalLawValidation {
-    const warnings: string[] = [];
-    const disclaimers: string[] = [];
-    let hasAncestralAssets = false;
-    let hasHUFAssets = false;
-    let hasJointAssets = false;
+  private validateGoaWill(will: any): PersonalLawValidation {
+    // Goa Civil Code: Communion of Assets
+    // Rule: Total Disposable Quota = 50%. The other 50% belongs to Spouse/Heirs (Legitime).
 
-    // Check assets for ancestral/HUF property
+    // Calculate total assets value
+    let totalEstateValue = 0;
     for (const asset of will.assets || []) {
-      if (asset.ownershipType === OwnershipType.ANCESTRAL) {
-        hasAncestralAssets = true;
-        warnings.push(
-          `Asset "${asset.title}" is marked as ancestral. Under Hindu Succession Act, you can only will your share (not exceeding your coparcenary interest), not the entire property.`,
-        );
-
-        // Check if ownership share is specified correctly
-        if (!asset.ownershipShare || asset.ownershipShare === 100) {
-          warnings.push(
-            `Asset "${asset.title}": For ancestral property, specify your actual share percentage (typically less than 100%).`,
-          );
-        }
-      }
-      if (asset.ownershipType === OwnershipType.HUF) {
-        hasHUFAssets = true;
-        warnings.push(
-          `Asset "${asset.title}" is marked as HUF/coparcenary property. You can only will your coparcenary share, not the entire HUF property.`,
-        );
-      }
-      if (asset.ownershipType === OwnershipType.JOINT) {
-        hasJointAssets = true;
-        if (!asset.ownershipShare || asset.ownershipShare === 100) {
-          warnings.push(
-            `Asset "${asset.title}" is jointly owned. Specify your exact share percentage.`,
-          );
-        }
-      }
+      totalEstateValue += (asset.estimatedValue || 0);
     }
 
-    // Check for self-acquired property (can be freely distributed)
-    const selfAcquiredAssets = (will.assets || []).filter(
-      (a: any) => a.ownershipType === OwnershipType.SELF_ACQUIRED,
-    );
-    if (selfAcquiredAssets.length > 0) {
-      disclaimers.push(
-        `You have ${selfAcquiredAssets.length} self-acquired asset(s). These can be freely distributed according to your will.`,
-      );
-    }
+    const disclaimers = [
+      'GOA CIVIL CODE APPLIES: Your assets are subject to "Communion of Assets".',
+      'You can only dispose of 50% of your total assets (Disposable Quota).',
+      'The remaining 50% is reserved for your Spouse and Forced Heirs (Legitime).'
+    ];
 
-    if (hasAncestralAssets || hasHUFAssets) {
-      disclaimers.push(
-        'Ancestral and HUF property are governed by Hindu Succession Act, 1956. You can only will your coparcenary share, not the entire property. Other coparceners have rights to their shares.',
-      );
-      disclaimers.push(
-        'It is strongly recommended to consult a legal expert for ancestral/HUF property distribution to avoid future disputes.',
-      );
-    }
+    // Check if distribution exceeds 50%
+    // Only check if we have value data, otherwise just warn
+    const warnings: string[] = ['Ensure your total bequests do not exceed 50% of your net assets.'];
 
-    if (hasJointAssets) {
-      disclaimers.push(
-        'Joint property can only be willed as your share. Ensure you specify the correct ownership percentage.',
-      );
-    }
+    // If specific allocations exist, we could check percentages, 
+    // but simplified check as requested by prompt:
 
     return {
       isValid: true,
       warnings,
       disclaimers,
+      allowedDistribution: true, // But restricted
+      templateType: 'goa'
+    };
+  }
+
+  private validateHinduWill(will: any): PersonalLawValidation {
+    const warnings: string[] = [];
+
+    // NEW: Strict Enforcement for Ancestral Property
+    for (const asset of will.assets || []) {
+      if (asset.ownershipType === 'ANCESTRAL' || asset.ownershipType === 'HUF') {
+
+        // Calculate the maximum share the user can bequeath (Notional Partition)
+        // Logic: User share = 1 / (User + Sons + Daughters + Spouse)
+        // Note: This requires counting family members from 'will.people'
+
+        const familyMembers = (will.people || []).filter((p: any) =>
+          ['SON', 'DAUGHTER', 'SPOUSE'].includes(p.relationship)
+        );
+        const totalCoparceners = familyMembers.length + 1; // +1 for Testator
+        const maxShare = 100 / totalCoparceners;
+
+        // If user tries to give away MORE than their notional share
+        if (asset.ownershipShare && asset.ownershipShare > maxShare) {
+          return {
+            isValid: false, // <--- BLOCK THE WILL
+            warnings: [`Legal Error: You cannot bequeath ${asset.ownershipShare}% of ${asset.title}. As Ancestral Property, your legal share is only ${maxShare.toFixed(2)}% (1/${totalCoparceners}th of total).`],
+            disclaimers: [],
+            allowedDistribution: false,
+            templateType: 'hindu'
+          };
+        }
+      }
+    }
+
+    return {
+      isValid: true,
+      warnings,
+      disclaimers: ['Ancestral property distribution is limited to your notional share.'],
       allowedDistribution: true,
       templateType: 'hindu',
     };
@@ -303,31 +309,64 @@ export class PersonalLawService {
   computeMuslimInheritanceShares(people: any[]): Map<string, number> {
     const shares = new Map<string, number>();
 
-    // Find Quranic heirs
-    const spouse = people.find((p) => p.relationship === 'SPOUSE');
-    const sons = people.filter((p) => p.relationship === 'SON');
-    const daughters = people.filter((p) => p.relationship === 'DAUGHTER');
-    const father = people.find((p) => p.relationship === 'FATHER');
-    const mother = people.find((p) => p.relationship === 'MOTHER');
+    // 1. Identify Heirs
+    const spouse = people.find(p => p.relationship === 'SPOUSE');
+    const father = people.find(p => p.relationship === 'FATHER');
+    const mother = people.find(p => p.relationship === 'MOTHER');
+    const sons = people.filter(p => p.relationship === 'SON');
+    const daughters = people.filter(p => p.relationship === 'DAUGHTER');
 
-    // Simplified Sharia rules (full calculation is more complex)
-    if (spouse && (sons.length > 0 || daughters.length > 0)) {
-      // Spouse gets 1/4 if there are children
-      shares.set(spouse.id, 25);
-    } else if (spouse && !sons.length && !daughters.length) {
-      // Spouse gets 1/2 if no children
-      shares.set(spouse.id, 50);
+    let remainingEstate = 100.0;
+    const hasChildren = sons.length > 0 || daughters.length > 0;
+
+    // 2. Fixed Shares (Ashab-al-Furud)
+
+    // Spouse
+    if (spouse) {
+      const spouseShare = hasChildren ? 12.5 : 25.0; // 1/8 or 1/4
+      shares.set(spouse.id, spouseShare);
+      remainingEstate -= spouseShare;
     }
 
+    // Parents
     if (father) {
-      shares.set(father.id, 16.67); // 1/6
+      const fatherShare = hasChildren ? 16.66 : 0; // 1/6 (Simplified: Father is residuary if no kids)
+      if (fatherShare > 0) {
+        shares.set(father.id, fatherShare);
+        remainingEstate -= fatherShare;
+      }
     }
     if (mother) {
-      shares.set(mother.id, 16.67); // 1/6
+      const motherShare = hasChildren ? 16.66 : 33.33; // 1/6 or 1/3
+      shares.set(mother.id, motherShare);
+      remainingEstate -= motherShare;
     }
 
-    // Remaining goes to children (sons get 2x daughters)
-    // This is simplified - actual Sharia is more complex
+    // 3. Residuary Shares (Asaba) - The 2:1 Rule
+    // "Allah instructs you concerning your children: for the male, what is equal to the share of two females." (4:11)
+
+    if (hasChildren) {
+      const numSons = sons.length;
+      const numDaughters = daughters.length;
+
+      // Calculate Units: Son = 2 units, Daughter = 1 unit
+      const totalUnits = (numSons * 2) + (numDaughters * 1);
+      const valuePerUnit = remainingEstate / totalUnits;
+
+      sons.forEach(son => {
+        shares.set(son.id, valuePerUnit * 2);
+      });
+
+      daughters.forEach(daughter => {
+        shares.set(daughter.id, valuePerUnit * 1);
+      });
+    } else {
+      // If no children, Father often takes the residue. (Simplified logic for MVP)
+      if (father) {
+        const currentShare = shares.get(father.id) || 0;
+        shares.set(father.id, currentShare + remainingEstate);
+      }
+    }
 
     return shares;
   }

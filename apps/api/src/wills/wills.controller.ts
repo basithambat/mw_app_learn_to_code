@@ -15,13 +15,18 @@ import { WillsService } from './wills.service';
 import { CreateWillDto, UpdateWillDto } from './dto/will.dto';
 import { UpdateBasicInfoDto } from './dto/basic-info.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PdfService } from '../pdf/pdf.service';
+import { PremiumGuard } from '../common/guards/premium.guard';
 
 @ApiTags('wills')
 @Controller('wills')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class WillsController {
-  constructor(private readonly willsService: WillsService) {}
+  constructor(
+    private readonly willsService: WillsService,
+    private readonly pdfService: PdfService,
+  ) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new will' })
@@ -65,6 +70,15 @@ export class WillsController {
   @ApiResponse({ status: 404, description: 'Will not found' })
   async createVersion(@Request() req, @Param('id') id: string) {
     return this.willsService.createVersion(id, req.user.id);
+  }
+
+  @Post(':id/pdf/generate')
+  @UseGuards(PremiumGuard)
+  @ApiOperation({ summary: 'Generate PDF (Premium only)' })
+  @ApiResponse({ status: 201, description: 'PDF generated' })
+  @ApiResponse({ status: 402, description: 'Payment required' })
+  async generatePdf(@Request() req, @Param('id') id: string) {
+    return this.pdfService.generatePdf(id, req.user.id);
   }
 
   @Patch(':id/basic-info')

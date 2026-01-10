@@ -5,6 +5,7 @@ import 'package:signature/signature.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/arrangements_service.dart';
+import 'signature_review_screen.dart';
 
 class SignatureCanvasScreen extends StatefulWidget {
   final String? willId;
@@ -51,12 +52,22 @@ class _SignatureCanvasScreenState extends State<SignatureCanvasScreen> {
       final file = File('${tempDir.path}/signature_${DateTime.now().millisecondsSinceEpoch}.png');
       await file.writeAsBytes(signatureData);
 
-      if (widget.willId != null && !widget.willId!.startsWith('demo-')) {
-        await _arrangementsService.uploadSignature(widget.willId!, file);
-      }
-
+      
+      // Navigate to Review Screen
       if (mounted) {
-        Navigator.pop(context, true);
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SignatureReviewScreen(
+              willId: widget.willId!,
+              signatureFile: file,
+            ),
+          ),
+        );
+
+        if (result == true && mounted) {
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       if (mounted) {

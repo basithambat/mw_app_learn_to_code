@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -16,17 +18,22 @@ class ApiException implements Exception {
 class ApiClient {
   late Dio _dio;
   
-  // Use localhost for web, IP address for mobile devices
-  // Update this IP address to match your computer's local IP
-  // Find it with: ifconfig (Mac/Linux) or ipconfig (Windows)
   static String get baseUrl {
+    // 1. If Web, always use localhost or specific env var
     if (kIsWeb) {
-      return 'http://localhost:3000/api';
-    } else {
-      // For physical devices, use your computer's local IP address
-      // Change this to your actual local IP (e.g., 192.168.0.101)
-      return 'http://192.168.0.103:3000/api';
+      return dotenv.get('API_URL_WEB', fallback: 'http://localhost:3000/api');
+    } 
+    
+    // 2. If Android Emulator, use the standard loopback IP
+    if (Platform.isAndroid) {
+      // Heuristic: If running in debug mode on Android, default to 10.0.2.2
+      // unless an explicit ENV var is set.
+      return dotenv.get('API_URL_ANDROID', fallback: 'http://10.0.2.2:3000/api');
     }
+    
+    // 3. For iOS simulator or physical devices, read from .env
+    // Developers must create a .env file with API_URL=http://<YOUR_LOCAL_IP>:3000/api
+    return dotenv.get('API_URL', fallback: 'http://localhost:3000/api');
   }
 
   ApiClient() {

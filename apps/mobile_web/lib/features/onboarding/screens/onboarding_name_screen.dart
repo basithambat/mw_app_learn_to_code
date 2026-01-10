@@ -156,12 +156,17 @@ class _OnboardingNameScreenState extends State<OnboardingNameScreen> {
                         ),
                         decoration: InputDecoration(
                           border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           hintText: 'Enter your name',
                           hintStyle: GoogleFonts.lato(
                             fontSize: 18,
                             color: AppTheme.textSecondary,
                           ),
+                          filled: false,
                         ),
                         onChanged: (value) {
                           setState(() {}); // Update border color when text changes
