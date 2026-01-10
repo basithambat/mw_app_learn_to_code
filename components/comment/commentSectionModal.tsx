@@ -338,7 +338,8 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
     };
   }, [keyboardHeightSV, bottom]);
 
-  if (!isVisible) return null;
+  // No early return - we keep this in the tree for 1:1 "glued" gestures
+  // Visibility is controlled by parent's translation and pointerEvents
 
   return (
     <View style={{ flex: 1 }}>
