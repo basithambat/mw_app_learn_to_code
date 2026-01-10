@@ -15,7 +15,7 @@ const DiscoverScreens = () => {
                 <SafeAreaView style={styles.container}>
                     <ExpoStatusBar style='dark' backgroundColor='transparent' translucent={true} />
                     <GestureHandlerRootView style={styles.contentContainer}>
-                        
+
                         <DiscoverScreen />
                     </GestureHandlerRootView>
                 </SafeAreaView>

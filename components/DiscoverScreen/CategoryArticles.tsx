@@ -6,15 +6,9 @@ import { Card } from '../CardAnimation';
 import { useSharedValue } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { getAllArticlesByCategories } from '@/api/apiArticles';
-import CategoryIcon from '../CategoryIcon';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CardStackPill } from './CardStackPill';
-// import {
-//     automobile, breakingNews, business, curatedForYou, entertainment, health,
-//     internationalNews, lifestyle, opinions, politics, science, sports, startup, technology,
-//     travel, world, finance
-// } from '@/assets';
+import CategoryIcon from '@/components/CategoryIcon';
 import { getLast48HoursRange } from '@/utils/DataAndTimeHelper';
+import Animated, { useAnimatedStyle, withSequence, withSpring } from 'react-native-reanimated';
 
 type CategoryIconKey = 'categoryKey' | string;
 
@@ -40,36 +34,25 @@ type CategoryIconKey = 'categoryKey' | string;
 
 const CategoryArticles = ({ category }: { category: CategoryType }) => {
     const [articles, setArticles] = useState<any[]>([])
-    const [consumedArticleIds, setConsumedArticleIds] = useState<Set<number>>(new Set());
-    const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
+    const { width: SCREEN_WIDTH } = useWindowDimensions();
     const isTablet = SCREEN_WIDTH >= 768;
 
     const activeIndex = useSharedValue(0);
     const translateX = useSharedValue(0);
+    const iconScale = useSharedValue(1);
     const router = useRouter();
 
-    // Storage key for consumed articles
-    const CONSUMED_STORAGE_KEY = `consumed_articles_${category.id}`;
-
-    // Mark article as consumed
-    const markAsConsumed = useCallback(async (articleId: number) => {
-        try {
-            setConsumedArticleIds((prev) => {
-                const newSet = new Set(prev);
-                newSet.add(articleId);
-                // Save to storage
-                AsyncStorage.setItem(CONSUMED_STORAGE_KEY, JSON.stringify(Array.from(newSet))).catch(console.error);
-                return newSet;
-            });
-        } catch (error) {
-            console.log("Error marking article as consumed:", error);
-        }
-    }, [CONSUMED_STORAGE_KEY]);
+    const iconAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: iconScale.value }]
+    }));
 
     const handleSwipe = useCallback((swipedArticle: any, direction: 'left' | 'right') => {
         try {
-            // Mark as consumed when swiped
-            markAsConsumed(swipedArticle.id);
+            // Micro-animation for the category icon
+            iconScale.value = withSequence(
+                withSpring(1.25, { damping: 10, stiffness: 300 }),
+                withSpring(1, { damping: 15, stiffness: 200 })
+            );
 
             setArticles((prevData): any => {
                 const newData = prevData.filter((article: any) => article.id !== swipedArticle.id);
@@ -79,12 +62,9 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
         } catch (error) {
             console.log("error: ", error);
         }
-    }, [markAsConsumed]);
+    }, []);
 
     const handleItemPress = useCallback((categoryId: any, itemId: number) => {
-        // Mark as consumed when opened
-        markAsConsumed(itemId);
-
         router.push({
             pathname: '/(news)/[slug]',
             params: {
@@ -92,22 +72,7 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
                 categoryId: categoryId.toString(),
             }
         });
-    }, [router, markAsConsumed]);
-
-    // Load consumed articles from storage
-    useEffect(() => {
-        (async () => {
-            try {
-                const stored = await AsyncStorage.getItem(CONSUMED_STORAGE_KEY);
-                if (stored) {
-                    const consumedIds = JSON.parse(stored) as number[];
-                    setConsumedArticleIds(new Set(consumedIds));
-                }
-            } catch (error) {
-                console.log("Error loading consumed articles:", error);
-            }
-        })();
-    }, [CONSUMED_STORAGE_KEY]);
+    }, [router]);
 
     useEffect(() => {
         (async () => {
@@ -122,123 +87,55 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
         })()
     }, []);
 
-    // Calculate card dimensions
     const CARD_WIDTH = SCREEN_WIDTH * 0.75;
     const CARD_HEIGHT = CARD_WIDTH * (320 / 273);
 
-    // Calculate stack dimensions - Instagram-style: minimal, precise spacing
+    // Calculate stack dimensions based on device type
     const getStackDimensions = () => {
-        const visibleArticlesCount = isTablet ? 4 : 3;
-
-        // Calculate only the essential card extension from transforms
-        // Instagram approach: calculate exact extension, add minimal safety buffer
-        const maxHorizontalOffset = (visibleArticlesCount - 1) * 20; // Max stack offset
-        const cardDiagonal = Math.sqrt(CARD_WIDTH * CARD_WIDTH + CARD_HEIGHT * CARD_HEIGHT);
-        const rotationExtension = Math.sin(10 * Math.PI / 180) * cardDiagonal * 0.3; // Conservative rotation estimate
-
-        // Minimal extension calculation - only what's needed
-        const totalExtension = maxHorizontalOffset + rotationExtension;
-
-        // Container height: card + extension + minimal buffer (Instagram-style tight spacing)
-        const baseContainerHeight = CARD_HEIGHT + totalExtension + 8; // Just 8px buffer
-
         if (isTablet) {
             return {
-                containerHeight: Math.max(1020, baseContainerHeight),
-                containerPadding: 0,
-                marginBottom: 12 // Reduced gap between categories (was 24px)
+                containerHeight: 1020,
+                stackPadding: 560,
+                containerPadding: 500
             };
         }
-
-
-        // Mobile: "Airbnb" style spacious design
-        const mobileContainerHeight = Platform.OS === 'ios'
-            ? Math.max(420, baseContainerHeight + 40) // Added 40px buffer
-            : Math.max(300, baseContainerHeight + 40);
-
         return {
-            containerHeight: mobileContainerHeight,
-            containerPadding: 0,
-            marginBottom: 32 // Increased gap between categories (was 8/20px) for elegance
+            containerHeight: CARD_HEIGHT + 40, // Base height on card size + padding
+            stackPadding: 10,
+            containerPadding: 0
         };
     };
 
-    const onSwipeCard = useCallback((item: any, direction: 'left' | 'right') => {
-        handleSwipe(item, direction);
-        translateX.value = 0;
-        activeIndex.value = 0;
-    }, [handleSwipe, translateX, activeIndex]);
-
-    const { containerHeight, marginBottom } = getStackDimensions();
+    const { containerHeight, stackPadding, containerPadding } = getStackDimensions();
     const visibleArticles = articles.slice(0, isTablet ? 4 : 3);
-
-    const totalCards = articles.length;
-    const consumedCards = Array.from(consumedArticleIds).filter(id =>
-        articles.some(article => article.id === id)
-    ).length;
-    const unconsumedCards = totalCards - consumedCards;
-
-    // Instagram-style spacing: minimal, precise
-    // Calculate only what's needed to prevent overlap
-    const maxCardExtension = (visibleArticles.length - 1) * 20;
-    const cardDiagonal = Math.sqrt(CARD_WIDTH * CARD_WIDTH + CARD_HEIGHT * CARD_HEIGHT);
-    const rotationExtension = Math.sin(10 * Math.PI / 180) * cardDiagonal * 0.3;
-    const categoryHeaderHeight = isTablet ? 44 : 36; // Tight header height
-
-    // Tight spacing between category header and cards (Instagram-style)
-    const categoryHeaderSpacing = isTablet ? 12 : 8;
+    const cardContainerPaddingTop = 20; // Stable padding
+    const cardContainerMarginBottom = visibleArticles.length === 1 ? 20 : 40;
 
     return (
-        <View style={{
-            paddingBottom: 8, // Reduced padding bottom significantly
-            paddingTop: 16,
-            marginBottom: marginBottom, // Reduced gap between categories
-            borderBottomWidth: 0, // Remove border for cleaner look
-        }}>
-            <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingLeft: isTablet ? 24 : 16,
-                paddingBottom: categoryHeaderSpacing, // Tight spacing
-                paddingTop: 4
-            }}>
-                <View style={{
-                    width: isTablet ? 32 : 24,
-                    height: isTablet ? 32 : 24,
-                    marginRight: 8,
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
+        <View className="pb-0 pt-8 border-b-2 border-[#F3F4F6]">
+            {/* Category Header */}
+            <View className={`flex-row items-center ${isTablet ? 'pl-[32px]' : 'pl-[16px]'} mb-2`}>
+                <Animated.View style={iconAnimatedStyle}>
                     <CategoryIcon
-                        categoryId={
-                            category?.icon_url ||
-                            (category as any)?.category_icon ||
-                            category?.id ||
-                            'all'
-                        }
-                        size={isTablet ? 32 : 24}
+                        categoryId={String(category.id)}
+                        size={isTablet ? 36 : 28}
+                        style={{ marginRight: 8 }}
                     />
-                </View>
-                <Text style={{
-                    fontFamily: 'Domine',
-                    fontSize: isTablet ? 20 : 18 // Slightly smaller
-                }}>
+                </Animated.View>
+                <Text className={`font-domine ${isTablet ? 'text-[24px]' : 'text-[20px]'}`}>
                     {category.name}
                 </Text>
             </View>
-            <View
-                style={[
-                    styles.cardContainer,
-                    {
-                        width: SCREEN_WIDTH,
-                        minHeight: containerHeight,
-                        paddingTop: visibleArticles.length === 1 ? 12 : 24, // Reduced padding
-                        paddingBottom: Math.max(8, rotationExtension + 4), // Minimal bottom padding
-                        marginBottom: marginBottom,
-                    }
-                ]}
-                pointerEvents="box-none"
-            >
+
+            {/* Imaginary/Transparent Boundary Box for the Stack */}
+            <View style={[
+                styles.cardContainer,
+                {
+                    width: SCREEN_WIDTH,
+                    height: containerHeight,
+                    paddingTop: cardContainerPaddingTop,
+                }
+            ]}>
                 {visibleArticles.map((item, itemIndex) => {
                     return (
                         <Card
@@ -253,20 +150,24 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
                             activeIndex={activeIndex}
                             translateX={translateX}
                             categoryIndex={category.index}
-                            onSwipe={(direction) => onSwipeCard(item, direction)}
+                            onSwipe={(direction) => {
+                                handleSwipe(item, direction);
+                                translateX.value = 0;
+                                activeIndex.value = 0;
+                            }}
                             onPress={() => handleItemPress(category.id, item.id)}
                         />
                     )
                 }).reverse()}
             </View>
 
-            {/* Card Stack Progress Pill */}
-            {totalCards > 0 && (
-                <CardStackPill
-                    totalCards={totalCards}
-                    consumedCards={consumedCards}
-                    unconsumedCards={unconsumedCards}
-                />
+            {/* Unread count pill below the stack */}
+            {articles.length > 0 && (
+                <View style={styles.pillContainer}>
+                    <View style={styles.pill}>
+                        <Text style={styles.pillText}>{articles.length} unread</Text>
+                    </View>
+                </View>
             )}
         </View>
     )
@@ -279,6 +180,22 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         backgroundColor: 'white',
-        overflow: 'visible', // Keep visible for card stacking effect
+        overflow: 'visible',
+    },
+    pillContainer: {
+        alignItems: 'center',
+        marginTop: -4,
+        marginBottom: 32,
+    },
+    pill: {
+        backgroundColor: '#F3F4F6',
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    pillText: {
+        fontSize: 12,
+        color: '#6B7280',
+        fontWeight: '500',
     },
 });

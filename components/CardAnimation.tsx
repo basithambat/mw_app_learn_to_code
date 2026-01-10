@@ -43,37 +43,51 @@ export const Card: React.FC<CardProps> = ({
   const CARD_HEIGHT = CARD_WIDTH * (320 / 273);
   const isFirst = index === 0;
 
-  // Emil Kowalski's recommended spring configs for card animations
-  const springConfigSnappy = useMemo(() => ({
-    damping: 20,
-    stiffness: 300,
-    mass: 0.8,
-  }), []);
-
-  const springConfigBouncy = useMemo(() => ({
-    damping: 15,
-    stiffness: 350,
+  // Airbnb-grade spring configs
+  const springConfigSnap = useMemo(() => ({
+    damping: 25,
+    stiffness: 200,
     mass: 0.5,
+    overshootClamping: false,
+    restDisplacementThreshold: 0.01,
+    restSpeedThreshold: 2,
   }), []);
 
-  // Deterministic random generator based on seed (id)
-  const pseudoRandom = (seed: number) => {
-    const x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-  };
+  const springConfigSwipe = useMemo(() => ({
+    damping: 20,
+    stiffness: 150,
+    mass: 1,
+  }), []);
 
-  const getRotationValues = (id: number) => {
-    // Generate a random rotation between -6 and 6 degrees
-    // Use card ID as seed so it's consistent for the same card
+  const getRotationValues = (id: number, categoryIdx?: number) => {
+    if (categoryIdx !== undefined) {
+      switch (categoryIdx % 6) {
+        case 0:
+          return { first: [-15, 0, 15], rest: [3, 0, 0] };
+        case 1:
+          return { first: [-15, 0, 15], rest: [-3, 0, 0] };
+        case 2:
+          return { first: [-15, 0, 15], rest: [0, 0, 0] };
+        case 3:
+          return { first: [-15, 0, 15], rest: [3, 0, 0] };
+        case 4:
+          return { first: [-15, 0, 15], rest: [-3, 0, 0] };
+        case 5:
+          return { first: [-15, 0, 15], rest: [0, 0, 0] };
+      }
+    }
+
+    // Fallback to random generation based on ID
+    const pseudoRandom = (seed: number) => {
+      const x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    };
     const randomSeed = pseudoRandom(id * 9999);
     const angle = (randomSeed * 12) - 6;
-
-    // For the first card (active), we use standard interaction values
-    // For resting cards, we use the random angle
     return { first: [-15, 0, 15], rest: [angle, 0, -angle / 2] };
   };
 
-  const rotationValues = getRotationValues(card.id);
+  const rotationValues = getRotationValues(card.id, categoryIndex);
 
   const removeCard = useCallback((direction: 'left' | 'right') => {
     'worklet';
@@ -85,54 +99,45 @@ export const Card: React.FC<CardProps> = ({
     runOnJS(onPress)();
   }, [onPress]);
 
-  const panGesture = useMemo(() => {
-    const pan = Gesture.Pan()
-      .activeOffsetX([-10, 10])
-      .failOffsetY([-10, 10])
-      .onUpdate((event) => {
-        if (isFirst) {
-          translateX.value = event.translationX;
+  const panGesture = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .onUpdate((event) => {
+      if (isFirst) {
+        translateX.value = event.translationX;
+      }
+    })
+    .onEnd((event) => {
+      if (isFirst) {
+        const direction = translateX.value > 0 ? 'right' : 'left';
+        if (Math.abs(event.velocityX) > 400 || Math.abs(translateX.value) > SCREEN_WIDTH * 0.4) {
+          // Swipe away with natural momentum
+          translateX.value = withSpring(
+            Math.sign(translateX.value) * SCREEN_WIDTH * 1.5,
+            springConfigSwipe,
+            (finished) => {
+              if (finished) {
+                runOnJS(onSwipe)(direction);
+              }
+            }
+          );
+        } else {
+          // Snap back with precision
+          translateX.value = withSpring(0, springConfigSnap);
         }
-      })
-      .onEnd((event) => {
-        'worklet';
-        if (isFirst) {
-          const { velocityX } = event;
-          const velocityThreshold = 500; // Emil's pattern: velocity-based decisions
-          const distanceThreshold = SCREEN_WIDTH * 0.35; // Slightly lower for better UX
-
-          // Emil's pattern: Use velocity for more natural feel
-          if (Math.abs(velocityX) > velocityThreshold || Math.abs(translateX.value) > distanceThreshold) {
-            const direction = translateX.value > 0 ? 'right' : 'left';
-            // Use velocity-aware spring for natural exit animation
-            translateX.value = withSpring(
-              Math.sign(translateX.value) * SCREEN_WIDTH * 1.2, // Slight overshoot for natural feel
-              velocityX && Math.abs(velocityX) > velocityThreshold
-                ? springConfigBouncy
-                : springConfigSnappy
-            );
-            removeCard(direction);
-          } else {
-            // Spring back with snappy config
-            translateX.value = withSpring(0, springConfigSnappy);
-          }
-        }
-      });
-
-    const tap = Gesture.Tap()
-      .onEnd(() => {
-        if (isFirst && Math.abs(translateX.value) < 5) {
-          // Only trigger tap if card hasn't moved much (not a swipe)
-          handlePress();
-        }
-      });
-
-    return Gesture.Race(pan, tap);
-  }, [isFirst, translateX, removeCard, SCREEN_WIDTH, handlePress]);
+      }
+    });
 
   // Pre-calculate static transform values to avoid recalculating on every frame
   const staticTranslateY = useMemo(() => index * 1, [index]);
-  const staticTranslateX = useMemo(() => index * 20, [index]);
+  // Determine stack direction based on category index for organic variety (Left, Right, Middle)
+  const stackDirection = useMemo(() => {
+    if (categoryIndex === undefined) return 1;
+    const mod = categoryIndex % 3;
+    if (mod === 0) return 1;  // Right
+    if (mod === 1) return -1; // Left
+    return 0;                 // Middle (Symmetric)
+  }, [categoryIndex]);
+  const staticTranslateX = useMemo(() => index * 15 * stackDirection, [index, stackDirection]);
   const staticOpacity = useMemo(() => {
     // Calculate opacity based on index position
     const maxIndex = Math.min(totalCards - 1, 3);
@@ -148,14 +153,14 @@ export const Card: React.FC<CardProps> = ({
     const scale = interpolate(
       activeIndex.value,
       [index - 1, index, index + 1],
-      [0.95, 1, 1.05],
+      [0.92, 1, 1.08], // Slightly more pronounced scale diff
       Extrapolate.CLAMP
     );
 
     const translateY = interpolate(
       activeIndex.value,
       [index - 1, index, index + 1],
-      [-18, 0, 0],
+      [-24, 0, 0], // Deeper vertical compression
       Extrapolate.CLAMP
     );
 
@@ -176,14 +181,42 @@ export const Card: React.FC<CardProps> = ({
           { translateX: staticTranslateX },
         ],
         opacity: staticOpacity,
+        shadowOpacity: 0.15,
+        shadowRadius: 3,
       };
     }
+
+    // Top card dynamic shadow and lift
+    const shadowOpacity = interpolate(
+      Math.abs(translateX.value),
+      [0, SCREEN_WIDTH * 0.5],
+      [0.4, 0.6],
+      Extrapolate.CLAMP
+    );
+
+    const shadowRadius = interpolate(
+      Math.abs(translateX.value),
+      [0, SCREEN_WIDTH * 0.5],
+      [5, 15],
+      Extrapolate.CLAMP
+    );
+
+    const elevation = interpolate(
+      Math.abs(translateX.value),
+      [0, SCREEN_WIDTH * 0.5],
+      [3, 10],
+      Extrapolate.CLAMP
+    );
 
     return {
       transform: [
         { translateX: translateX.value },
+        { translateY: interpolate(Math.abs(translateX.value), [0, SCREEN_WIDTH * 0.5], [0, -4], Extrapolate.CLAMP) },
         { rotate: `${rotate}deg` },
       ],
+      shadowOpacity,
+      shadowRadius,
+      elevation,
     };
   }, [isFirst, index, activeIndex, translateX, SCREEN_WIDTH, rotationValues, staticTranslateY, staticTranslateX, staticOpacity]);
 
@@ -192,11 +225,11 @@ export const Card: React.FC<CardProps> = ({
     'worklet';
     if (!isFirst) return {};
 
-    // Emil's pattern: Use Extrapolate.CLAMP for better performance
+    // Invert parallax: image moves SLIGHTLY opposite to swipe for depth
     const parallaxX = interpolate(
       translateX.value,
       [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-      [-30, 0, 30], // Shift image 30px opposite to movement for depth
+      [40, 0, -40],
       Extrapolate.CLAMP
     );
 
@@ -210,6 +243,7 @@ export const Card: React.FC<CardProps> = ({
 
     return {
       transform: [
+        { scale: 1.15 }, // Base scale to provide "bleed" area for parallax
         { translateX: parallaxX },
         { scale: parallaxScale }
       ]
@@ -218,22 +252,24 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <GestureDetector gesture={panGesture}>
-      <Animated.View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }, animatedCardStyle]}>
-        {card.image ? (
-          <Animated.Image source={{ uri: card.image }} style={[styles.cardImage, animatedImageStyle]} />
-        ) : (
-          <View style={[styles.cardImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
-            <Text style={{ color: '#9CA3AF', fontSize: 14 }}>No Image</Text>
-          </View>
-        )}
-        <LinearGradient
-          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)']}
-          style={styles.gradient}
-        >
-          <View style={StyleSheet.absoluteFill} />
-        </LinearGradient>
-        <Text style={styles.cardTitle}>{card.title}</Text>
-      </Animated.View>
+      <TouchableOpacity activeOpacity={0.95} onPress={onPress}>
+        <Animated.View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }, animatedCardStyle]}>
+          {card.image ? (
+            <Animated.Image source={{ uri: card.image }} style={[styles.cardImage, animatedImageStyle]} />
+          ) : (
+            <View style={[styles.cardImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
+              <Text style={{ color: '#9CA3AF', fontSize: 14 }}>No Image</Text>
+            </View>
+          )}
+          <LinearGradient
+            colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)']}
+            style={styles.gradient}
+          >
+            <View style={StyleSheet.absoluteFill} />
+          </LinearGradient>
+          <Text style={styles.cardTitle}>{card.title}</Text>
+        </Animated.View>
+      </TouchableOpacity>
     </GestureDetector>
   );
 };

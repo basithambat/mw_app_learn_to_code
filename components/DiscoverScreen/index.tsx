@@ -58,21 +58,16 @@ const DiscoverScreen = () => {
     useEffect(() => {
         (async () => {
             const { from, to } = getLast48HoursRange();
-            // userId is optional - ingestion platform doesn't need it
-            const userId: string = loggedInUserData?.user?.id as string || 'anonymous';
+            const userId: string = loggedInUserData?.user.id as string;
             try {
-                console.log('[DiscoverScreen] Fetching categories...');
                 const response = await getCategories(from, to, userId);
-                console.log(`[DiscoverScreen] Got ${response.length} categories`);
                 const categoriesWithIndex = response.map((category: Omit<CategoryType, 'index'>, idx: number) => ({
                     ...category,
                     index: Number(idx)
                 }));
                 setCategories(categoriesWithIndex);
             } catch (error) {
-                console.error("[DiscoverScreen] Error fetching categories:", error);
-                // Set empty array on error to prevent hanging
-                setCategories([]);
+                console.error("Error fetching categories:", error);
             }
         })();
     }, [location]);
