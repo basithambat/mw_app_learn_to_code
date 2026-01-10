@@ -72,6 +72,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         dismissY,
     } = useExpandedArticleGestures({
         onDismiss: onClose,
+        isWritingSV: keyboardVisibleSV, // PRIORITY FIX
     });
 
     const [activeArticle, setActiveArticle] = useState(initialArticleId);

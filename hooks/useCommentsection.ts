@@ -57,7 +57,7 @@ export const commentSectionStyles = StyleSheet.create({
     width: '100%',
     position: 'absolute',
     bottom: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: '#F3F4F6', // Surface Unity
   },
   commentContainer: {
     height: '100%', // Use full available space
@@ -71,7 +71,7 @@ export const commentSectionStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 16, // Safe area handled by parent inset or calculated padding
     paddingBottom: 8,
     backgroundColor: 'transparent', // Seamless header
     // No border

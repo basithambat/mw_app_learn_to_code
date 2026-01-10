@@ -83,8 +83,13 @@ const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress }) => {
             alignSelf: 'center' as const,
             borderBottomLeftRadius: borderRadiusSV.value,
             borderBottomRightRadius: borderRadiusSV.value,
-            overflow: 'hidden' as const,
-            backgroundColor: '#F3F4F6', // Sync background to prevent white ghosting
+            // SHADOW FIX: No overflow hidden here, so shadow casts
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: interpolate(commentProgress.value, [0, 1], [0, 0.15], Extrapolate.CLAMP),
+            shadowRadius: 8,
+            elevation: interpolate(commentProgress.value, [0, 1], [0, 5], Extrapolate.CLAMP),
+            backgroundColor: '#F3F4F6',
         };
     }, [commentProgress]);
 

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Dimensions, Platform } from 'react-native';
+import { Dimensions, Platform, Keyboard } from 'react-native';
 import { Gesture } from 'react-native-gesture-handler';
 import {
     useSharedValue,
@@ -40,6 +40,7 @@ type DirectionLock = 'none' | 'horizontal' | 'vertical';
 
 interface UseExpandedArticleGesturesProps {
     onDismiss: () => void; // Navigation callback to close detail screen
+    isWritingSV?: any; // SharedValue<number> (0/1)
 }
 
 /**
@@ -58,6 +59,7 @@ interface UseExpandedArticleGesturesProps {
  */
 export const useExpandedArticleGestures = ({
     onDismiss,
+    isWritingSV,
 }: UseExpandedArticleGesturesProps) => {
     // ============================================================================
     // JS State (mode)
@@ -158,6 +160,14 @@ export const useExpandedArticleGestures = ({
                 // MODE: comments
                 // Only allow drag down when scroll is at top
                 if (mode === 'comments') {
+                    // PRIORITY: If Writing (keyboard visible), swipe down triggers dismiss first
+                    if (isWritingSV && isWritingSV.value === 1 && translationY > 0) {
+                        if (translationY > 20) {
+                            runOnJS(Keyboard.dismiss)();
+                        }
+                        return; // BLOCK sheet movement
+                    }
+
                     if (commentsScrollY.value <= 0 && translationY > 0) {
                         // User is dragging down from fully open state
                         // commentProgress goes from 1 → 0 as user drags down

@@ -126,6 +126,7 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
   const commentsLoading = useSelector(commentsLoadingSelector);
   const router = useRouter();
   const { personas, token } = useFirebaseAuth();
+  const safeAreaInsets = useSafeAreaInsets(); // Airbnb Safe Area Fix
 
   // MOCK DATA for local testing and overflow verification
   const MOCK_COMMENTS: ArticleComment[] = __DEV__ ? Array.from({ length: 12 }).map((_, i) => ({
@@ -348,7 +349,7 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
 
         {/* TRANSLATABLE CONTENT: This layer moves for Docked view */}
         <Animated.View style={[{ flex: 1 }, contentTranslateStyle]}>
-          <View style={styles.header}>
+          <View style={[styles.header, { paddingTop: safeAreaInsets.top + 16 }]}>
             <Text style={{ fontFamily: 'Geist-Medium', fontSize: 18, color: '#000000' }}>
               All comments
             </Text>
