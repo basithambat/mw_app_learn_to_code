@@ -105,16 +105,12 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         );
     }, [commentProgress]);
 
-    // MANDATORY: Sheet top as SHARED VALUE (updated via effects only)
-    const uiStateSV = useSharedValue<0 | 1 | 2>(0); // 0=reading, 1=comments, 2=writing
-    const sheetTopSV = useSharedValue(LAYOUT.SCREEN_HEIGHT); // Start off-screen
-
     // Track article scroll for gesture gating
     const articleScrollY = useSharedValue(0);
 
     // Hero layer style - uses uiStateSV + pointerEvents for overlay
     const heroLayerStyle = useAnimatedStyle(() => {
-        const isWriting = uiStateSV.value === 2;
+        const isWriting = keyboardHeightSV.value > 10;
 
         // Simplify: Direct top anchor without scale division
         const topAnchor = interpolate(
@@ -145,28 +141,27 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                 { translateY: scrollOffset + dismissY.value }
             ]
         };
-    }, [uiStateSV, commentProgress, articleScrollY, top, dismissY]);
+    }, [commentProgress, articleScrollY, top, dismissY, keyboardHeightSV]);
 
     // Sheet layer style - CRITICAL: Position driven by gesture progress for zero-lag reversibility
     // Sheet layer style - NOW A STATIC FULL-SCREEN MASK
     const sheetLayerStyle = useAnimatedStyle(() => {
+        const isWriting = keyboardHeightSV.value > 10;
         return {
             position: 'absolute' as const,
             left: 0,
             right: 0,
             top: 0,
             bottom: 0,
-            zIndex: uiStateSV.value === 2 ? 50 : 20,
-            elevation: uiStateSV.value === 2 ? 50 : 0,
+            zIndex: isWriting ? 50 : 20,
+            elevation: isWriting ? 50 : 0,
             pointerEvents: mode === 'comments' ? 'auto' : 'none',
         };
-    }, [mode]);
+    }, [mode, keyboardHeightSV]);
 
     // NEW: Content-only translation to preserve the physical floor for the composer
     const sheetContentTranslateStyle = useAnimatedStyle(() => {
-        const isDocked = uiStateSV.value === 1;
-        const isFullscreen = uiStateSV.value === 2;
-
+        // 1. Core Docked Position (interpolated from closed to open)
         const progressTop = interpolate(
             commentProgress.value,
             [0, 1],
@@ -174,33 +169,22 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
             Extrapolate.CLAMP
         );
 
-        const finalTop = isFullscreen ? sheetTopSV.value : progressTop;
+        // 2. Writing Offset: Smoothly lifts the sheet as keyboard appears
+        // We lift it from dockedTop (progressTop) to 0.
+        // Formula: progressTop - (kbProgress * progressTop) = progressTop * (1 - kbProgress)
+        // However, it's simpler to just subtract the keyboard-driven translate.
+        const kbProgress = interpolate(keyboardHeightSV.value, [0, 200], [0, 1], Extrapolate.CLAMP);
+        const finalTranslate = progressTop * (1 - kbProgress);
 
         return {
             flex: 1,
             backgroundColor: '#F3F4F6',
-            borderTopLeftRadius: isDocked ? 0 : 22,
-            borderTopRightRadius: isDocked ? 0 : 22,
+            borderTopLeftRadius: interpolate(keyboardHeightSV.value, [0, 50], [22, 0], Extrapolate.CLAMP),
+            borderTopRightRadius: interpolate(keyboardHeightSV.value, [0, 50], [22, 0], Extrapolate.CLAMP),
             overflow: 'hidden' as const,
-            transform: [{ translateY: finalTop }]
+            transform: [{ translateY: finalTranslate }]
         };
-    }, [top]);
-
-    // CRITICAL: Fluid dimming driven by ACTUAL plane position (No flashes)
-    const dimStyle = useAnimatedStyle(() => {
-        // Interpolate background dimming based on the literal top of the sheet
-        // 0.85 (Writing) | 0.45 (Docked) | 0 (Reading)
-        const dimOpacity = interpolate(
-            sheetTopSV.value,
-            [0, LAYOUT.HERO_COMMENTS_HEIGHT + top, SCREEN_HEIGHT],
-            [0.85, 0.45, 0],
-            Extrapolate.CLAMP
-        );
-
-        return {
-            opacity: dimOpacity,
-        };
-    }, [sheetTopSV, top]);
+    }, [top, commentProgress, keyboardHeightSV]);
 
     // Reset when component becomes visible
     useEffect(() => {
@@ -257,26 +241,6 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     }, [])
 
         ;
-
-    // P0 FIX: Update sheetTopSV and uiStateSV via effects (not derived values!)
-    // Effect 1: Core state machine for the 3-state contract
-    useEffect(() => {
-        if (isKeyboardVisibleJS) {
-            // State 2: Writing (Fullscreen)
-            sheetTopSV.value = withTiming(0, { duration: 300 });
-            uiStateSV.value = 2;
-        } else if (mode === 'comments') {
-            // State 1: Docked (Comments visible below Hero)
-            // Driven by sheetTopSV for the target, but manual gesture (commentProgress) 
-            // also drives the sheetView during active drag.
-            sheetTopSV.value = withTiming(LAYOUT.HERO_COMMENTS_HEIGHT + top, { duration: 300 });
-            uiStateSV.value = 1;
-        } else {
-            // State 0: Reading (Neutral)
-            sheetTopSV.value = withTiming(LAYOUT.SCREEN_HEIGHT, { duration: 300 });
-            uiStateSV.value = 0;
-        }
-    }, [isKeyboardVisibleJS, mode, top]);
 
     // Android back button handler
     useEffect(() => {
