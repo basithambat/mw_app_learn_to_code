@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Dimensions, StyleSheet,Platform } from 'react-native';
+import { Dimensions, StyleSheet, Platform } from 'react-native';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -57,41 +57,43 @@ export const commentSectionStyles = StyleSheet.create({
     width: '100%',
     position: 'absolute',
     bottom: 0,
+    backgroundColor: 'transparent',
   },
   commentContainer: {
-    height: Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.52 : SCREEN_HEIGHT * 0.53,
+    height: '100%', // Use full available space
     width: '100%',
     position: 'absolute',
     bottom: 0,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    backgroundColor: 'transparent', // Seamless header
+    // No border
   },
   headerText: {
-    fontFamily: 'Domine',
-    fontSize: 16,
+    fontFamily: 'Geist-Medium',
+    fontSize: 18,
+    color: '#000',
   },
   commentList: {
     flex: 1,
+    paddingHorizontal: 0, // Edge to edge or slightly padded? Reference shows edge to edge with padding in items
   },
   expandableInputContainer: {
-    flex: 1,
-    backgroundColor: "white",
-    borderRadius: 24,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    // Moved inline to component for flexibility
   },
   replyingToInner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 4,
+    paddingBottom: 4,
   },
   replyingToText: {
     fontFamily: 'Geist',
@@ -101,8 +103,8 @@ export const commentSectionStyles = StyleSheet.create({
   inputContainer: {
     width: SCREEN_WIDTH,
     position: "absolute",
-    height: INPUT_CONTAINER_HEIGHT,
     bottom: 0,
+    //Height controlled by content now
   },
   inputField: {
     width: SCREEN_WIDTH,
@@ -117,8 +119,6 @@ export const commentSectionStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    // height: "100%",
-    height: 68
   },
   commentIcon: {
     width: 40,

@@ -1,0 +1,1371 @@
+Could not find a shared URI scheme for the dev client between the local /ios and /android directories. App launches (QR code, interstitial, terminal keys) may not work as expected. You can configure a custom scheme using the --scheme option, or by running npx expo prebuild to regenerate the native directories with URI schemes.
+Starting project at /Users/basith/Documents/whatsay-app-main
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Android Bundled 9370ms node_modules/expo-router/entry.js (1942 modules)
+ LOG  [DiscoverScreen] Fetching categories...
+ LOG  [Categories] Fetching from ingestion platform...
+λ Bundled 10730ms node_modules/expo-router/node/render.js (1697 modules)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:17:54)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:18:29)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:18:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:502:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:29:27)
+Web Bundled 12635ms node_modules/expo-router/entry.js (1589 modules)
+Error storing data ReferenceError: window is not defined
+    at getValue (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:52)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:12)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:98:28)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:87:7)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+λ Bundled 69ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:17:54)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:18:29)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:18:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:502:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:29:27)
+Error storing data ReferenceError: window is not defined
+    at getValue (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:52)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:39:21
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:37:10)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:69:12)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:98:28)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:87:7)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 483ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 4625ms node_modules/expo-router/entry.js (1589 modules)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+λ Bundled 172ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:31:48)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:24:193)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:16:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:5:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:46:21)
+Error storing data ReferenceError: window is not defined
+    at reject (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:85:1)
+    at errors (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:55:20)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:53:6)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:85:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:118:23)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:105:3)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1360ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 191ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:31:48)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:24:193)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:16:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:5:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:46:21)
+Error storing data ReferenceError: window is not defined
+    at reject (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:85:1)
+    at errors (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:55:20)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:53:6)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:85:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:118:23)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:105:3)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 61ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 610ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+λ Bundled 116ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:31:48)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:24:193)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:16:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:5:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:46:21)
+Error storing data ReferenceError: window is not defined
+    at reject (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:85:1)
+    at errors (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:55:20)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:53:6)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:85:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:118:23)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:105:3)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1134ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 189ms node_modules/expo-router/node/render.js (1 module)
+Web Bundled 60ms node_modules/expo-router/entry.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:31:48)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:24:193)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:16:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:5:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:46:21)
+Error storing data ReferenceError: window is not defined
+    at reject (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:85:1)
+    at errors (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:55:20)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:53:6)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:85:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:118:23)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:105:3)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 593ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+λ Bundled 100ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:36:25)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:26:22)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:16:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:5:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:46:21)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:89:3
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:59:3
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:57:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:89:3)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:118:23)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:105:3)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1288ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 205ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:36:25)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:26:22)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:16:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:5:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:46:21)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:89:3
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:59:3
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:57:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:89:3)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:118:23)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:105:3)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 532ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 65ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+λ Bundled 131ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:39:52)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:29:27)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:21:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:8:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:49:17)
+Error storing data ReferenceError: window is not defined
+    at callback (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:92:27)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:62:18
+    at new Promise (<anonymous>)
+    at getAllKeys (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:60:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:92:3)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:122:6)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:109:5)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1132ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 92ms node_modules/expo-router/node/render.js (1 module)
+Web Bundled 116ms node_modules/expo-router/entry.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:39:52)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:29:27)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:21:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:8:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:49:17)
+Error storing data ReferenceError: window is not defined
+    at callback (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:92:27)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:62:18
+    at new Promise (<anonymous>)
+    at getAllKeys (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:60:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:92:3)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:122:6)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:109:5)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 599ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+λ Bundled 29ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:39:52)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:29:27)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:21:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:8:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:49:17)
+Error storing data ReferenceError: window is not defined
+    at callback (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:92:27)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:62:18
+    at new Promise (<anonymous>)
+    at getAllKeys (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:60:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:92:3)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:122:6)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:109:5)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 618ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 42ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js:39:52)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:29:27)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:21:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:8:1)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (components/glossyButton.tsx:49:17)
+Error storing data ReferenceError: window is not defined
+    at callback (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:92:27)
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:62:18
+    at new Promise (<anonymous>)
+    at getAllKeys (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:60:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:92:3)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:122:6)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/createPersistoid.js:109:5)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 389ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 58ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+Android Bundled 1113ms node_modules/expo-router/entry.js (1 module)
+ LOG  [DiscoverScreen] Fetching categories...
+ LOG  [Categories] Fetching from ingestion platform...
+ LOG  Terms accepted
+λ Bundled 757ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/TapGestureHandler.js:16:109)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:153:28)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at _interopRequireDefault (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at useAsyncStorage (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:8:10)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:6:9)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 2209ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 61ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/TapGestureHandler.js:16:109)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:153:28)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at _interopRequireDefault (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at useAsyncStorage (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:8:10)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:6:9)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 68ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 558ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+Android Bundled 131ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 93ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/TapGestureHandler.js:16:109)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:153:28)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at _interopRequireDefault (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at useAsyncStorage (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:8:10)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:6:9)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1419ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 69ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/TapGestureHandler.js:16:109)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:153:28)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at _interopRequireDefault (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at useAsyncStorage (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:8:10)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:6:9)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 415ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 64ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+λ Bundled 123ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/TapGestureHandler.js:16:109)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:153:28)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at _interopRequireDefault (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at useAsyncStorage (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:8:10)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:6:9)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1100ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 26ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/TapGestureHandler.js:16:109)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:153:28)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at _interopRequireDefault (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at useAsyncStorage (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:8:10)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:6:9)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 323ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 52ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/TapGestureHandler.js:16:109)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:153:28)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at _interopRequireDefault (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at useAsyncStorage (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:8:10)
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:6:9)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-firebase/app/node_modules/firebase/app/dist/index.cjs.js:16:1)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 447ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 76ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+Android Bundled 4921ms node_modules/expo-router/entry.js (1 module)
+ LOG  [DiscoverScreen] Fetching categories...
+ LOG  [Categories] Fetching from ingestion platform...
+ LOG  [Categories] Got 8 categories
+ LOG  [Ingestion] Fetching articles for category: all
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&limit=20
+ LOG  [Ingestion] Fetching articles for category: business
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=business&limit=20
+ LOG  [Ingestion] Fetching articles for category: sports
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=sports&limit=20
+ LOG  [Ingestion] Fetching articles for category: technology
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=technology&limit=20
+ LOG  [Ingestion] Fetching articles for category: entertainment
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=entertainment&limit=20
+ LOG  [Ingestion] Fetching articles for category: science
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=science&limit=20
+ LOG  [Ingestion] Fetching articles for category: health
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=health&limit=20
+ LOG  [Ingestion] Fetching articles for category: world
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=world&limit=20
+ LOG  [Ingestion] Received 20 items
+ LOG  [Ingestion] Returning 20 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Categories] Returning 4 categories with articles
+ LOG  [DiscoverScreen] Got 4 categories
+ LOG  [Ingestion] Fetching articles for category: all
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&limit=20
+ LOG  [Ingestion] Fetching articles for category: business
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=business&limit=20
+ LOG  [Ingestion] Fetching articles for category: sports
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=sports&limit=20
+ LOG  [Ingestion] Fetching articles for category: technology
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=technology&limit=20
+ LOG  [Ingestion] Received 20 items
+ LOG  [Ingestion] Returning 20 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+λ Bundled 5675ms node_modules/expo-router/node/render.js (1 module)
+λ Bundled 200ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1466ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 7012ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 57ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 397ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 60ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+info Opening /Users/basith/Documents/whatsay-app-main/node_modules/@react-navigation/native-stack/lib/module/navigators/createNativeStackNavigator.js with code
+error spawn code ENOENT
+info 
+ How to fix: 
+  When you see Red Box with stack trace, you can click any 
+  stack frame to jump to the source file. The packager will launch your 
+  editor of choice. It will first look at REACT_EDITOR environment 
+  variable, then at EDITOR.
+  To set it up, you can add something like 
+  export REACT_EDITOR=atom to your ~/.bashrc or ~/.zshrc depending on 
+  which shell you use.
+
+info Opening /Users/basith/Documents/whatsay-app-main/node_modules/@react-navigation/native-stack/lib/module/navigators/createNativeStackNavigator.js with code
+error spawn code ENOENT
+info 
+ How to fix: 
+  When you see Red Box with stack trace, you can click any 
+  stack frame to jump to the source file. The packager will launch your 
+  editor of choice. It will first look at REACT_EDITOR environment 
+  variable, then at EDITOR.
+  To set it up, you can add something like 
+  export REACT_EDITOR=atom to your ~/.bashrc or ~/.zshrc depending on 
+  which shell you use.
+
+λ Bundled 108ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1020ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 344ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 673ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 66ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+Android Bundled 242ms node_modules/expo-router/entry.js (1 module)
+ LOG  [DiscoverScreen] Fetching categories...
+ LOG  [Categories] Fetching from ingestion platform...
+ LOG  [Categories] Got 8 categories
+ LOG  [Ingestion] Fetching articles for category: all
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&limit=20
+ LOG  [Ingestion] Fetching articles for category: business
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=business&limit=20
+ LOG  [Ingestion] Fetching articles for category: sports
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=sports&limit=20
+ LOG  [Ingestion] Fetching articles for category: technology
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=technology&limit=20
+ LOG  [Ingestion] Fetching articles for category: entertainment
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=entertainment&limit=20
+ LOG  [Ingestion] Fetching articles for category: science
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=science&limit=20
+ LOG  [Ingestion] Fetching articles for category: health
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=health&limit=20
+ LOG  [Ingestion] Fetching articles for category: world
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=world&limit=20
+ LOG  [Ingestion] Received 20 items
+ LOG  [Ingestion] Returning 20 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Categories] Returning 4 categories with articles
+ LOG  [DiscoverScreen] Got 4 categories
+ LOG  [Ingestion] Fetching articles for category: all
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&limit=20
+ LOG  [Ingestion] Fetching articles for category: business
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=business&limit=20
+ LOG  [Ingestion] Fetching articles for category: sports
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=sports&limit=20
+ LOG  [Ingestion] Fetching articles for category: technology
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=technology&limit=20
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 20 items
+ LOG  [Ingestion] Returning 20 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Fetching articles for category: all
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&limit=20
+ LOG  [Ingestion] Received 20 items
+ LOG  [Ingestion] Returning 20 articles
+ ERROR  TypeError: _reactNativeGestureHandler.Gestu(...)e;return anonymous;}()).onCancel is not a function (it is undefined)
+
+This error is located at:
+    in ExpandNewsItem (created by NewsDetails)
+    in RCTView (created by View)
+    in View (created by AnimatedComponent(View))
+    in AnimatedComponent(View)
+    in Unknown (created by PanGestureHandler)
+    in PanGestureHandler (created by NewsDetails)
+    in RNGestureHandlerRootView (created by GestureHandlerRootView)
+    in GestureHandlerRootView (created by NewsDetails)
+    in NewsDetails
+    in Unknown (created by Route((news)/[slug]))
+    in Suspense (created by Route((news)/[slug]))
+    in Route (created by Route((news)/[slug]))
+    in Route((news)/[slug]) (created by SceneView)
+    in StaticContainer
+    in EnsureSingleNavigator (created by SceneView)
+    in SceneView (created by SceneView)
+    in RCTView (created by View)
+    in View (created by DebugContainer)
+    in DebugContainer (created by MaybeNestedStack)
+    in MaybeNestedStack (created by SceneView)
+    in RCTView (created by View)
+    in View (created by SceneView)
+    in RNSScreen (created by Animated(Anonymous))
+    in Animated(Anonymous) (created by InnerScreen)
+    in Suspender (created by Freeze)
+    in Suspense (created by Freeze)
+    in Freeze (created by DelayedFreeze)
+    in DelayedFreeze (created by InnerScreen)
+    in InnerScreen (created by Screen)
+    in Screen (created by SceneView)
+    in SceneView (created by NativeStackViewInner)
+    in Suspender (created by Freeze)
+    in Suspense (created by Freeze)
+    in Freeze (created by DelayedFreeze)
+    in DelayedFreeze (created by ScreenStack)
+    in RNSScreenStack (created by ScreenStack)
+    in ScreenStack (created by NativeStackViewInner)
+    in NativeStackViewInner (created by NativeStackView)
+    in RCTView (created by View)
+    in View (created by SafeAreaProviderCompat)
+    in SafeAreaProviderCompat (created by NativeStackView)
+    in NativeStackView (created by NativeStackNavigator)
+    in PreventRemoveProvider (created by NavigationContent)
+    in NavigationContent
+    in Unknown (created by NativeStackNavigator)
+    in NativeStackNavigator
+    in Unknown (created by RootLayout)
+    in RNGestureHandlerRootView (created by GestureHandlerRootView)
+    in GestureHandlerRootView (created by RootLayout)
+    in RNCSafeAreaProvider (created by SafeAreaProvider)
+    in SafeAreaProvider (created by RootLayout)
+    in AuthProvider (created by RootLayout)
+    in FirebaseAuthProvider (created by RootLayout)
+    in PersistGate (created by RootLayout)
+    in Provider (created by RootLayout)
+    in RootLayout
+    in Unknown (created by Route())
+    in Suspense (created by Route())
+    in Route (created by Route())
+    in Route() (created by ContextNavigator)
+    in RNCSafeAreaProvider (created by SafeAreaProvider)
+    in SafeAreaProvider (created by wrapper)
+    in wrapper (created by ContextNavigator)
+    in EnsureSingleNavigator
+    in BaseNavigationContainer
+    in ThemeProvider
+    in NavigationContainerInner (created by ContextNavigator)
+    in ContextNavigator (created by ExpoRoot)
+    in ExpoRoot (created by App)
+    in App (created by ErrorOverlay)
+    in ErrorToastContainer (created by ErrorOverlay)
+    in ErrorOverlay (created by withDevTools(ErrorOverlay))
+    in withDevTools(ErrorOverlay)
+    in RCTView (created by View)
+    in View (created by AppContainer)
+    in RCTView (created by View)
+    in View (created by AppContainer)
+    in AppContainer
+    in main(RootComponent), js engine: hermes
+λ Bundled 95ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+λ Bundled 507ms node_modules/expo-router/node/render.js (1 module)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1924ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 859ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 57ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 447ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 72ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)
+Android Bundled 222ms node_modules/expo-router/entry.js (1 module)
+ LOG  [DiscoverScreen] Fetching categories...
+ LOG  [Categories] Fetching from ingestion platform...
+ LOG  [Categories] Got 8 categories
+ LOG  [Ingestion] Fetching articles for category: all
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&limit=20
+ LOG  [Ingestion] Fetching articles for category: business
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=business&limit=20
+ LOG  [Ingestion] Fetching articles for category: sports
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=sports&limit=20
+ LOG  [Ingestion] Fetching articles for category: technology
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=technology&limit=20
+ LOG  [Ingestion] Fetching articles for category: entertainment
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=entertainment&limit=20
+ LOG  [Ingestion] Fetching articles for category: science
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=science&limit=20
+ LOG  [Ingestion] Fetching articles for category: health
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=health&limit=20
+ LOG  [Ingestion] Fetching articles for category: world
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=world&limit=20
+ LOG  [Ingestion] Received 20 items
+ LOG  [Ingestion] Returning 20 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Ingestion] Received 0 items
+ LOG  [Ingestion] Returning 0 articles
+ LOG  [Categories] Returning 4 categories with articles
+ LOG  [DiscoverScreen] Got 4 categories
+ LOG  [Ingestion] Fetching articles for category: all
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&limit=20
+ LOG  [Ingestion] Fetching articles for category: business
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=business&limit=20
+ LOG  [Ingestion] Fetching articles for category: sports
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=sports&limit=20
+ LOG  [Ingestion] Fetching articles for category: technology
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&category=technology&limit=20
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 20 items
+ LOG  [Ingestion] Returning 20 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Received 10 items
+ LOG  [Ingestion] Returning 10 articles
+ LOG  [Ingestion] Fetching articles for category: all
+ LOG  [Ingestion] Fetching feed from: http://192.168.0.103:3002/api/feed?source=inshorts&limit=20
+ LOG  [Ingestion] Received 20 items
+ LOG  [Ingestion] Returning 20 articles
+ ERROR  TypeError: _reactNativeGestureHandler.Gestu(...)e;return anonymous;}()).onCancel is not a function (it is undefined)
+
+This error is located at:
+    in ExpandNewsItem (created by NewsDetails)
+    in RCTView (created by View)
+    in View (created by AnimatedComponent(View))
+    in AnimatedComponent(View)
+    in Unknown (created by PanGestureHandler)
+    in PanGestureHandler (created by NewsDetails)
+    in RNGestureHandlerRootView (created by GestureHandlerRootView)
+    in GestureHandlerRootView (created by NewsDetails)
+    in NewsDetails
+    in Unknown (created by Route((news)/[slug]))
+    in Suspense (created by Route((news)/[slug]))
+    in Route (created by Route((news)/[slug]))
+    in Route((news)/[slug]) (created by SceneView)
+    in StaticContainer
+    in EnsureSingleNavigator (created by SceneView)
+    in SceneView (created by SceneView)
+    in RCTView (created by View)
+    in View (created by DebugContainer)
+    in DebugContainer (created by MaybeNestedStack)
+    in MaybeNestedStack (created by SceneView)
+    in RCTView (created by View)
+    in View (created by SceneView)
+    in RNSScreen (created by Animated(Anonymous))
+    in Animated(Anonymous) (created by InnerScreen)
+    in Suspender (created by Freeze)
+    in Suspense (created by Freeze)
+    in Freeze (created by DelayedFreeze)
+    in DelayedFreeze (created by InnerScreen)
+    in InnerScreen (created by Screen)
+    in Screen (created by SceneView)
+    in SceneView (created by NativeStackViewInner)
+    in Suspender (created by Freeze)
+    in Suspense (created by Freeze)
+    in Freeze (created by DelayedFreeze)
+    in DelayedFreeze (created by ScreenStack)
+    in RNSScreenStack (created by ScreenStack)
+    in ScreenStack (created by NativeStackViewInner)
+    in NativeStackViewInner (created by NativeStackView)
+    in RCTView (created by View)
+    in View (created by SafeAreaProviderCompat)
+    in SafeAreaProviderCompat (created by NativeStackView)
+    in NativeStackView (created by NativeStackNavigator)
+    in PreventRemoveProvider (created by NavigationContent)
+    in NavigationContent
+    in Unknown (created by NativeStackNavigator)
+    in NativeStackNavigator
+    in Unknown (created by RootLayout)
+    in RNGestureHandlerRootView (created by GestureHandlerRootView)
+    in GestureHandlerRootView (created by RootLayout)
+    in RNCSafeAreaProvider (created by SafeAreaProvider)
+    in SafeAreaProvider (created by RootLayout)
+    in AuthProvider (created by RootLayout)
+    in FirebaseAuthProvider (created by RootLayout)
+    in PersistGate (created by RootLayout)
+    in Provider (created by RootLayout)
+    in RootLayout
+    in Unknown (created by Route())
+    in Suspense (created by Route())
+    in Route (created by Route())
+    in Route() (created by ContextNavigator)
+    in RNCSafeAreaProvider (created by SafeAreaProvider)
+    in SafeAreaProvider (created by wrapper)
+    in wrapper (created by ContextNavigator)
+    in EnsureSingleNavigator
+    in BaseNavigationContainer
+    in ThemeProvider
+    in NavigationContainerInner (created by ContextNavigator)
+    in ContextNavigator (created by ExpoRoot)
+    in ExpoRoot (created by App)
+    in App (created by ErrorOverlay)
+    in ErrorToastContainer (created by ErrorOverlay)
+    in ErrorOverlay (created by withDevTools(ErrorOverlay))
+    in withDevTools(ErrorOverlay)
+    in RCTView (created by View)
+    in View (created by AppContainer)
+    in RCTView (created by View)
+    in View (created by AppContainer)
+    in AppContainer
+    in main(RootComponent), js engine: hermes
+λ Bundled 131ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 1638ms node_modules/expo-router/entry.js (1 module)
+λ Bundled 55ms node_modules/expo-router/node/render.js (1 module)
+λ  WARN  Require cycle: node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/Gestures.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/PanGestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js -> node_modules/react-native-gesture-handler/lib/commonjs/handlers/gestureHandlerCommon.js -> node_modules/react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule.web.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/ghQueueMicrotask.js:11:45)
+  factory (node_modules/react-native-gesture-handler/lib/commonjs/web/handlers/GestureHandler.js:127:5)
+λ  WARN  Require cycle: node_modules/@react-native-firebase/auth/lib/index.js -> node_modules/@react-native-firebase/auth/lib/modular/index.js -> node_modules/@react-native-firebase/auth/lib/index.js
+
+Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle. 
+  factory (node_modules/@react-native-firebase/auth/lib/modular/index.js:114:1)
+  factory (node_modules/@react-native-firebase/auth/lib/index.js:161:3)
+λ  LOG  Firebase Web Initialized
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  StyleSheetRuntime.create (node_modules/nativewind/dist/style-sheet/runtime.js:393:66)
+  factory (app/(tabs)/profile/preferences.tsx:260:33)
+λ  WARN  "textShadow*" style props are deprecated. Use "textShadow". 
+  Function.create (node_modules/expo-router/node/render.js.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&resolver.environment=node&transform.environment=node:100508:25)
+  factory (assets/images/profileIcons/privacy.webp:1:268)
+Error storing data ReferenceError: window is not defined
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4
+    at /Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:136:1
+    at new Promise (<anonymous>)
+    at createPromise (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/AsyncStorage.js:134:1)
+    at Object.setItem (/Users/basith/Documents/whatsay-app-main/node_modules/@react-native-async-storage/async-storage/lib/commonjs/hooks.js:15:4)
+    at writeStagedState (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/stateReconciler/autoMergeLevel2.js:1:13)
+    at Timeout.processNextKey [as _onTimeout] (/Users/basith/Documents/whatsay-app-main/node_modules/redux-persist/lib/persistCombineReducers.js:12:93)
+    at listOnTimeout (node:internal/timers:608:17)
+    at processTimers (node:internal/timers:543:7)
+Web Bundled 63ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 464ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Error: ENOENT: no such file or directory, open './assets/images/favicon.png'
+    at Object.openSync (node:fs:563:18)
+    at readFileSync (node:fs:447:35)
+    at calculateHash (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:13:73)
+    at createCacheKey (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:19:16)
+    at Object.createCacheKeyWithDirectoryAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Cache.ts:28:31)
+    at generateImageAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/image-utils/src/Image.ts:182:32)
+    at getFaviconFromExpoConfigAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/export/favicon.ts:83:24)
+    at FaviconMiddleware.handleRequestAsync (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/FaviconMiddleware.ts:29:20)
+    at internalMiddleware (/Users/basith/Documents/whatsay-app-main/node_modules/@expo/cli/src/start/server/middleware/ExpoMiddleware.ts:44:16)

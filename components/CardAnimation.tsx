@@ -56,26 +56,24 @@ export const Card: React.FC<CardProps> = ({
     mass: 0.5,
   }), []);
 
-  const getRotationValues = (categoryIdx: number) => {
-    switch (categoryIdx) {
-      case 0:
-        return { first: [-10, 0, 10], rest: [3, 0, 0] };
-      case 1:
-        return { first: [-10, 0, 10], rest: [-3, 0, 0] };
-      case 2:
-        return { first: [-10, 0, 10], rest: [0, 0, 0] };
-      case 3:
-        return { first: [-10, 0, 10], rest: [3, 0, 0] };
-      case 4:
-        return { first: [-10, 0, 10], rest: [-3, 0, 0] };
-      case 5:
-        return { first: [-10, 0, 10], rest: [0, 0, 0] };
-      default:
-        return { first: [-10, 0, 10], rest: [3, 0, -3] };
-    }
+  // Deterministic random generator based on seed (id)
+  const pseudoRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
   };
 
-  const rotationValues = getRotationValues(categoryIndex ? categoryIndex : 0);
+  const getRotationValues = (id: number) => {
+    // Generate a random rotation between -6 and 6 degrees
+    // Use card ID as seed so it's consistent for the same card
+    const randomSeed = pseudoRandom(id * 9999);
+    const angle = (randomSeed * 12) - 6;
+
+    // For the first card (active), we use standard interaction values
+    // For resting cards, we use the random angle
+    return { first: [-15, 0, 15], rest: [angle, 0, -angle / 2] };
+  };
+
+  const rotationValues = getRotationValues(card.id);
 
   const removeCard = useCallback((direction: 'left' | 'right') => {
     'worklet';
@@ -102,7 +100,7 @@ export const Card: React.FC<CardProps> = ({
           const { velocityX } = event;
           const velocityThreshold = 500; // Emil's pattern: velocity-based decisions
           const distanceThreshold = SCREEN_WIDTH * 0.35; // Slightly lower for better UX
-          
+
           // Emil's pattern: Use velocity for more natural feel
           if (Math.abs(velocityX) > velocityThreshold || Math.abs(translateX.value) > distanceThreshold) {
             const direction = translateX.value > 0 ? 'right' : 'left';
@@ -193,7 +191,7 @@ export const Card: React.FC<CardProps> = ({
   const animatedImageStyle = useAnimatedStyle(() => {
     'worklet';
     if (!isFirst) return {};
-    
+
     // Emil's pattern: Use Extrapolate.CLAMP for better performance
     const parallaxX = interpolate(
       translateX.value,
@@ -201,7 +199,7 @@ export const Card: React.FC<CardProps> = ({
       [-30, 0, 30], // Shift image 30px opposite to movement for depth
       Extrapolate.CLAMP
     );
-    
+
     // Add subtle scale for depth effect (Emil's pattern)
     const parallaxScale = interpolate(
       Math.abs(translateX.value),
@@ -209,7 +207,7 @@ export const Card: React.FC<CardProps> = ({
       [1, 1.05],
       Extrapolate.CLAMP
     );
-    
+
     return {
       transform: [
         { translateX: parallaxX },

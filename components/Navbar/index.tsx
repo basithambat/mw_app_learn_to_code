@@ -32,16 +32,17 @@ const NavBar = () => {
     <View className="absolute top-0 left-0 right-0 z-50 ">
       <View className="flex-row justify-between items-center pt-20 px-[18px] pb-5 rounded-b-[40px] bg-white ">
         <TouchableOpacity onPress={handleProfilePress}>
-          {userProfilePic ? (  // Check if profile pic exists
+          {userProfilePic ? (  // Check if user has a profile pic
             <Image
               source={{ uri: userProfilePic }}
-              className="w-[40px] h-[40px] rounded-full"
+              className="rounded-full"
+              style={{ width: 40, height: 40 }}
               resizeMode="cover"
             />
           ) : (
             <Image
               source={menuIcon}
-              className="w-[40px] h-[40px]"
+              style={{ width: 40, height: 40 }}
               resizeMode="contain"
             />
           )}

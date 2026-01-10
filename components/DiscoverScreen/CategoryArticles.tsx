@@ -150,15 +150,16 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
             };
         }
 
-        // Mobile: minimal, precise spacing
+
+        // Mobile: "Airbnb" style spacious design
         const mobileContainerHeight = Platform.OS === 'ios'
-            ? Math.max(388, baseContainerHeight)
-            : Math.max(260, baseContainerHeight);
+            ? Math.max(420, baseContainerHeight + 40) // Added 40px buffer
+            : Math.max(300, baseContainerHeight + 40);
 
         return {
             containerHeight: mobileContainerHeight,
             containerPadding: 0,
-            marginBottom: 8 // Reduced gap between categories (was 20px)
+            marginBottom: 32 // Increased gap between categories (was 8/20px) for elegance
         };
     };
 

@@ -32,107 +32,146 @@ export async function generateTodayEdition(
   dateLocal: string
 ): Promise<EditionGenerationResult> {
   const editionId = dateLocal; // "YYYY-MM-DD"
-  
-  // Check if edition already exists
-  const existing = await prisma.edition.findUnique({
-    where: { editionId },
-  });
 
-  if (existing && existing.mode === 'fixed') {
-    // Return existing edition
-    return getExistingEdition(editionId);
-  }
+  try {
+    // Check if edition already exists
+    const existing = await prisma.edition.findUnique({
+      where: { editionId },
+    });
 
-  // Get user preferences
-  const preferences = await prisma.categoryPreference.findMany({
-    where: { userId, enabled: true },
-    orderBy: { manualOrder: 'asc' },
-  });
-
-  // Get must-know stories (importance >= 85, top 5)
-  const mustKnowStories = await prisma.contentItem.findMany({
-    where: {
-      sourceId: 'inshorts',
-      // We'll calculate importance from existing data
-      // For now, use recent high-quality items
-    },
-    orderBy: { createdAt: 'desc' },
-    take: MUST_KNOW_COUNT * 2, // Get more to filter
-  });
-
-  // Filter and rank must-know (simplified - use recent important items)
-  const selectedMustKnow = mustKnowStories.slice(0, MUST_KNOW_COUNT);
-
-  // Allocate remaining slots by category preferences
-  const remainingSlots = DAILY_EDITION_SIZE - MUST_KNOW_COUNT;
-  const categoryQuotas = calculateCategoryQuotas(preferences, remainingSlots);
-
-  const categoryStories: ContentItem[] = [];
-  
-  for (const pref of preferences.slice(0, 7)) { // Top 7 categories
-    const quota = categoryQuotas[pref.categoryId] || 0;
-    if (quota > 0) {
-      const stories = await prisma.contentItem.findMany({
-        where: {
-          sourceId: 'inshorts',
-          sourceCategory: pref.categoryId,
-        },
-        orderBy: { createdAt: 'desc' },
-        take: quota * 2, // Get more to filter
-      });
-      categoryStories.push(...stories.slice(0, quota));
+    if (existing && existing.mode === 'fixed') {
+      // Return existing edition
+      return getExistingEdition(editionId);
     }
-  }
 
-  // Combine and dedupe
-  const allStories = [...selectedMustKnow, ...categoryStories];
-  const uniqueStories = Array.from(
-    new Map(allStories.map(s => [s.id, s])).values()
-  ).slice(0, DAILY_EDITION_SIZE);
+    // Get user preferences
+    const preferences = await prisma.categoryPreference.findMany({
+      where: { userId, enabled: true },
+      orderBy: { manualOrder: 'asc' },
+    });
 
-  // Create edition
-  const cutoffAt = new Date(dateLocal);
-  cutoffAt.setHours(23, 59, 59, 999);
+    // Get must-know stories (importance >= 85, top 5)
+    const mustKnowStories = await prisma.contentItem.findMany({
+      where: {
+        sourceId: 'inshorts',
+        // We'll calculate importance from existing data
+        // For now, use recent high-quality items
+      },
+      orderBy: { createdAt: 'desc' },
+      take: MUST_KNOW_COUNT * 2, // Get more to filter
+    });
 
-  await prisma.edition.upsert({
-    where: { editionId },
-    create: {
+    // Filter and rank must-know (simplified - use recent important items)
+    const selectedMustKnow = mustKnowStories.slice(0, MUST_KNOW_COUNT);
+
+    // Allocate remaining slots by category preferences
+    const remainingSlots = DAILY_EDITION_SIZE - MUST_KNOW_COUNT;
+    const categoryQuotas = calculateCategoryQuotas(preferences, remainingSlots);
+
+    const categoryStories: ContentItem[] = [];
+
+    for (const pref of preferences.slice(0, 7)) { // Top 7 categories
+      const quota = categoryQuotas[pref.categoryId] || 0;
+      if (quota > 0) {
+        const stories = await prisma.contentItem.findMany({
+          where: {
+            sourceId: 'inshorts',
+            sourceCategory: pref.categoryId,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: quota * 2, // Get more to filter
+        });
+        categoryStories.push(...stories.slice(0, quota));
+      }
+    }
+
+    // Combine and dedupe
+    const allStories = [...selectedMustKnow, ...categoryStories];
+    const uniqueStories = Array.from(
+      new Map(allStories.map(s => [s.id, s])).values()
+    ).slice(0, DAILY_EDITION_SIZE);
+
+    if (uniqueStories.length === 0) {
+      throw new Error("No stories found for today's edition");
+    }
+
+    // Create edition
+    const cutoffAt = new Date(dateLocal);
+    cutoffAt.setHours(23, 59, 59, 999);
+
+    await prisma.edition.upsert({
+      where: { editionId },
+      create: {
+        editionId,
+        dateLocal,
+        timezone,
+        publishedAt: new Date(),
+        cutoffAt,
+        mode: 'semi_live',
+        version: 1,
+      },
+      update: {},
+    });
+
+    // Create edition stories
+    const editionStories = uniqueStories.map((story, index) => ({
       editionId,
-      dateLocal,
-      timezone,
-      publishedAt: new Date(),
-      cutoffAt,
-      mode: 'semi_live',
-      version: 1,
-    },
-    update: {},
-  });
+      storyId: story.id,
+      rank: index + 1,
+      addedAt: new Date(),
+      reason: index < MUST_KNOW_COUNT ? 'must_know' : 'personalized',
+      updateCount: 0,
+      lastUpdatedAt: new Date(),
+    }));
 
-  // Create edition stories
-  const editionStories = uniqueStories.map((story, index) => ({
-    editionId,
-    storyId: story.id,
-    rank: index + 1,
-    addedAt: new Date(),
-    reason: index < MUST_KNOW_COUNT ? 'must_know' : 'personalized',
-    updateCount: 0,
-    lastUpdatedAt: new Date(),
-  }));
+    await prisma.editionStory.createMany({
+      data: editionStories,
+      skipDuplicates: true,
+    });
 
-  await prisma.editionStory.createMany({
-    data: editionStories,
-    skipDuplicates: true,
-  });
+    return {
+      editionId,
+      stories: uniqueStories,
+      editionStories: editionStories.map(es => ({
+        storyId: es.storyId,
+        rank: es.rank,
+        reason: es.reason,
+      })),
+    };
 
-  return {
-    editionId,
-    stories: uniqueStories,
-    editionStories: editionStories.map(es => ({
-      storyId: es.storyId,
-      rank: es.rank,
-      reason: es.reason,
-    })),
-  };
+  } catch (error) {
+    console.error(`[EditionGenerator] Failed to generate edition for ${dateLocal}:`, error);
+
+    // Fallback: Get most recent successful edition
+    const lastEdition = await prisma.edition.findFirst({
+      where: {
+        editionId: { not: editionId }, // Don't return the broken one we just tried to make
+      },
+      orderBy: { publishedAt: 'desc' },
+      include: {
+        editionStories: {
+          include: { story: true },
+          orderBy: { rank: 'asc' },
+        },
+      },
+    });
+
+    if (!lastEdition) {
+      throw error;
+    }
+
+    console.warn(`[EditionGenerator] Serving fallback edition: ${lastEdition.editionId}`);
+
+    return {
+      editionId: lastEdition.editionId,
+      stories: lastEdition.editionStories.map(es => es.story),
+      editionStories: lastEdition.editionStories.map(es => ({
+        storyId: es.storyId,
+        rank: es.rank,
+        reason: es.reason,
+      })),
+    };
+  }
 }
 
 function calculateCategoryQuotas(
@@ -140,19 +179,19 @@ function calculateCategoryQuotas(
   totalSlots: number
 ): Record<string, number> {
   const quotas: Record<string, number> = {};
-  
+
   // Top 3 categories: 2 each
   // Next 4: 1 each
   // Remainder: distribute
-  
+
   for (let i = 0; i < Math.min(3, preferences.length); i++) {
     quotas[preferences[i].categoryId] = 2;
   }
-  
+
   for (let i = 3; i < Math.min(7, preferences.length); i++) {
     quotas[preferences[i].categoryId] = 1;
   }
-  
+
   return quotas;
 }
 

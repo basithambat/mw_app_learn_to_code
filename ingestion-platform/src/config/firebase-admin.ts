@@ -18,10 +18,21 @@ export function initFirebaseAdmin() {
   try {
     // Option 1: Use service account JSON file (if provided)
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
+      try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+        // Ensure private key has correct newline formatting
+        if (serviceAccount.private_key) {
+          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
+
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+        });
+      } catch (parseError) {
+        console.error('❌ Failed to parse FIREBASE_SERVICE_ACCOUNT JSON. Ensure it is a valid single-line JSON string.');
+        throw parseError;
+      }
     }
     // Option 2: Use GOOGLE_APPLICATION_CREDENTIALS env var
     else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
@@ -48,8 +59,12 @@ export function initFirebaseAdmin() {
 
     initialized = true;
     console.log('✅ Firebase Admin initialized');
-  } catch (error) {
-    console.error('❌ Firebase Admin initialization failed:', error);
+  } catch (error: any) {
+    if (error.code === 'app/invalid-credential' || error.message?.includes('ASN.1')) {
+      console.error('❌ Firebase Admin initialization failed: Invalid service account credential. Check your private key format.');
+    } else {
+      console.error('❌ Firebase Admin initialization failed:', error.message || error);
+    }
     // Don't throw - allow app to continue without Firebase Admin
     // (useful for development or if Firebase is optional)
   }

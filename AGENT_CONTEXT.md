@@ -15,6 +15,22 @@
 
 ---
 
+## 🛑 STANDING INSTRUCTIONS (COST & ARCHITECTURE)
+
+**1. Cost Impact Checks**
+> [!IMPORTANT]
+> **ANY change that adds resources, processes, or external calls MUST be evaluated for cost increases.**
+> - **Before proceeding**, you MUST inform the user if a change (e.g., adding workers, new cloud services, frequent polling) increases cloud costs.
+> - **Confirm** with the user before implementing "always-on" or "auto-scaling" features.
+
+**2. Backend Architecture Rule**
+> The backend follows a **Producer-Consumer** pattern.
+> - **API (Producer)**: Runs on port 3002. Handles HTTP requests.
+> - **Worker (Consumer)**: Runs separately. Processes background jobs (Ingestion).
+> - **Local Dev**: ALWAYS run both. Use `npm run dev:all` in `ingestion-platform`.
+
+---
+
 ## 🎯 Project Overview
 
 **WhatSay App** is a React Native news aggregation platform with:
@@ -176,11 +192,12 @@
    - Copy `ingestion-platform/env.example` to `ingestion-platform/.env`
    - Fill in values (see `CREDENTIALS_AND_CONFIG.md`)
 
-5. **Start backend:**
+5. **Start backend (API + Worker):**
    ```bash
    cd ingestion-platform
-   npm run dev
-   # Runs on http://localhost:3000
+   npm run dev:all
+   # Runs API on http://localhost:3002 AND Worker process concurrently
+   # Logs for both will appear in the same terminal
    ```
 
 6. **Start frontend:**

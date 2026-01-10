@@ -1,20 +1,64 @@
 /**
  * Firebase Authentication Service
- * Unified authentication using Firebase Auth
+ * Unified authentication using Firebase Auth (Web & Native)
  */
 
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { Platform } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { storeUser } from '@/api/apiUser';
 
-// Configure Google Sign-in
-// Using Web client ID from whatsaynews Firebase project
-GoogleSignin.configure({
-  webClientId: '92160441398-mueier229usc3firqpt6sed1b09c8io0.apps.googleusercontent.com', // From whatsaynews project
-  scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-  offlineAccess: true,
-  iosClientId: '396092481898-s3r4cvs735fc3oo2097nipogoico5hsb.apps.googleusercontent.com', // Keep iOS client from old project for now
-});
+// Native Imports
+import nativeAuth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+
+// Web Support Imports
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithCredential as webSignInWithCredential,
+  onAuthStateChanged as webOnAuthStateChanged,
+  onIdTokenChanged as webOnIdTokenChanged,
+  signInWithPhoneNumber as webSignInWithPhoneNumber,
+  signOut as webSignOut,
+  updateProfile as webUpdateProfile,
+  updateEmail as webUpdateEmail,
+  sendEmailVerification as webSendEmailVerification,
+  User as WebUser
+} from 'firebase/auth';
+
+// Web Configuration (whatsaynews)
+const firebaseConfig = {
+  apiKey: "AIzaSyC_KbvE24c4PRAp6_Tl2L7-7laALwgGupA",
+  authDomain: "whatsaynews.firebaseapp.com",
+  projectId: "whatsaynews",
+  storageBucket: "whatsaynews.firebasestorage.app",
+  messagingSenderId: "92160441398",
+  appId: "1:92160441398:android:086e8d338f74e5fef66c97"
+};
+
+// Initialize for Web
+let webAuth: any = null;
+if (Platform.OS === 'web') {
+  try {
+    if (getApps().length === 0) {
+      initializeApp(firebaseConfig);
+    }
+    webAuth = getAuth();
+    console.log("Firebase Web Initialized");
+  } catch (e) {
+    console.error("Firebase Web Init Error:", e);
+  }
+}
+
+// Configure Google Sign-in (Mobile Only)
+if (Platform.OS !== 'web') {
+  GoogleSignin.configure({
+    webClientId: '92160441398-mueier229usc3firqpt6sed1b09c8io0.apps.googleusercontent.com', // From whatsaynews project
+    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+    offlineAccess: true,
+  });
+}
 
 export interface FirebaseUser {
   uid: string;
@@ -23,12 +67,11 @@ export interface FirebaseUser {
   photoURL: string | null;
   phoneNumber: string | null;
   emailVerified: boolean;
+  getIdToken: () => Promise<string>;
 }
 
-/**
- * Convert Firebase user to app user format
- */
-function mapFirebaseUser(firebaseUser: FirebaseAuthTypes.User): FirebaseUser {
+// Map Native User
+function mapNativeUser(firebaseUser: FirebaseAuthTypes.User): FirebaseUser {
   return {
     uid: firebaseUser.uid,
     email: firebaseUser.email,
@@ -36,62 +79,100 @@ function mapFirebaseUser(firebaseUser: FirebaseAuthTypes.User): FirebaseUser {
     photoURL: firebaseUser.photoURL,
     phoneNumber: firebaseUser.phoneNumber,
     emailVerified: firebaseUser.emailVerified,
+    getIdToken: () => firebaseUser.getIdToken(),
+  };
+}
+
+// Map Web User
+function mapWebUser(firebaseUser: WebUser): FirebaseUser {
+  return {
+    uid: firebaseUser.uid,
+    email: firebaseUser.email,
+    displayName: firebaseUser.displayName,
+    photoURL: firebaseUser.photoURL,
+    phoneNumber: firebaseUser.phoneNumber,
+    emailVerified: firebaseUser.emailVerified,
+    getIdToken: () => firebaseUser.getIdToken(),
   };
 }
 
 /**
- * Sign in with Google using Firebase Auth
+ * Sign in with Google
  */
 export async function signInWithGoogle(): Promise<FirebaseUser> {
-  try {
-    // Get user's ID token from Google Sign-in
-    await GoogleSignin.hasPlayServices();
-    const { idToken } = await GoogleSignin.signIn();
-
-    // Create Firebase credential
-    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-
-    // Sign in to Firebase with Google credential
-    const userCredential = await auth().signInWithCredential(googleCredential);
-    const firebaseUser = userCredential.user;
-
-    // Get ID token for backend
-    const token = await firebaseUser.getIdToken();
-
-    // Store user in Supabase (for backward compatibility)
+  if (Platform.OS === 'web') {
+    // Web: Use Popup
     try {
-      await storeUser(
-        {
-          data: {
-            user: {
-              id: firebaseUser.uid,
-              email: firebaseUser.email,
-              name: firebaseUser.displayName,
-              photo: firebaseUser.photoURL,
-            },
-            idToken: token,
-          },
-        },
-        'via google'
-      );
-    } catch (error) {
-      console.warn('Failed to store user in Supabase:', error);
-      // Continue even if Supabase fails
-    }
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(webAuth, provider);
+      const user = result.user;
+      const token = await user.getIdToken();
 
-    return mapFirebaseUser(firebaseUser);
-  } catch (error: any) {
-    console.error('Google Sign-in Error:', error);
-    throw new Error(`Google sign-in failed: ${error.message}`);
+      await syncUserWithBackend(mapWebUser(user), token, 'via google');
+      return mapWebUser(user);
+    } catch (error: any) {
+      console.error('Web Google Sign-in Error:', error);
+      throw error;
+    }
+  } else {
+    // Native: Use GoogleSignin + Credential
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      // @ts-ignore
+      const { idToken } = response;
+      const googleCredential = nativeAuth.GoogleAuthProvider.credential(idToken);
+      const userCredential = await nativeAuth().signInWithCredential(googleCredential);
+      const user = userCredential.user;
+      const token = await user.getIdToken();
+
+      await syncUserWithBackend(mapNativeUser(user), token, 'via google');
+      return mapNativeUser(user);
+    } catch (error: any) {
+      console.error('Native Google Sign-in Error:', error);
+      throw error;
+    }
   }
 }
 
 /**
- * Sign in with Phone Number (already using Firebase)
+ * Sync user with backend
+ */
+async function syncUserWithBackend(user: FirebaseUser, token: string, method: string) {
+  try {
+    await storeUser({
+      data: {
+        user: {
+          id: user.uid,
+          email: user.email,
+          name: user.displayName,
+          photo: user.photoURL,
+        },
+        idToken: token,
+      },
+    }, method);
+  } catch (error) {
+    console.warn('Failed to store user in Supabase:', error);
+  }
+}
+
+/**
+ * Sign in with Phone Number
+ * Note: Web implementation for Phone Auth is complex and requires RecaptchaVerifier.
+ * For now, we stub it or use a simple implementation if needed, but keeping primarily native logic here.
  */
 export async function signInWithPhoneNumber(phoneNumber: string) {
+  if (Platform.OS === 'web') {
+    console.warn("Phone Auth on web requires ReCaptcha. Not fully implemented.");
+    if (!webAuth) throw new Error("Web Auth not initialized");
+    // Web requires a RecaptchaVerifier passed as 2nd arg. 
+    // This is significant UI work. For this fix, we might want to skip or basic imp.
+    // return webSignInWithPhoneNumber(webAuth, phoneNumber, ...); 
+    throw new Error("Phone Sign-in not implemented for Web yet");
+  }
+
   try {
-    const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
+    const confirmation = await nativeAuth().signInWithPhoneNumber(phoneNumber);
     return confirmation;
   } catch (error: any) {
     console.error('Phone Sign-in Error:', error);
@@ -100,7 +181,7 @@ export async function signInWithPhoneNumber(phoneNumber: string) {
 }
 
 /**
- * Confirm phone OTP
+ * Confirm phone OTP (Native Only for now)
  */
 export async function confirmPhoneOTP(
   confirmation: FirebaseAuthTypes.ConfirmationResult,
@@ -108,31 +189,12 @@ export async function confirmPhoneOTP(
 ): Promise<FirebaseUser> {
   try {
     const userCredential = await confirmation.confirm(code);
-    const firebaseUser = userCredential.user;
+    if (!userCredential) throw new Error('Confirmation failed');
+    const user = userCredential.user;
+    const token = await user.getIdToken();
 
-    // Get ID token for backend
-    const token = await firebaseUser.getIdToken();
-
-    // Store user in Supabase (for backward compatibility)
-    try {
-      await storeUser(
-        {
-          user: {
-            id: firebaseUser.uid,
-            email: firebaseUser.email,
-            name: firebaseUser.displayName,
-            phone: firebaseUser.phoneNumber,
-          },
-          idToken: token,
-        },
-        'via phone'
-      );
-    } catch (error) {
-      console.warn('Failed to store user in Supabase:', error);
-      // Continue even if Supabase fails
-    }
-
-    return mapFirebaseUser(firebaseUser);
+    await syncUserWithBackend(mapNativeUser(user), token, 'via phone');
+    return mapNativeUser(user);
   } catch (error: any) {
     console.error('OTP Confirmation Error:', error);
     throw new Error(`OTP confirmation failed: ${error.message}`);
@@ -143,18 +205,29 @@ export async function confirmPhoneOTP(
  * Get current Firebase user
  */
 export function getCurrentUser(): FirebaseUser | null {
-  const user = auth().currentUser;
-  return user ? mapFirebaseUser(user) : null;
-}
+  if (Platform.OS === 'web') {
+    return webAuth?.currentUser ? mapWebUser(webAuth.currentUser) : null;
+  }
 
+  try {
+    const user = nativeAuth().currentUser;
+    return user ? mapNativeUser(user) : null;
+  } catch (e) {
+    return null;
+  }
+}
 
 /**
  * Sign out
  */
 export async function signOut(): Promise<void> {
   try {
-    await auth().signOut();
-    await GoogleSignin.signOut();
+    if (Platform.OS === 'web') {
+      await webSignOut(webAuth);
+    } else {
+      await nativeAuth().signOut();
+      await GoogleSignin.signOut();
+    }
   } catch (error) {
     console.error('Sign out error:', error);
     throw error;
@@ -168,12 +241,19 @@ export async function updateProfile(updates: {
   displayName?: string;
   photoURL?: string;
 }): Promise<void> {
-  try {
-    const user = auth().currentUser;
+  if (Platform.OS === 'web') {
+    const user = webAuth?.currentUser;
     if (!user) throw new Error('No user signed in');
+    await webUpdateProfile(user, updates);
+    await user.reload();
+    return;
+  }
 
+  try {
+    const user = nativeAuth().currentUser;
+    if (!user) throw new Error('No user signed in');
     await user.updateProfile(updates);
-    await user.reload(); // Reload to get updated profile
+    await user.reload();
   } catch (error) {
     console.error('Update profile error:', error);
     throw error;
@@ -184,10 +264,16 @@ export async function updateProfile(updates: {
  * Update email
  */
 export async function updateEmail(newEmail: string): Promise<void> {
-  try {
-    const user = auth().currentUser;
+  if (Platform.OS === 'web') {
+    const user = webAuth?.currentUser;
     if (!user) throw new Error('No user signed in');
+    await webUpdateEmail(user, newEmail);
+    return;
+  }
 
+  try {
+    const user = nativeAuth().currentUser;
+    if (!user) throw new Error('No user signed in');
     await user.updateEmail(newEmail);
   } catch (error) {
     console.error('Update email error:', error);
@@ -199,10 +285,16 @@ export async function updateEmail(newEmail: string): Promise<void> {
  * Send email verification
  */
 export async function sendEmailVerification(): Promise<void> {
-  try {
-    const user = auth().currentUser;
+  if (Platform.OS === 'web') {
+    const user = webAuth?.currentUser;
     if (!user) throw new Error('No user signed in');
+    await webSendEmailVerification(user);
+    return;
+  }
 
+  try {
+    const user = nativeAuth().currentUser;
+    if (!user) throw new Error('No user signed in');
     await user.sendEmailVerification();
   } catch (error) {
     console.error('Send email verification error:', error);
@@ -216,9 +308,22 @@ export async function sendEmailVerification(): Promise<void> {
 export function onAuthStateChanged(
   callback: (user: FirebaseUser | null) => void
 ): () => void {
-  return auth().onAuthStateChanged((firebaseUser) => {
-    callback(firebaseUser ? mapFirebaseUser(firebaseUser) : null);
-  });
+  if (Platform.OS === 'web') {
+    if (!webAuth) return () => { };
+    // @ts-ignore
+    return webOnAuthStateChanged(webAuth, (user) => {
+      callback(user ? mapWebUser(user) : null);
+    });
+  }
+
+  try {
+    return nativeAuth().onAuthStateChanged((firebaseUser) => {
+      callback(firebaseUser ? mapNativeUser(firebaseUser) : null);
+    });
+  } catch (e) {
+    console.error("onAuthStateChanged failed:", e);
+    return () => { };
+  }
 }
 
 /**
@@ -227,7 +332,24 @@ export function onAuthStateChanged(
 export function onIdTokenChanged(
   callback: (token: string | null) => void
 ): () => void {
-  return auth().onIdTokenChanged(async (user) => {
+  if (Platform.OS === 'web') {
+    if (!webAuth) return () => { };
+    // @ts-ignore
+    return webOnIdTokenChanged(webAuth, async (user) => {
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          callback(token);
+        } catch (e) {
+          callback(null);
+        }
+      } else {
+        callback(null);
+      }
+    });
+  }
+
+  return nativeAuth().onIdTokenChanged(async (user) => {
     if (user) {
       try {
         const token = await user.getIdToken();
@@ -240,4 +362,33 @@ export function onIdTokenChanged(
       callback(null);
     }
   });
+}
+
+/**
+ * Get access to the native Auth instance (INTERNAL USE ONLY)
+ * Use only if you know what you are doing and are on native
+ */
+export const getNativeAuth = () => {
+  if (Platform.OS === 'web') return null;
+  return nativeAuth();
+}
+
+/**
+ * Refresh the ID token (force refresh)
+ */
+export async function getIdToken(forceRefresh: boolean = false): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    const user = webAuth?.currentUser;
+    if (!user) return null;
+    return user.getIdToken(forceRefresh);
+  }
+
+  try {
+    const user = nativeAuth().currentUser;
+    if (!user) return null;
+    return user.getIdToken(forceRefresh);
+  } catch (e) {
+    console.error("getIdToken error:", e);
+    return null;
+  }
 }

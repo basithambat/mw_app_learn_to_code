@@ -1,9 +1,9 @@
 import axios, { AxiosResponse } from "axios";
+import { getIngestionApiBase } from "./apiIngestion";
 
 let APIService = axios.create({
-    baseURL: `https://whatsay.news:8080/api`,
-    // baseURL: `http://localhost:8080/api`,
-    timeout: 30000, // Adjusted for a reasonable timeout in ms
+    baseURL: `${getIngestionApiBase()}/api`,
+    timeout: 10000, // Reduced to 10s as per P0 plan (fail fast)
     headers: {
         "Content-Type": "application/json",
     },

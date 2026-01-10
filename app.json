@@ -60,10 +60,11 @@
         "VIBRATE",
         "INTERNET",
         "ACCESS_FINE_LOCATION",
-      "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION"
       ],
       "package": "com.safwanambat.whatsay",
       "versionCode": 11,
+      "googleServicesFile": "./android/app/google-services.json"
     },
     "web": {
       "bundler": "metro",

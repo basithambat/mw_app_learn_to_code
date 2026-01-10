@@ -1,52 +1,36 @@
-import { useNewsItemAnimations } from '@/hooks/useAnimations';
-import { useCombinedSwipe } from '@/hooks/useCombined';
+import { useExpandedArticleGestures } from '@/hooks/useExpandedArticleGestures';
+import { useKeyboardController } from '@/hooks/useKeyboardController';
+import { LAYOUT, ANIMATION } from '@/constants/layout';
 import { AntDesign } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { styled } from 'nativewind';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
     View,
     Text,
-    Image,
     FlatList,
     Platform,
-    TouchableOpacity
+    TouchableOpacity,
+    Dimensions,
+    ScrollView,
 } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+    useSharedValue,
     useAnimatedStyle,
+    withTiming,
+    useDerivedValue,
     interpolate,
-    Extrapolate
+    Extrapolate,
+    useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import CommentSectionModal from '@/components/comment/commentSectionModal';
+import HeroCard from '@/components/HeroCard';
+import ArticleContent from '@/components/ArticleContent';
 import { getAllCategories } from '@/api/apiCategories';
 import { CategoryType } from '@/types/CategoryTypes';
-import {
-    SCREEN_DIMENSIONS,
-    IMAGE_WRAPPER_STYLE,
-    IMAGE_STYLE,
-    GRADIENT_STYLE,
-    CATEGORY_STYLES,
-    DEFAULT_CATEGORY_STYLE
-} from '@/constants/expandedScreenData';
+import { SCREEN_DIMENSIONS } from '@/constants/expandedScreenData';
 
-const StyledView = styled(View);
-const StyledImage = styled(Image);
-
-const getCategoryStyleClasses = (categoryName: string) => {
-    const styles = CATEGORY_STYLES[categoryName] || DEFAULT_CATEGORY_STYLE;
-    return {
-        container: `mb-4 mr-auto border rounded-full`,
-        text: `text-sm px-4 py-1 rounded-full inline-block`,
-        style: {
-            backgroundColor: styles.backgroundColor,
-            borderColor: styles.borderColor,
-        },
-        textStyle: {
-            color: styles.textColor,
-        }
-    };
-};
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface ExpandNewsItemProps {
     items: any[];
@@ -63,17 +47,33 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
 }) => {
     const flatListRef = useRef<FlatList>(null);
     const [categories, setCategories] = useState<CategoryType[]>([]);
-    const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+
+    // Use production-grade keyboard controller (NO FLICKER)
     const {
-        animatedValues,
-        panGesture,
-        imageAnimatedStyle,
-        gradientAnimatedStyle,
-        titleAnimatedStyle,
-        contentAnimatedStyle,
-        dragIndicatorAnimatedStyle,
-        modalAnimatedStyle
-    } = useNewsItemAnimations(isCommentModalVisible, onClose);
+        keyboardVisibleSV,
+        keyboardHeightSV,
+        keyboardProgress,
+        keyboardHeightJS,
+        isKeyboardVisibleJS,
+    } = useKeyboardController();
+
+    const { top, bottom } = useSafeAreaInsets();
+    // Use unified gesture hook - single source of truth
+    const {
+        mode,
+        verticalPanGesture,
+        containerStyle,
+        // dimStyle, // REMOVED - we define our own based on uiStateSV
+        openComments,
+        closeComments,
+        dismissDetail,
+        commentsScrollY,
+        commentProgress,
+        dismissY,
+    } = useExpandedArticleGestures({
+        onDismiss: onClose,
+    });
+
     const [activeArticle, setActiveArticle] = useState(initialArticleId);
 
     // Calculate initial index based on the ID
@@ -84,22 +84,141 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
 
     const currentIndexRef = useRef(initialIndex);
 
-    // Reset currentIndexRef when initialArticleId changes (component reopened with different article)
+    // Get current item
+    const currentItem = useMemo(() => {
+        const index = items.findIndex((item: any) => item.id === activeArticle);
+        return items[index >= 0 ? index : 0];
+    }, [items, activeArticle]);
+
+    // Get current category
+    const currentCategory = useMemo(() => {
+        return categories.find((cat: CategoryType) => cat.id === currentItem?.category_id);
+    }, [categories, currentItem]);
+
+    // MANDATORY: Hero height as DERIVED value (pure interpolation - OK)
+    const heroHeightSV = useDerivedValue(() => {
+        return interpolate(
+            commentProgress.value,
+            [0, 1],
+            [LAYOUT.HERO_READING_HEIGHT, LAYOUT.HERO_COMMENTS_HEIGHT],
+            Extrapolate.CLAMP
+        );
+    }, [commentProgress]);
+
+    // MANDATORY: Sheet top as SHARED VALUE (updated via effects only)
+    const uiStateSV = useSharedValue<0 | 1 | 2>(0); // 0=reading, 1=comments, 2=writing
+    const sheetTopSV = useSharedValue(LAYOUT.SCREEN_HEIGHT); // Start off-screen
+
+    // Track article scroll for gesture gating
+    const articleScrollY = useSharedValue(0);
+
+    // Hero layer style - uses uiStateSV + pointerEvents for overlay
+    const heroLayerStyle = useAnimatedStyle(() => {
+        const isWriting = uiStateSV.value === 2;
+
+        const currentScale = interpolate(
+            commentProgress.value,
+            [0, 1],
+            [1, 0.94],
+            Extrapolate.CLAMP
+        );
+
+        // SENIOR DESIGN FIX: Scale-Compensated Top Anchor
+        // Since the plane is scaled from top:0, a point at 'y' moves to 'y * scale'.
+        // To keep it at 'targetTop', we set 'y = targetTop / scale'.
+        const topAnchor = interpolate(
+            commentProgress.value,
+            [0, 1],
+            [0, top],
+            Extrapolate.CLAMP
+        );
+        const compensatedTop = topAnchor / currentScale;
+
+        const scrollOffset = interpolate(
+            commentProgress.value,
+            [0, 1],
+            [-articleScrollY.value, 0],
+            Extrapolate.CLAMP
+        );
+
+        return {
+            position: 'absolute' as const,
+            top: compensatedTop,
+            left: 0,
+            right: 0,
+            zIndex: isWriting ? 10 : 40, // Top priority
+            elevation: isWriting ? 10 : 40,
+            overflow: 'hidden' as const,
+            pointerEvents: isWriting ? 'none' : 'auto',
+            transform: [{ translateY: scrollOffset }]
+        };
+    }, [uiStateSV, commentProgress, articleScrollY, top]);
+
+    // Sheet layer style - CRITICAL: Position driven by gesture progress for zero-lag reversibility
+    // Sheet layer style - NOW A STATIC FULL-SCREEN MASK
+    const sheetLayerStyle = useAnimatedStyle(() => {
+        return {
+            position: 'absolute' as const,
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            zIndex: uiStateSV.value === 2 ? 50 : 20,
+            elevation: uiStateSV.value === 2 ? 50 : 0,
+            pointerEvents: mode === 'comments' ? 'auto' : 'none',
+        };
+    }, [mode]);
+
+    // NEW: Content-only translation to preserve the physical floor for the composer
+    const sheetContentTranslateStyle = useAnimatedStyle(() => {
+        const isDocked = uiStateSV.value === 1;
+        const isFullscreen = uiStateSV.value === 2;
+
+        const progressTop = interpolate(
+            commentProgress.value,
+            [0, 1],
+            [SCREEN_HEIGHT, LAYOUT.HERO_COMMENTS_HEIGHT + top],
+            Extrapolate.CLAMP
+        );
+
+        const finalTop = isFullscreen ? sheetTopSV.value : progressTop;
+
+        return {
+            flex: 1,
+            backgroundColor: '#F3F4F6',
+            borderTopLeftRadius: isDocked ? 0 : 22,
+            borderTopRightRadius: isDocked ? 0 : 22,
+            overflow: 'hidden' as const,
+            transform: [{ translateY: finalTop }]
+        };
+    }, [top]);
+
+    // CRITICAL: Fluid dimming driven by ACTUAL plane position (No flashes)
+    const dimStyle = useAnimatedStyle(() => {
+        // Interpolate background dimming based on the literal top of the sheet
+        // 0.85 (Writing) | 0.45 (Docked) | 0 (Reading)
+        const dimOpacity = interpolate(
+            sheetTopSV.value,
+            [0, LAYOUT.HERO_COMMENTS_HEIGHT + top, SCREEN_HEIGHT],
+            [0.85, 0.45, 0],
+            Extrapolate.CLAMP
+        );
+
+        return {
+            opacity: dimOpacity,
+        };
+    }, [sheetTopSV, top]);
+
+    // Reset when component becomes visible
     useEffect(() => {
         if (!isVisible) {
-            // Reset state when component becomes invisible
-            setIsCommentModalVisible(false);
             return;
         }
 
-        // Component is visible - reset all state
         currentIndexRef.current = initialIndex;
         setActiveArticle(initialArticleId);
-        setIsCommentModalVisible(false); // Reset comment modal state
 
-        // Ensure FlatList scrolls to correct position when reopened
         if (flatListRef.current) {
-            // Use multiple attempts to ensure scroll works
             const scrollToCorrectPosition = () => {
                 try {
                     flatListRef.current?.scrollToIndex({
@@ -107,37 +226,30 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                         animated: false
                     });
                 } catch (error) {
-                    // Fallback to scrollToOffset if scrollToIndex fails
                     try {
                         flatListRef.current?.scrollToOffset({
                             offset: initialIndex * SCREEN_DIMENSIONS.width,
                             animated: false
                         });
                     } catch (offsetError) {
-                        // If both fail, try again after a delay
                         setTimeout(() => {
                             flatListRef.current?.scrollToOffset({
                                 offset: initialIndex * SCREEN_DIMENSIONS.width,
                                 animated: false
                             });
-                        }, 200);
+                        }, 100);
                     }
                 }
             };
 
-            // Try immediately
             requestAnimationFrame(() => {
                 scrollToCorrectPosition();
-                // Also try after a short delay to ensure FlatList is ready
                 setTimeout(scrollToCorrectPosition, 100);
             });
         }
     }, [initialArticleId, initialIndex, isVisible]);
 
-    const handleCommentModalClose = () => {
-        setIsCommentModalVisible(false);
-    };
-
+    // Fetch categories
     useEffect(() => {
         (async () => {
             try {
@@ -149,59 +261,54 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                 console.error('Error fetching categories:', error);
             }
         })();
-    }, []);
+    }, [])
 
-    const { scrollEnabled, animatedStyle } = useCombinedSwipe({
-        data: items,
-        currentIndex: currentIndexRef.current,
-        onSwipeLeft: (index) => {
-            // Navigate to next item (swipe left = next)
-            const nextIndex = currentIndexRef.current + 1;
-            if (flatListRef.current && !isCommentModalVisible && nextIndex < items.length) {
-                currentIndexRef.current = nextIndex;
-                if (items[nextIndex]) {
-                    setActiveArticle(items[nextIndex].id);
-                }
-                flatListRef.current.scrollToIndex({
-                    index: nextIndex,
-                    animated: true
-                });
-            }
-        },
-        onSwipeRight: (index) => {
-            // Navigate to previous item (swipe right = previous)
-            const prevIndex = currentIndexRef.current - 1;
-            if (flatListRef.current && !isCommentModalVisible && prevIndex >= 0) {
-                currentIndexRef.current = prevIndex;
-                if (items[prevIndex]) {
-                    setActiveArticle(items[prevIndex].id);
-                }
-                flatListRef.current.scrollToIndex({
-                    index: prevIndex,
-                    animated: true
-                });
-            }
-        },
-        onSwipeUp: () => {
-            if (!isCommentModalVisible) {
-                setIsCommentModalVisible(true);
-            }
-        },
-        onSwipeDown: () => {
-            if (!isCommentModalVisible && onClose) {
-                onClose();
-            }
-        },
-        isCommentModalVisible
-    });
+        ;
 
+    // P0 FIX: Update sheetTopSV and uiStateSV via effects (not derived values!)
+    // Effect 1: Core state machine for the 3-state contract
+    useEffect(() => {
+        if (isKeyboardVisibleJS) {
+            // State 2: Writing (Fullscreen)
+            sheetTopSV.value = withTiming(0, { duration: 300 });
+            uiStateSV.value = 2;
+        } else if (mode === 'comments') {
+            // State 1: Docked (Comments visible below Hero)
+            // Driven by sheetTopSV for the target, but manual gesture (commentProgress) 
+            // also drives the sheetView during active drag.
+            sheetTopSV.value = withTiming(LAYOUT.HERO_COMMENTS_HEIGHT + top, { duration: 300 });
+            uiStateSV.value = 1;
+        } else {
+            // State 0: Reading (Neutral)
+            sheetTopSV.value = withTiming(LAYOUT.SCREEN_HEIGHT, { duration: 300 });
+            uiStateSV.value = 0;
+        }
+    }, [isKeyboardVisibleJS, mode, top]);
+
+    // Android back button handler
+    useEffect(() => {
+        const backHandler = require('react-native').BackHandler.addEventListener(
+            'hardwareBackPress',
+            () => {
+                if (mode === 'comments') {
+                    closeComments();
+                    return true;
+                } else if (mode === 'reading') {
+                    return false;
+                }
+                return false;
+            }
+        );
+
+        return () => backHandler.remove();
+    }, [mode, closeComments]);
+
+    // Handle FlatList scrolling (article paging)
     const handleScroll = useCallback((event: any) => {
-        if (!isVisible) return; // Don't update if component is not visible
+        if (!isVisible) return;
 
         const offsetX = event.nativeEvent.contentOffset.x;
         const slideIndex = Math.round(offsetX / SCREEN_DIMENSIONS.width);
-
-        // Clamp index to valid range
         const validIndex = Math.max(0, Math.min(slideIndex, items.length - 1));
 
         if (validIndex !== currentIndexRef.current) {
@@ -212,154 +319,10 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         }
     }, [items, isVisible]);
 
-    const handleUpButtonPress = () => {
-        setIsCommentModalVisible(true);
-    };
-
+    // FlatList renderItem - invisible spacers for horizontal paging
     const renderScreen = useCallback(({ item }: { item: any }) => {
-        const category = categories.find((cat: CategoryType) => cat.id === item.category_id);
-        const imageWrapperStyle = {
-            ...IMAGE_WRAPPER_STYLE,
-            borderBottomRightRadius: isCommentModalVisible ? 20 : 0,
-            borderBottomLeftRadius: isCommentModalVisible ? 20 : 0,
-        };
-
-        // Emil's pattern: Use Reanimated animated styles
-        const containerAnimatedStyle = useAnimatedStyle(() => {
-            'worklet';
-            return {
-                transform: [{ scale: animatedValues.scale.value }],
-            };
-        }, []);
-
-        return (
-            <Animated.View
-                style={[{
-                    width: SCREEN_DIMENSIONS.width,
-                    backgroundColor: isCommentModalVisible ? '#F3F4F6' : 'white',
-                }, containerAnimatedStyle]}
-                collapsable={false} // Prevent view collapsing for smoother animations
-                pointerEvents={isCommentModalVisible ? 'none' : 'auto'} // Allow touches to pass through when comment modal is open
-            >
-                <GestureDetector gesture={panGesture}>
-                    <Animated.View
-                        style={[
-                            imageWrapperStyle,
-                            imageAnimatedStyle
-                        ]}
-                    >
-                        {item.image_url ? (
-                            <StyledImage
-                                source={{ uri: item.image_url }}
-                                style={IMAGE_STYLE}
-                                resizeMode="cover"
-                            />
-                        ) : (
-                            <View style={[IMAGE_STYLE, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
-                                <Text style={{ color: '#9CA3AF', fontSize: 16 }}>No Image</Text>
-                            </View>
-                        )}
-                        <Animated.View style={[GRADIENT_STYLE, gradientAnimatedStyle]}>
-                            <LinearGradient
-                                colors={['transparent', 'rgba(0,0,0,0.8)']}
-                                style={{ flex: 1 }}
-                            />
-                        </Animated.View>
-
-                        <Animated.View style={[
-                            {
-                                position: 'absolute',
-                                bottom: 32,
-                                left: 20,
-                                right: 20,
-                            },
-                            titleAnimatedStyle
-                        ]}>
-                            {isCommentModalVisible && (
-                                <Text className="text-[22px] font-domine text-white">
-                                    {item.title}
-                                </Text>
-                            )}
-                        </Animated.View>
-
-                        <Animated.View style={[
-                            {
-                                position: 'absolute',
-                                bottom: 12,
-                                alignSelf: 'center',
-                            },
-                            dragIndicatorAnimatedStyle
-                        ]}>
-                            {isCommentModalVisible && (
-                                <View className='h-[4px] w-[24px] rounded-full bg-[#FFFFFF]/20' />
-                            )}
-                        </Animated.View>
-                    </Animated.View>
-                </GestureDetector>
-
-                <Animated.View style={contentAnimatedStyle}>
-                    <StyledView className="p-[16px]">
-                        <Text className="text-[20px] font-domine mb-[12px]">
-                            {item.title}
-                        </Text>
-                        <Text className="font-geist font-light mb-4 text-[16px] leading-6">
-                            {item.summary}
-                        </Text>
-
-                        {category && (
-                            <View
-                                className={getCategoryStyleClasses(category.name).container}
-                                style={getCategoryStyleClasses(category.name).style}
-                            >
-                                <Text
-                                    className={getCategoryStyleClasses(category.name).text}
-                                    style={getCategoryStyleClasses(category.name).textStyle}
-                                >
-                                    {category.name}
-                                </Text>
-                            </View>
-                        )}
-                    </StyledView>
-                </Animated.View>
-
-                {/* Pagination Indicators - Story Style */}
-                {!isCommentModalVisible && (
-                    <View style={{
-                        position: 'absolute',
-                        top: 60,
-                        left: 10,
-                        right: 10,
-                        flexDirection: 'row',
-                        height: 3,
-                        justifyContent: 'center',
-                        gap: 4
-                    }}>
-                        {items.map((_, idx) => (
-                            <View
-                                key={idx}
-                                style={{
-                                    flex: 1,
-                                    height: '100%',
-                                    backgroundColor: idx === currentIndexRef.current ? 'white' : 'rgba(255,255,255,0.3)',
-                                    borderRadius: 2
-                                }}
-                            />
-                        ))}
-                    </View>
-                )}
-
-                {!isCommentModalVisible && (
-                    <TouchableOpacity
-                        className="absolute bottom-[40px] self-center bg-[#F7F7F7] rounded-full px-[20px] py-[8px]"
-                        onPress={handleUpButtonPress}
-                        activeOpacity={0.7}
-                    >
-                        <AntDesign name="up" size={12} color="#9DA2A9" />
-                    </TouchableOpacity>
-                )}
-            </Animated.View>
-        );
-    }, [isCommentModalVisible, categories, animatedValues]);
+        return <View style={{ width: SCREEN_DIMENSIONS.width }} />;
+    }, []);
 
     const getItemLayout = useCallback((_: any, index: number) => ({
         length: SCREEN_DIMENSIONS.width,
@@ -368,66 +331,145 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     }), []);
 
     return (
-        <Animated.View style={[{ flex: 1, marginTop: 50 }]}>
-            <Animated.View style={[
-                { flex: 1, backgroundColor: 'white' },
-                animatedStyle
-            ]}>
-                <FlatList
-                    ref={flatListRef}
-                    data={items}
-                    renderItem={renderScreen}
-                    keyExtractor={(item) => item.id.toString()}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    getItemLayout={getItemLayout}
-                    onMomentumScrollEnd={handleScroll}
-                    initialScrollIndex={initialIndex}
-                    scrollEventThrottle={16} // Optimized to 16ms (60fps) to reduce bridge traffic
-                    scrollEnabled={!isCommentModalVisible && isVisible} // Disable only when comment modal is open or component not visible
-                    maintainVisibleContentPosition={null} // Allow free scrolling
-                    disableScrollViewPanResponder={false} // Ensure FlatList can handle its own gestures
-                    decelerationRate="fast" // Standard "paging" feel
-                    snapToInterval={SCREEN_DIMENSIONS.width}
-                    snapToAlignment='center'
-                    removeClippedSubviews={Platform.OS === 'android'} // Improve memory on Android
-                    bounces={false} // Disable bounce for smoother feel
-                    overScrollMode="never" // Android: prevent over-scroll glow
-                    directionalLockEnabled={true} // iOS: lock to one direction
-                    disableIntervalMomentum={true} // Smoother snap behavior
-                    windowSize={3} // Optimize memory: only render current + 1 offscreen
-                    maxToRenderPerBatch={1} // Only render 1 item at a time
-                    initialNumToRender={1} // Only render initial item
-                    updateCellsBatchingPeriod={50}
-                    onScrollToIndexFailed={(info) => {
-                        // Fallback: scroll to offset if scrollToIndex fails
-                        const wait = new Promise(resolve => setTimeout(resolve, 100));
-                        wait.then(() => {
-                            const offset = info.averageItemLength * info.index;
-                            flatListRef.current?.scrollToOffset({ offset, animated: false });
-                            // Update ref after scroll
-                            currentIndexRef.current = info.index;
-                            if (items[info.index]) {
-                                setActiveArticle(items[info.index].id);
-                            }
-                        });
-                    }}
-                    onScroll={(event) => {
-                        // Real-time scroll tracking for better responsiveness
-                        if (isVisible && !isCommentModalVisible) {
-                            handleScroll(event);
-                        }
-                    }}
-                    nestedScrollEnabled={true} // Allow nested scrolling
-                />
-            </Animated.View>
-            <CommentSectionModal
-                postId={activeArticle.toString()}
-                isVisible={isCommentModalVisible}
-                onClose={handleCommentModalClose}
-            />
-        </Animated.View>
+        <View style={{ flex: 1, backgroundColor: '#F3F4F6' }}>
+            <GestureDetector gesture={verticalPanGesture}>
+                <View style={{ flex: 1 }}>
+                    {/* PLANE 1: ARTICLE CONTENT (Text and Scroll) */}
+                    <Animated.View style={[{ flex: 1, zIndex: 1 }, containerStyle]}>
+                        {/* Dim overlay when comments are open */}
+                        <Animated.View
+                            style={[
+                                {
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    backgroundColor: '#F3F4F6', // Sync background color
+                                    zIndex: 10,
+                                },
+                                dimStyle
+                            ]}
+                            pointerEvents="none"
+                        />
+
+                        <Animated.ScrollView
+                            scrollEnabled={mode === 'reading'}
+                            showsVerticalScrollIndicator={false}
+                            onScroll={useAnimatedScrollHandler({
+                                onScroll: (event) => {
+                                    articleScrollY.value = event.contentOffset.y;
+                                }
+                            })}
+                            scrollEventThrottle={16}
+                            style={{ flex: 1, backgroundColor: '#F3F4F6' }}
+                            contentContainerStyle={{ backgroundColor: '#F3F4F6' }}
+                        >
+                            <ArticleContent
+                                item={currentItem}
+                                category={currentCategory}
+                                commentProgress={commentProgress}
+                                heroHeightSV={heroHeightSV}
+                                topInset={top}
+                            />
+                        </Animated.ScrollView>
+
+                        {/* Pagination Indicators - anchored to reading mode container */}
+                        {mode === 'reading' && (
+                            <View style={{
+                                position: 'absolute',
+                                top: 10,
+                                left: 0,
+                                right: 0,
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                paddingHorizontal: 20,
+                                gap: 4,
+                                zIndex: 10,
+                            }}>
+                                {items.map((_, index) => (
+                                    <View
+                                        key={index}
+                                        style={{
+                                            flex: 1,
+                                            height: 2,
+                                            backgroundColor: currentIndexRef.current === index
+                                                ? 'white'
+                                                : 'rgba(255,255,255,0.3)',
+                                            borderRadius: 2,
+                                        }}
+                                    />
+                                ))}
+                            </View>
+                        )}
+
+                        {/* Up Arrow Button */}
+                        {mode === 'reading' && (
+                            <TouchableOpacity
+                                onPress={openComments}
+                                style={{
+                                    position: 'absolute',
+                                    bottom: 24,
+                                    alignSelf: 'center',
+                                    backgroundColor: 'rgba(0,0,0,0.6)',
+                                    borderRadius: 24,
+                                    padding: 12,
+                                    zIndex: 10,
+                                }}
+                            >
+                                <AntDesign name="up" size={20} color="white" />
+                            </TouchableOpacity>
+                        )}
+
+                        {/* Invisible FlatList for horizontal paging only */}
+                        <View style={{ position: 'absolute', opacity: 0, pointerEvents: mode === 'reading' ? 'auto' : 'none' }}>
+                            <FlatList
+                                ref={flatListRef}
+                                data={items}
+                                renderItem={renderScreen}
+                                keyExtractor={(item) => item.id.toString()}
+                                horizontal
+                                pagingEnabled
+                                showsHorizontalScrollIndicator={false}
+                                getItemLayout={getItemLayout}
+                                onMomentumScrollEnd={handleScroll}
+                                initialScrollIndex={initialIndex}
+                                scrollEventThrottle={16}
+                                scrollEnabled={mode === 'reading' && isVisible}
+                                decelerationRate="fast"
+                                snapToInterval={SCREEN_DIMENSIONS.width}
+                                snapToAlignment='center'
+                                removeClippedSubviews={Platform.OS === 'android'}
+                                bounces={false}
+                                windowSize={3}
+                                initialNumToRender={1}
+                            />
+                        </View>
+                    </Animated.View>
+
+                    {/* PLANE 2: COMMENTS SHEET (Isolation) */}
+                    <Animated.View style={[sheetLayerStyle]}>
+                        <CommentSectionModal
+                            postId={activeArticle.toString()}
+                            isVisible={mode === 'comments'}
+                            onClose={closeComments}
+                            commentsScrollY={commentsScrollY}
+                            keyboardHeight={keyboardHeightJS}
+                            keyboardHeightSV={keyboardHeightSV}
+                            contentTranslateStyle={sheetContentTranslateStyle}
+                        />
+                    </Animated.View>
+
+                    {/* PLANE 3: HERO CARD (Persistent Top layer) */}
+                    <Animated.View style={[heroLayerStyle, containerStyle]}>
+                        <HeroCard
+                            item={currentItem}
+                            commentProgress={commentProgress}
+                        />
+                    </Animated.View>
+                </View>
+            </GestureDetector>
+        </View>
     );
 };
 

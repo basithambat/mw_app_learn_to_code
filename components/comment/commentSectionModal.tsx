@@ -1,12 +1,12 @@
 import React, { useEffect, useCallback, useRef, useState } from 'react';
 import {
   View, Text, TouchableOpacity, FlatList, TextInput, Platform,
-  Keyboard, KeyboardAvoidingView, Image
+  Keyboard, Image
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { NativeViewGestureHandler, PanGestureHandler } from 'react-native-gesture-handler';
-import Animated from 'react-native-reanimated';
+import Animated, { useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolate } from 'react-native-reanimated';
 import UserComment from './userComment';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,9 +14,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loggedInUserDataSelector } from '@/redux/slice/userSlice';
 import { useRouter } from 'expo-router';
 import { apiAddArticleComment, apigetAllComments } from '@/api/apiComments';
-import { 
-  commentsDataSelector, 
-  setComment, 
+import {
+  commentsDataSelector,
+  setComment,
   setLoading,
   setError,
   setSortBy,
@@ -34,11 +34,18 @@ import { ImageBackground } from 'react-native';
 import { PersonaSelector } from '@/components/PersonaSelector';
 import { useFirebaseAuth } from '@/config/firebaseAuthContext';
 import { CommentSkeleton } from '@/components/comment/CommentSkeleton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { SharedValue } from 'react-native-reanimated';
 
 interface CommentSectionModalProps {
   postId: string;
   isVisible: boolean;
   onClose: () => void;
+  commentsScrollY?: SharedValue<number>;
+  keyboardHeight?: number;
+  keyboardHeightSV?: SharedValue<number>;
+  contentTranslateStyle?: any; // NEW PROP for Fixed-Floor
 }
 
 const ExpandableInput: React.FC<ExpandableInputProps> = ({
@@ -60,7 +67,7 @@ const ExpandableInput: React.FC<ExpandableInputProps> = ({
   }, [replyingTo]);
 
   return (
-    <View style={styles.expandableInputContainer}>
+    <View style={{ flex: 1, justifyContent: 'center' }}>
       {replyingTo && (
         <View style={styles.replyingToInner}>
           <Text style={styles.replyingToText}>
@@ -78,7 +85,14 @@ const ExpandableInput: React.FC<ExpandableInputProps> = ({
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
         multiline
-        style={[{ flex: 1 }, { height: Math.max(48, inputHeight) }]}
+        style={[{
+          fontSize: 16,
+          color: '#111',
+          paddingTop: 0,
+          paddingBottom: 0,
+          textAlignVertical: 'center',
+          maxHeight: 80,
+        }]}
         onContentSizeChange={(event) => {
           setInputHeight(event.nativeEvent.contentSize.height);
         }}
@@ -87,12 +101,15 @@ const ExpandableInput: React.FC<ExpandableInputProps> = ({
   );
 };
 
-const CommentSectionModal: React.FC<CommentSectionModalProps> = ({ postId, isVisible, onClose }) => {
+const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
+  postId, isVisible, onClose, commentsScrollY,
+  keyboardHeight = 0, keyboardHeightSV,
+  contentTranslateStyle // NEW
+}) => {
   const dispatch = useDispatch();
   const [replies, setReplies] = useState<any>([]);
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<any | null>(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
@@ -110,40 +127,43 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({ postId, isVis
   const router = useRouter();
   const { personas, token } = useFirebaseAuth();
 
-  const { scrollTo, gestureHandler, rBottomSheetStyle } = useCommentSectionAnimation(onClose);
+  // MOCK DATA for local testing and overflow verification
+  const MOCK_COMMENTS: ArticleComment[] = __DEV__ ? Array.from({ length: 12 }).map((_, i) => ({
+    id: `mock-${i}`,
+    postId: postId,
+    personaId: 'mock-p',
+    parent_id: null,
+    parentId: null,
+    body: i === 0
+      ? "This is a dummy comment to check the visual spacing and shadows."
+      : `Test comment #${i + 1} to test the scrolling behavior. It should overflow nicely now.`,
+    comment: `Test comment #${i + 1}`,
+    upvotes: Math.floor(Math.random() * 100),
+    downvotes: 0,
+    score: Math.floor(Math.random() * 100),
+    state: 'visible',
+    createdAt: new Date(Date.now() - i * 3600 * 1000).toISOString(),
+    created_at: new Date(Date.now() - i * 3600 * 1000).toISOString(),
+    persona: {
+      id: 'mock-p',
+      displayName: ['Test User', 'Alex', 'Sam', 'Jordan', 'Casey'][i % 5],
+      avatarUrl: null,
+      type: 'user'
+    } as any,
+    likes: [],
+    replies: [],
+    replies_count: 0,
+  })) : [];
 
-  // Enhanced keyboard handling
-  useEffect(() => {
-    const keyboardWillShowListener = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-        // Scroll to bottom when keyboard shows
-        if (flatListRef.current) {
-          setTimeout(() => {
-            flatListRef.current?.scrollToEnd({ animated: true });
-          }, 100);
-        }
-      }
-    );
+  const displayComments = (commentsData.length === 0 && __DEV__) ? MOCK_COMMENTS : commentsData;
 
-    const keyboardWillHideListener = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => setKeyboardHeight(0)
-    );
-
-    return () => {
-      keyboardWillShowListener.remove();
-      keyboardWillHideListener.remove();
-    };
-  }, []);
 
   const loadComments = async (showLoading = true) => {
     if (showLoading) {
       dispatch(setLoading(true));
     }
     try {
-      scrollTo(0);
+      // scrollTo removed - using FlatList ref directly now
       const response = await apigetAllComments(postId, token || undefined, sortBy);
       dispatch(setComment(response || []));
       dispatch(setError(null));
@@ -199,10 +219,10 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({ postId, isVis
       return;
     }
 
-    if (newComment.trim() === ''){
+    if (newComment.trim() === '') {
       setIsLoading(false)
       return;
-    } 
+    }
 
     const commentText = newComment.trim();
     const parentId = replyingTo?.id;
@@ -240,11 +260,11 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({ postId, isVis
         parentId,
         token
       );
-      
+
       // Replace optimistic comment with real one
       if (res && res.length > 0) {
-        const realComment = res.find(c => 
-          c.body === commentText && 
+        const realComment = res.find(c =>
+          c.body === commentText &&
           (c.parentId === parentId || (!c.parentId && !parentId))
         );
         if (realComment) {
@@ -281,171 +301,149 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({ postId, isVis
     }
   }, []);
 
+  // P0 FIX: Proper scroll handler using Reanimated
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      if (commentsScrollY) {
+        commentsScrollY.value = event.contentOffset.y;
+      }
+    }
+  });
+
+  const { bottom } = useSafeAreaInsets();
+
+  // Create animated style for composer position & padding
+  // IDEAL FIX: Interpolate padding to vanish as keyboard rises, preventing gaps
+  const composerStyle = useAnimatedStyle(() => {
+    const kbHeight = keyboardHeightSV?.value ?? 0;
+
+    // Interpolate padding: At 0 keyboard, we need safe area. As keyboard rises, padding goes to 0.
+    // We clamp it so once keyboard is appearing, padding is gone.
+    const padding = interpolate(
+      kbHeight,
+      [0, 20], // Threshold: as soon as keyboard starts moving
+      [bottom, 0],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      // PLATFORM SMART: iOS needs manual lift, Android has OS lift
+      bottom: Platform.OS === 'ios' ? kbHeight : 0,
+      paddingBottom: padding, // Safe area handling when KB is closed
+      backgroundColor: 'transparent',
+      zIndex: 100,
+    };
+  }, [keyboardHeightSV, bottom]);
+
   if (!isVisible) return null;
 
-  const INPUT_CONTAINER_HEIGHT = 94;
-
   return (
-    <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}>
-      <PanGestureHandler onGestureEvent={gestureHandler}>
-        <Animated.View style={[styles.modalContainer, rBottomSheetStyle]}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.commentContainer}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-          >
-            <View style={styles.header}>
-              <Text style={styles.headerText}>Comments</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TouchableOpacity
-                  onPress={() => handleSortChange('new')}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 16,
-                    backgroundColor: sortBy === 'new' ? '#007AFF' : '#F0F0F0',
-                  }}
-                >
-                  <Text style={{
-                    color: sortBy === 'new' ? '#FFF' : '#666',
-                    fontSize: 12,
-                    fontWeight: '600',
-                  }}>
-                    New
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => handleSortChange('top')}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 16,
-                    backgroundColor: sortBy === 'top' ? '#007AFF' : '#F0F0F0',
-                  }}
-                >
-                  <Text style={{
-                    color: sortBy === 'top' ? '#FFF' : '#666',
-                    fontSize: 12,
-                    fontWeight: '600',
-                  }}>
-                    Top
-                  </Text>
-                </TouchableOpacity>
-              </View>
+    <View style={{ flex: 1 }}>
+      {/* Parent (ExpandNewsItem) now provides a static full-screen container */}
+      <View style={styles.commentContainer}>
+
+        {/* TRANSLATABLE CONTENT: This layer moves for Docked view */}
+        <Animated.View style={[{ flex: 1 }, contentTranslateStyle]}>
+          <View style={[styles.header, { paddingTop: 24 }]}>
+            <Text style={{ fontFamily: 'Geist-Medium', fontSize: 18, color: '#000000' }}>
+              All comments
+            </Text>
+          </View>
+
+          {commentsLoading && commentsData.length === 0 && (
+            <View style={{ padding: 16 }}>
+              {[1, 2, 3].map((i) => (
+                <CommentSkeleton key={i} />
+              ))}
+            </View>
+          )}
+
+
+
+          <NativeViewGestureHandler disallowInterruption={true}>
+            <Animated.FlatList
+              ref={flatListRef}
+              data={displayComments}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <UserComment
+                  comment={item}
+                  navigation={navigation}
+                  onReply={() => handleReply(item)}
+                  replies={replies[item.id] || []}
+                  postId={postId}
+                />
+              )}
+              style={styles.commentList}
+              contentContainerStyle={{
+                paddingBottom: 120 + (keyboardHeight || 0) + bottom
+              }}
+              onScroll={scrollHandler}
+              scrollEventThrottle={16}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#007AFF" />
+              }
+              ListEmptyComponent={
+                !commentsLoading ? (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Text style={{ color: '#999', fontSize: 14 }}>No comments yet.</Text>
+                  </View>
+                ) : null
+              }
+            />
+          </NativeViewGestureHandler>
+        </Animated.View>
+
+        {/* COMPOSER: OUTSIDE the translated layer, pinned to device floor */}
+        <Animated.View style={composerStyle}>
+          <BlurView intensity={0} style={{ paddingHorizontal: 16, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{
+              flex: 1,
+              backgroundColor: '#FFFFFF',
+              borderRadius: 28,
+              paddingHorizontal: 20,
+              paddingVertical: Platform.OS === 'ios' ? 12 : 8,
+              minHeight: 52,
+              marginRight: 12,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: 'rgba(0,0,0,0.02)'
+            }}>
+              <ExpandableInput
+                inputRef={inputRef}
+                value={newComment}
+                onChangeText={setNewComment}
+                placeholder={replyingTo ? "Write a reply..." : "Whatsay?"}
+                placeholderTextColor="#9CA3AF"
+                replyingTo={replyingTo}
+                onCancelReply={() => { setReplyingTo(null); Keyboard.dismiss(); }}
+              />
             </View>
 
-            {commentsLoading && commentsData.length === 0 && (
-              <View style={{ padding: 16 }}>
-                {[1, 2, 3].map((i) => (
-                  <CommentSkeleton key={i} />
-                ))}
+            <TouchableOpacity onPress={handlePostComment} disabled={isLoading || !newComment.trim()}>
+              <View style={{ width: 52, height: 52, borderRadius: 26, elevation: 5, backgroundColor: 'white', padding: 2 }}>
+                <LinearGradient
+                  colors={isLoading ? ['#9CA3AF', '#6B7280'] : (newComment.trim() ? ['#6E85E3', '#5B7083'] : ['#8E9BB3', '#728aa1'])}
+                  style={{ flex: 1, borderRadius: 24, alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Image source={require('@/assets/commentIcon.webp')} style={{ width: 22, height: 22, tintColor: 'white', marginLeft: -2, marginTop: 2 }} resizeMode="contain" />
+                </LinearGradient>
               </View>
-            )}
-
-            <NativeViewGestureHandler disallowInterruption={true}>
-              <FlatList
-                ref={flatListRef}
-                data={commentsData}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <UserComment
-                    comment={item}
-                    navigation={navigation}
-                    onReply={() => handleReply(item)}
-                    replies={replies[item.id] || []}
-                    postId={postId}
-                  />
-                )}
-                style={styles.commentList}
-                contentContainerStyle={{
-                  paddingBottom: INPUT_CONTAINER_HEIGHT + keyboardHeight + 16
-                }}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                    tintColor="#007AFF"
-                  />
-                }
-                ListEmptyComponent={
-                  !commentsLoading ? (
-                    <View style={{ padding: 20, alignItems: 'center' }}>
-                      <Text style={{ color: '#999', fontSize: 14 }}>
-                        No comments yet. Be the first to comment!
-                      </Text>
-                    </View>
-                  ) : null
-                }
-                removeClippedSubviews={Platform.OS === 'android'}
-                maxToRenderPerBatch={10}
-                updateCellsBatchingPeriod={50}
-                initialNumToRender={10}
-                windowSize={10}
-                getItemLayout={undefined}
-                scrollEventThrottle={16}
-              />
-            </NativeViewGestureHandler>
-
-            <BlurView intensity={10} tint="light" style={[styles.inputContainer, { bottom: keyboardHeight }]}>
-              <LinearGradient
-                colors={['rgba(243, 244, 246, 0)', '#F3F4F6']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
-              />
-              <View style={styles.inputField}>
-                {loggedInUserData && personas && personas.length > 0 && (
-                  <PersonaSelector
-                    selectedPersonaId={selectedPersonaId}
-                    onPersonaChange={setSelectedPersonaId}
-                    style={{ marginBottom: 8 }}
-                  />
-                )}
-                <View style={styles.inputWrapper} className={`h-${replyingTo ? 'full' : ''}`}>
-                  <ExpandableInput
-                    inputRef={inputRef}
-                    value={newComment}
-                    onChangeText={setNewComment}
-                    placeholder={replyingTo ? "Write a reply..." : "Whatsay?"}
-                    placeholderTextColor="#C4C4C4"
-                    replyingTo={replyingTo}
-                    onCancelReply={() => {
-                      setReplyingTo(null);
-                      Keyboard.dismiss();
-                    }}
-                  />
-
-                  <TouchableOpacity onPress={handlePostComment} className='flex flex-row' disabled={isLoading}>
-
-                    {isLoading ?
-                      <ImageBackground source={require('@/assets/bg/BtnBg.webp')} className='w-[40px] h-[40px] flex items-center justify-center'>
-                        <LottieView
-                          autoPlay
-                          ref={animation}
-                          style={{
-                            width: 20,
-                            height: 20
-                          }}
-                          // Find more Lottie files at https://lottiefiles.com/featured
-                          source={require('@/assets/animations/loading.json')}
-                          hardwareAccelerationAndroid={true}
-                          renderMode="AUTOMATIC"
-                          speed={1}
-                          cacheStrategy="strong"
-                        />
-                      </ImageBackground>
-                      :
-                      <Image source={require('@/assets/commentIcon.webp')} style={styles.commentIcon} />
-                    }
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </BlurView>
-          </KeyboardAvoidingView>
+            </TouchableOpacity>
+          </BlurView>
         </Animated.View>
-      </PanGestureHandler>
+      </View>
     </View>
   );
 };
+
 
 export default CommentSectionModal;

@@ -116,7 +116,7 @@ export default function RootLayout() {
         <FirebaseAuthProvider>
           <AuthProvider>
             <SafeAreaProvider>
-              <GestureHandlerRootView style={{ flex: 1 }}>
+              <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#F3F4F6' }}>
                 {/* Temporary version overlay on splash screen */}
                 {splashVisible && (
                   <View style={styles.versionOverlay} pointerEvents="none">

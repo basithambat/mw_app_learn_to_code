@@ -55,12 +55,16 @@ export async function createComment(input: CreateCommentInput): Promise<CommentW
   }
 
   // 1) Verify persona belongs to user
-  const persona = await prisma.persona.findUnique({
-    where: { id: personaId },
+  // 1) Verify persona belongs to user
+  const persona = await prisma.persona.findFirst({
+    where: {
+      id: personaId,
+      userId: userId
+    },
   });
 
-  if (!persona || persona.userId !== userId) {
-    throw new Error('Persona does not belong to user');
+  if (!persona) {
+    throw new Error('Unauthorized: You do not own this persona.');
   }
 
   // 2) Get user for status check

@@ -1,0 +1,21 @@
+{
+    "extends": [
+        "expo",
+        "plugin:react-hooks/recommended"
+    ],
+    "plugins": [
+        "react-hooks"
+    ],
+    "rules": {
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "warn",
+        "no-use-before-define": [
+            "error",
+            {
+                "functions": false,
+                "classes": true,
+                "variables": true
+            }
+        ]
+    }
+}

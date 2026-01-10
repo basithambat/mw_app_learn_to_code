@@ -3,7 +3,7 @@
  * Shows edit/delete/report options for comments
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useFirebaseAuth } from '@/config/firebaseAuthContext';
@@ -34,7 +34,7 @@ export const CommentActionsMenu: React.FC<CommentActionsMenuProps> = ({
 
   const handleReport = async (reason: 'spam' | 'hate' | 'harassment' | 'misinfo' | 'other') => {
     if (!token) return;
-    
+
     setReporting(true);
     try {
       await apiReportComment(comment.id, reason, undefined, token);
@@ -50,7 +50,7 @@ export const CommentActionsMenu: React.FC<CommentActionsMenuProps> = ({
 
   const handleBlockUser = async () => {
     if (!token || !comment.user_id) return;
-    
+
     try {
       await apiBlockUser(comment.user_id, token);
       onClose();
@@ -103,7 +103,7 @@ export const CommentActionsMenu: React.FC<CommentActionsMenuProps> = ({
               )}
             </>
           )}
-          
+
           {!isOwnComment && (
             <>
               <TouchableOpacity
@@ -134,12 +134,12 @@ export const CommentActionsMenu: React.FC<CommentActionsMenuProps> = ({
                 style={[styles.menuItem, styles.dangerItem]}
                 onPress={handleBlockUser}
               >
-                <AntDesign name="userdelete" size={20} color="#FF3B30" />
+                <AntDesign name="deleteuser" size={20} color="#FF3B30" />
                 <Text style={[styles.menuItemText, styles.dangerText]}>Block User</Text>
               </TouchableOpacity>
             </>
           )}
-          
+
           <TouchableOpacity
             style={[styles.menuItem, styles.cancelItem]}
             onPress={onClose}

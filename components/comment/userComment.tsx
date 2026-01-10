@@ -7,9 +7,9 @@ import { ArticleComment } from '@/types';
 import { loggedInUserDataSelector } from '@/redux/slice/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { apiCommentLikesToogle, apiEditComment, apiDeleteComment, apigetAllComments } from '@/api/apiComments';
-import { 
-  updateVoteOptimistic, 
-  updateLike, 
+import {
+  updateVoteOptimistic,
+  updateLike,
   removeCommentOptimistic,
   updateCommentBody,
   setComment,
@@ -35,6 +35,9 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
   const dispatch = useDispatch();
   const router = useRouter()
 
+  const isRemoved = comment.state === 'removed_user' || comment.state === 'removed_moderator';
+  const commentBody = isRemoved ? '[removed]' : (comment.body || comment.comment);
+
   const [showReplies, setShowReplies] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -44,8 +47,6 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
   const displayName = comment.persona?.displayName || comment.user?.name || 'Anonymous';
   const avatarUrl = comment.persona?.avatarUrl || comment.user?.pic || null;
   const badge = comment.persona?.badge;
-  const isRemoved = comment.state === 'removed_user' || comment.state === 'removed_moderator';
-  const commentBody = isRemoved ? '[removed]' : (comment.body || comment.comment);
   const upvotes = comment.upvotes ?? 0;
   const downvotes = comment.downvotes ?? 0;
   const score = comment.score ?? (upvotes - downvotes);
@@ -56,7 +57,7 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
 
   const handleLike = async () => {
     if (isVoting) return;
-    
+
     try {
       if (!loggedInUserData || !token) {
         return router.push('/login/loginScreen');
@@ -64,7 +65,7 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
 
       setIsVoting(true);
       const currentVote = hasLiked ? 'none' : 'up';
-      
+
       // Optimistic update
       dispatch(updateVoteOptimistic({
         commentId: comment.id,
@@ -104,7 +105,7 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
 
   const handleEdit = async () => {
     if (!token || !loggedInUserData) return;
-    
+
     if (editText.trim() === '') {
       Alert.alert('Error', 'Comment cannot be empty');
       return;
@@ -126,7 +127,7 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
 
   const handleDelete = async () => {
     if (!token) return;
-    
+
     Alert.alert(
       'Delete Comment',
       'Are you sure you want to delete this comment?',
@@ -139,17 +140,17 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
             try {
               // Optimistic removal
               dispatch(removeCommentOptimistic(comment.id));
-              
+
               await apiDeleteComment(comment.id, token);
-              
+
               // Reload comments to ensure consistency
               const updated = await apigetAllComments(postId, token);
-              dispatch(setComment(updated));
+              dispatch(setComment(updated as any));
             } catch (error: any) {
               Alert.alert('Error', error.message || 'Failed to delete comment');
               // Reload on error to restore
               const updated = await apigetAllComments(postId, token);
-              dispatch(setComment(updated));
+              dispatch(setComment(updated as any));
             }
           },
         },
@@ -158,72 +159,86 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
   };
 
   return (
-    <ScrollView className="border-b border-gray-200">
+    <View className="border-b border-gray-100">
       <View className="p-4">
         <View className="flex-row">
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} className="w-10 h-10 rounded-full mr-3" />
-          ) : (
-            <View className="w-10 h-10 rounded-full mr-3 bg-gray-300 items-center justify-center">
-              <Text className="text-white font-semibold text-sm">
-                {displayName.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
+          <TouchableOpacity>
+            {avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} className="w-9 h-9 rounded-full mr-3" />
+            ) : (
+              <View className="w-9 h-9 rounded-full mr-3 bg-gray-200 items-center justify-center">
+                <Text className="text-gray-500 font-semibold text-xs">
+                  {displayName.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
           <View className="flex-1">
-            <View className="flex-row items-center">
-              <Text className="font-geist text-[#000000]/60 text-[12px] capitalize">
+            <View className="flex-row items-baseline mb-1">
+              <Text className="font-geist-medium text-[#111] text-[14px] mr-2">
                 {displayName}
               </Text>
+              <Text className="font-geist text-gray-500 text-[12px]">
+                3 mins ago {/* Placeholder for timeago(comment.createdAt) */}
+              </Text>
               {badge && (
-                <View className="ml-2 bg-blue-100 px-2 py-0.5 rounded">
+                <View className="ml-2 bg-blue-50 px-1.5 py-0.5 rounded">
                   <Text className="text-blue-600 text-[10px] font-semibold">
-                    {badge === 'google_verified' ? '✓ Google' : '✓ Phone'}
+                    {badge === 'google_verified' ? '✓' : '✓'}
                   </Text>
                 </View>
               )}
             </View>
+
             {!isEditing ? (
-              <Text className={`mt-1 font-geist text-[16px] ${isRemoved ? 'text-gray-400 italic' : 'text-[#000000]'}`}>
+              <Text className={`font-geist text-[15px] leading-5 ${isRemoved ? 'text-gray-400 italic' : 'text-[#222]'}`}>
                 {commentBody}
               </Text>
             ) : null}
+
             {comment.editedAt && (
               <Text className="mt-1 text-gray-400 text-[10px]">(edited)</Text>
-            )}
-            <View className="flex-row mt-2 items-center">
+            )
+            }
 
-              <TouchableOpacity onPress={handleLike} className="flex-row items-center mr-4">
+            <View className="flex-row mt-3 items-center gap-5">
+              <TouchableOpacity onPress={handleLike} className="flex-row items-center">
                 <AntDesign
                   size={16}
                   name={hasLiked ? "heart" : "hearto"}
-                  color={hasLiked ? "red" : "black"}
+                  color={hasLiked ? "#FF385C" : "#717171"} // Airbnb Red for like
                 />
-                <Text className="ml-1 font-geist text-[#000000]/60 text-[12px]">
-                  {score > 0 ? `+${score}` : score}
-                </Text>
+                {score > 0 && (
+                  <Text className="ml-1.5 font-geist text-[#717171] text-[12px]">
+                    {score}
+                  </Text>
+                )}
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={toggleReplies} className="flex-row items-center mr-4">
-                <Feather name="message-circle" size={16} color="gray" />
-                <Text className="ml-1">{comment.replies?.length ?? 0}</Text>
+              <TouchableOpacity onPress={onReply} className="flex-row items-center">
+                <Image source={require('@/assets/reply.webp')} style={{ width: 14, height: 14, opacity: 0.6 }} />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={onReply} className="flex-row items-center mr-4">
-                <Image source={replyIcon} style={{ width: 16, height: 16 }} />
-              </TouchableOpacity>
-
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setShowActionsMenu(true)}
-                className="flex-row items-center"
+                className="flex-row items-center ml-auto"
               >
-                <Feather name="more-horizontal" size={16} color="gray" />
+                <Feather name="more-horizontal" size={16} color="#717171" />
               </TouchableOpacity>
 
             </View>
+
+            <TouchableOpacity onPress={toggleReplies} className="mt-3">
+              {comment.replies?.length > 0 && (
+                <Text className="text-[#717171] text-[12px] font-semibold">
+                  {showReplies ? 'Hide replies' : `View ${comment.replies.length} replies`}
+                </Text>
+              )}
+            </TouchableOpacity>
+
           </View>
         </View>
-        
+
         <CommentActionsMenu
           comment={comment}
           isVisible={showActionsMenu}
@@ -235,7 +250,7 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
           onDelete={handleDelete}
           currentUserId={loggedInUserData?.user?.id}
         />
-        
+
         {isEditing && (
           <View className="mt-2 p-3 bg-gray-50 rounded-lg">
             <TextInput
@@ -276,7 +291,7 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
           </View>
         )}
       </View>
-    </ScrollView>
+    </View>
   );
 };
 

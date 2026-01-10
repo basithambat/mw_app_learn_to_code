@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
+    "dev:all": "concurrently \"npm run dev\" \"npm run worker\"",
     "start": "node dist/index.js",
     "worker": "tsx src/worker.ts",
     "worker:prod": "node dist/worker.js",
@@ -50,6 +51,7 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.15.0",
     "prisma": "^5.19.1",
     "tsx": "^4.19.2",
