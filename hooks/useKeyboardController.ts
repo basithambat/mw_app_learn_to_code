@@ -40,14 +40,19 @@ export function useKeyboardController(): KeyboardController {
     const onShow = (e: KeyboardEvent) => {
         const h = e.endCoordinates?.height ?? 0;
 
-        // Ignore tiny fluctuations
-        if (Math.abs(h - lastHeightRef.current) <= 10 && isKeyboardVisibleJS) return;
+        // Stickier Filter: Ignore fluctuations under 15px if already visible
+        // This prevents jitter during emoji/predictive bar changes.
+        const delta = Math.abs(h - lastHeightRef.current);
+        if (isKeyboardVisibleJS && delta < 15) return;
 
         lastHeightRef.current = h;
         setKeyboardState(true, h);
     };
 
     const onHide = () => {
+        // Only trigger hide if we were actually visible
+        if (lastHeightRef.current === 0 && !isKeyboardVisibleJS) return;
+
         lastHeightRef.current = 0;
         setKeyboardState(false, 0);
     };

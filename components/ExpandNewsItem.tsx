@@ -118,8 +118,9 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     const heroLayerStyle = useAnimatedStyle(() => {
         const isWriting = keyboardVisibleSV.value === 1;
 
-        // Simplify: Direct top anchor without scale division
-        const topAnchor = interpolate(
+        // NEW: Core translateY logic for the top anchor
+        // This replaces the "top" property animation which causes seams.
+        const topAnchorY = interpolate(
             commentProgress.value,
             [0, 1],
             [0, top],
@@ -136,7 +137,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
 
         return {
             position: 'absolute' as const,
-            top: topAnchor,
+            top: 0, // FIXED TOP
             left: 0,
             right: 0,
             // Stable zIndex based on visibility state (no flicker)
