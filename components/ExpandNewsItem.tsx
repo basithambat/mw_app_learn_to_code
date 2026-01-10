@@ -115,16 +115,21 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         return withTiming(keyboardVisibleSV.value, { duration: 200 });
     });
 
+    // Airbnb Anchor Logic: Define the "Hard Top" for the Card
+    const HERO_TOP = top + 2;
+
     // Hero layer style - uses writingLiftSV for stable layer depth
     const heroLayerStyle = useAnimatedStyle(() => {
         const isWriting = keyboardVisibleSV.value === 1;
 
         // NEW: Core translateY logic for the top anchor
-        // This replaces the "top" property animation which causes seams.
+        // Base position is HERO_TOP.
+        // Reading (0) -> needs to be at 0 onscreen -> offset = -HERO_TOP.
+        // Docked (1) -> needs to be at HERO_TOP onscreen -> offset = 0.
         const topAnchorY = interpolate(
             commentProgress.value,
             [0, 1],
-            [0, top],
+            [-HERO_TOP, 0],
             Extrapolate.CLAMP
         );
 
@@ -138,7 +143,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
 
         return {
             position: 'absolute' as const,
-            top: 0, // FIXED TOP
+            top: HERO_TOP, // FIXED at Safe Area + Gap
             left: 0,
             right: 0,
             // Stable zIndex based on visibility state (no flicker)
@@ -171,10 +176,11 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     // NEW: Content-only translation to preserve the physical floor for the composer
     const sheetContentTranslateStyle = useAnimatedStyle(() => {
         // 1. Core Docked Position (interpolated from closed to open)
+        // Corrected for HERO_TOP base
         const progressTop = interpolate(
             commentProgress.value,
             [0, 1],
-            [SCREEN_HEIGHT, LAYOUT.HERO_COMMENTS_HEIGHT + top],
+            [SCREEN_HEIGHT, LAYOUT.HERO_COMMENTS_HEIGHT + HERO_TOP],
             Extrapolate.CLAMP
         );
 
