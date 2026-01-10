@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "tsx watch src/index.ts",
+    "dev": "PORT=3002 tsx watch src/index.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run worker\"",
     "start": "node dist/index.js",
     "worker": "tsx src/worker.ts",

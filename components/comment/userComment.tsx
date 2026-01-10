@@ -18,6 +18,8 @@ import { useRouter } from 'expo-router';
 import { AuthPayload } from '@/types/UserTypes';
 import { useFirebaseAuth } from '@/config/firebaseAuthContext';
 import { CommentActionsMenu } from './CommentActionsMenu';
+import { LikeIcon, ReplyIcon } from '../icons/CommentIcons'; // NEW ICONS
+import { ReactionPicker } from './ReactionPicker';
 
 interface UserCommentProps {
   comment: ArticleComment;
@@ -42,6 +44,8 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(commentBody);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
 
   // Get display info from persona or fallback to user (for backward compat)
   const displayName = comment.persona?.displayName || comment.user?.name || 'Anonymous';
@@ -166,20 +170,20 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
             {avatarUrl ? (
               <Image source={{ uri: avatarUrl }} className="w-9 h-9 rounded-full mr-3" />
             ) : (
-              <View className="w-9 h-9 rounded-full mr-3 bg-gray-200 items-center justify-center">
-                <Text className="text-gray-500 font-semibold text-xs">
+              <View className="w-9 h-9 rounded-full mr-3 bg-gray-100 items-center justify-center">
+                <Text className="text-gray-500 font-geist-medium text-[11px] leading-[36px] text-center">
                   {displayName.charAt(0).toUpperCase()}
                 </Text>
               </View>
             )}
           </TouchableOpacity>
           <View className="flex-1">
-            <View className="flex-row items-baseline mb-1">
-              <Text className="font-geist-medium text-[#111] text-[14px] mr-2">
+            <View className="flex-row items-center mb-1">
+              <Text className="font-geist-medium text-[#222222] text-[15px] mr-2">
                 {displayName}
               </Text>
-              <Text className="font-geist text-gray-500 text-[12px]">
-                3 mins ago {/* Placeholder for timeago(comment.createdAt) */}
+              <Text className="font-geist text-[#717171] text-[14px]">
+                · 3 mins ago
               </Text>
               {badge && (
                 <View className="ml-2 bg-blue-50 px-1.5 py-0.5 rounded">
@@ -191,7 +195,7 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
             </View>
 
             {!isEditing ? (
-              <Text className={`font-geist text-[15px] leading-5 ${isRemoved ? 'text-gray-400 italic' : 'text-[#222]'}`}>
+              <Text className={`font-geist text-[16px] leading-6 ${isRemoved ? 'text-gray-400 italic' : 'text-[#222222]'} mt-1`}>
                 {commentBody}
               </Text>
             ) : null}
@@ -201,31 +205,62 @@ const UserComment: React.FC<UserCommentProps> = ({ comment, navigation, onReply,
             )
             }
 
-            <View className="flex-row mt-3 items-center gap-5">
-              <TouchableOpacity onPress={handleLike} className="flex-row items-center">
-                <AntDesign
-                  size={16}
-                  name={hasLiked ? "heart" : "hearto"}
-                  color={hasLiked ? "#FF385C" : "#717171"} // Airbnb Red for like
-                />
-                {score > 0 && (
-                  <Text className="ml-1.5 font-geist text-[#717171] text-[12px]">
-                    {score}
-                  </Text>
+            <View className="flex-row mt-5 items-center gap-6">
+              <View>
+                {showReactionPicker && (
+                  <ReactionPicker
+                    onSelect={(emoji) => {
+                      setSelectedReaction(emoji);
+                      if (!hasLiked) handleLike();
+                    }}
+                    onClose={() => setShowReactionPicker(false)}
+                  />
                 )}
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleLike}
+                  onLongPress={() => setShowReactionPicker(true)}
+                  className="flex-row items-center"
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  activeOpacity={0.7}
+                >
+                  {selectedReaction ? (
+                    <Text className="text-[20px]">{selectedReaction}</Text>
+                  ) : (
+                    <LikeIcon
+                      size={20}
+                      color={hasLiked ? "#FF385C" : "#000000"}
+                      opacity={hasLiked ? 1 : 0.6}
+                    />
+                  )}
+                  {score > 0 && (
+                    <Text className="ml-2 font-geist text-[#717171] text-[12px]">
+                      {score}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
 
-              <TouchableOpacity onPress={onReply} className="flex-row items-center">
-                <Image source={require('@/assets/reply.webp')} style={{ width: 14, height: 14, opacity: 0.6 }} />
+              <TouchableOpacity
+                onPress={onReply}
+                className="flex-row items-center"
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                activeOpacity={0.7}
+              >
+                <ReplyIcon
+                  size={20}
+                  color="#000000"
+                  opacity={0.6}
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => setShowActionsMenu(true)}
                 className="flex-row items-center ml-auto"
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                activeOpacity={0.7}
               >
-                <Feather name="more-horizontal" size={16} color="#717171" />
+                <Feather name="more-horizontal" size={18} color="#717171" />
               </TouchableOpacity>
-
             </View>
 
             <TouchableOpacity onPress={toggleReplies} className="mt-3">

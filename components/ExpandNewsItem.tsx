@@ -2,6 +2,7 @@ import { useExpandedArticleGestures } from '@/hooks/useExpandedArticleGestures';
 import { useKeyboardController } from '@/hooks/useKeyboardController';
 import { LAYOUT, ANIMATION } from '@/constants/layout';
 import { AntDesign } from '@expo/vector-icons';
+import Svg, { Rect, G, Path, Defs, ClipPath } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
@@ -12,6 +13,7 @@ import {
     TouchableOpacity,
     Dimensions,
     ScrollView,
+    StyleSheet,
 } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -37,13 +39,17 @@ interface ExpandNewsItemProps {
     initialArticleId: number | string;
     isVisible: boolean;
     onClose: () => void;
+    initialTitle?: string;
+    initialImage?: string;
 }
 
 const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     items,
     initialArticleId,
     isVisible,
-    onClose
+    onClose,
+    initialTitle,
+    initialImage
 }) => {
     const flatListRef = useRef<FlatList>(null);
     const [categories, setCategories] = useState<CategoryType[]>([]);
@@ -58,12 +64,10 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     } = useKeyboardController();
 
     const { top, bottom } = useSafeAreaInsets();
-    // Use unified gesture hook - single source of truth
     const {
         mode,
         verticalPanGesture,
         containerStyle,
-        // dimStyle, // REMOVED - we define our own based on uiStateSV
         openComments,
         closeComments,
         dismissDetail,
@@ -72,9 +76,10 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         dismissY,
     } = useExpandedArticleGestures({
         onDismiss: onClose,
-        isWritingSV: keyboardVisibleSV, // PRIORITY FIX
+        isWritingSV: keyboardVisibleSV,
     });
 
+    const entranceProgress = useSharedValue(0);
     const [activeArticle, setActiveArticle] = useState(initialArticleId);
 
     // Calculate initial index based on the ID
@@ -87,9 +92,20 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
 
     // Get current item
     const currentItem = useMemo(() => {
-        const index = items.findIndex((item: any) => item.id === activeArticle);
-        return items[index >= 0 ? index : 0];
-    }, [items, activeArticle]);
+        const index = items.findIndex((item: any) => item.id.toString() === activeArticle.toString());
+        if (index >= 0) return items[index];
+
+        // If items aren't loaded yet, use the initial metadata passed via route params
+        if (initialTitle || initialImage) {
+            return {
+                id: initialArticleId,
+                title: initialTitle,
+                image_url: initialImage,
+                summary: 'Loading summary...'
+            };
+        }
+        return null;
+    }, [items, activeArticle, initialTitle, initialImage]);
 
     // Get current category
     const currentCategory = useMemo(() => {
@@ -116,7 +132,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     });
 
     // Airbnb Anchor Logic: Define the "Hard Top" for the Card
-    const HERO_TOP = top + 2;
+    const HERO_TOP = top + 12; // Staff Fix: 12px buffer (was 2px) for radii visibility
 
     // Hero layer style - uses writingLiftSV for stable layer depth
     const heroLayerStyle = useAnimatedStyle(() => {
@@ -152,7 +168,8 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
             overflow: 'hidden' as const,
             pointerEvents: isWriting ? 'none' : 'auto',
             transform: [
-                { translateY: scrollOffset + dismissY.value }
+                // P0 FIX: Add topAnchorY to prevent drift into status bar
+                { translateY: topAnchorY + scrollOffset + dismissY.value }
             ]
         };
     }, [commentProgress, articleScrollY, top, dismissY, keyboardVisibleSV]);
@@ -160,23 +177,28 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     // Sheet layer style - NOW A STATIC FULL-SCREEN MASK
     const sheetLayerStyle = useAnimatedStyle(() => {
         const isWriting = keyboardVisibleSV.value === 1;
+        // P0 FIX: Layer opacity - ensure it's completely hidden in reading mode
+        const opacity = interpolate(commentProgress.value, [0, 0.1], [0, 1], Extrapolate.CLAMP);
+        // P0 FIX: Strictly use activeModeSV for pointer events to prevent "stuck" touches
+        const isCommentsActive = commentProgress.value > 0.5;
+
         return {
             position: 'absolute' as const,
             left: 0,
             right: 0,
             top: 0,
             bottom: 0,
+            opacity, // STAFF FIX: Zero opacity in reading mode
             // Stable layering based on visibility state
             zIndex: isWriting ? 50 : 20,
             elevation: isWriting ? 50 : 0,
-            pointerEvents: mode === 'comments' ? 'auto' : 'none',
+            pointerEvents: (isCommentsActive) ? 'auto' : 'none',
         };
-    }, [mode, keyboardVisibleSV]);
+    }, [commentProgress, keyboardVisibleSV]);
 
     // NEW: Content-only translation to preserve the physical floor for the composer
     const sheetContentTranslateStyle = useAnimatedStyle(() => {
         // 1. Core Docked Position (interpolated from closed to open)
-        // Corrected for HERO_TOP base
         const progressTop = interpolate(
             commentProgress.value,
             [0, 1],
@@ -185,19 +207,32 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         );
 
         // 2. Writing Offset: Smoothly lifts the sheet using writingLiftSV
-        // This decouples the movement from raw keyboard height jitter.
         const finalTranslate = progressTop * (1 - writingLiftSV.value);
 
         return {
             flex: 1,
             backgroundColor: '#F3F4F6',
-            // Radius only applies during Writing mode (0 in Docked)
             borderTopLeftRadius: writingLiftSV.value * 22,
             borderTopRightRadius: writingLiftSV.value * 22,
             overflow: 'hidden' as const,
-            transform: [{ translateY: finalTranslate }]
+            transform: [{ translateY: finalTranslate }],
+            // STAFF FIX: High-threshold ghosting (0.99) to hide layout-driven realignment jitter
+            opacity: interpolate(commentProgress.value, [0.99, 1], [0, 1], Extrapolate.CLAMP),
         };
-    }, [top, commentProgress, writingLiftSV]);
+    }, [top, commentProgress, writingLiftSV, HERO_TOP]);
+
+    // Backdrop style (orchestrated fading)
+    const backdropStyle = useAnimatedStyle(() => {
+        const entranceOpacity = interpolate(entranceProgress.value, [0, 0.4], [0, 1], Extrapolate.CLAMP);
+        const dismissOpacity = interpolate(dismissY.value, [0, SCREEN_HEIGHT * 0.4], [1, 0], Extrapolate.CLAMP);
+
+        return {
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: '#F3F4F6',
+            opacity: entranceOpacity * dismissOpacity,
+            zIndex: 0,
+        };
+    }, [entranceProgress, dismissY]);
 
     // Re-implement Dim Style for the Writing state
     const dimLayerStyle = useAnimatedStyle(() => {
@@ -223,7 +258,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         currentIndexRef.current = initialIndex;
         setActiveArticle(initialArticleId);
 
-        if (flatListRef.current) {
+        if (flatListRef.current && initialIndex >= 0) {
             const scrollToCorrectPosition = () => {
                 try {
                     flatListRef.current?.scrollToIndex({
@@ -231,28 +266,18 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                         animated: false
                     });
                 } catch (error) {
-                    try {
-                        flatListRef.current?.scrollToOffset({
-                            offset: initialIndex * SCREEN_DIMENSIONS.width,
-                            animated: false
-                        });
-                    } catch (offsetError) {
-                        setTimeout(() => {
-                            flatListRef.current?.scrollToOffset({
-                                offset: initialIndex * SCREEN_DIMENSIONS.width,
-                                animated: false
-                            });
-                        }, 100);
-                    }
+                    flatListRef.current?.scrollToOffset({
+                        offset: initialIndex * SCREEN_DIMENSIONS.width,
+                        animated: false
+                    });
                 }
             };
 
-            requestAnimationFrame(() => {
-                scrollToCorrectPosition();
-                setTimeout(scrollToCorrectPosition, 100);
-            });
+            scrollToCorrectPosition();
+            // Immediate entrance on UI thread
+            entranceProgress.value = withTiming(1, { duration: 500 }); // Slightly faster duration (500ms)
         }
-    }, [initialArticleId, initialIndex, isVisible]);
+    }, [initialArticleId, initialIndex, isVisible, items.length]);
 
     // Fetch categories
     useEffect(() => {
@@ -316,11 +341,24 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     }), []);
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#F3F4F6' }}>
+        <View style={{ flex: 1, backgroundColor: 'transparent' }}>
             <GestureDetector gesture={verticalPanGesture}>
                 <View style={{ flex: 1 }}>
+                    {/* PLANE 0: BACKGROUND (Orchestrated) */}
+                    <Animated.View style={backdropStyle} />
+
                     {/* PLANE 1: ARTICLE CONTENT (Text and Scroll) */}
-                    <Animated.View style={[{ flex: 1, zIndex: 1, backgroundColor: '#F3F4F6' }, containerStyle]}>
+                    <Animated.View style={[
+                        { flex: 1, zIndex: 1 },
+                        containerStyle,
+                        useAnimatedStyle(() => ({
+                            opacity: entranceProgress.value,
+                            transform: [
+                                ...(containerStyle ? (Array.isArray(containerStyle) ? containerStyle[0].transform || [] : []) : []),
+                                { translateY: interpolate(entranceProgress.value, [0, 1], [30, 0], Extrapolate.CLAMP) }
+                            ]
+                        }))
+                    ]}>
                         <Animated.ScrollView
                             scrollEnabled={mode === 'reading'}
                             showsVerticalScrollIndicator={false}
@@ -330,8 +368,8 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                                 }
                             })}
                             scrollEventThrottle={16}
-                            style={{ flex: 1, backgroundColor: '#F3F4F6' }}
-                            contentContainerStyle={{ backgroundColor: '#F3F4F6' }}
+                            style={{ flex: 1 }}
+                            contentContainerStyle={{ backgroundColor: 'transparent' }}
                         >
                             <ArticleContent
                                 item={currentItem}
@@ -343,8 +381,8 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                         </Animated.ScrollView>
 
                         {/* Pagination Indicators - anchored to reading mode container */}
-                        {mode === 'reading' && (
-                            <View style={{
+                        <Animated.View style={[
+                            {
                                 position: 'absolute',
                                 top: 10,
                                 left: 0,
@@ -354,40 +392,68 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                                 paddingHorizontal: 20,
                                 gap: 4,
                                 zIndex: 10,
-                            }}>
-                                {items.map((_, index) => (
-                                    <View
-                                        key={index}
-                                        style={{
-                                            flex: 1,
-                                            height: 2,
-                                            backgroundColor: currentIndexRef.current === index
-                                                ? 'white'
-                                                : 'rgba(255,255,255,0.3)',
-                                            borderRadius: 2,
-                                        }}
-                                    />
-                                ))}
-                            </View>
-                        )}
+                                flex: 1,
+                            },
+                            useAnimatedStyle(() => ({
+                                opacity: interpolate(commentProgress.value, [0, 0.1], [1, 0], Extrapolate.CLAMP),
+                                pointerEvents: commentProgress.value < 0.1 ? 'auto' : 'none'
+                            }))
+                        ]}>
+                            {items.map((_, index) => (
+                                <View
+                                    key={index}
+                                    style={{
+                                        flex: 1,
+                                        height: 2,
+                                        backgroundColor: currentIndexRef.current === index
+                                            ? 'white'
+                                            : 'rgba(255,255,255,0.3)',
+                                        borderRadius: 2,
+                                    }}
+                                />
+                            ))}
+                        </Animated.View>
 
-                        {/* Up Arrow Button */}
-                        {mode === 'reading' && (
+                        {/* Up Arrow Button - Fixed Position */}
+                        <Animated.View
+                            style={[
+                                {
+                                    position: 'absolute',
+                                    bottom: 24 + bottom,
+                                    alignSelf: 'center',
+                                    zIndex: 60,
+                                },
+                                useAnimatedStyle(() => ({
+                                    opacity: interpolate(commentProgress.value, [0, 0.2], [1, 0], Extrapolate.CLAMP),
+                                    transform: [{ translateY: interpolate(commentProgress.value, [0, 0.2], [0, 10], Extrapolate.CLAMP) }],
+                                    pointerEvents: commentProgress.value < 0.1 ? 'auto' : 'none'
+                                }))
+                            ]}
+                        >
                             <TouchableOpacity
                                 onPress={openComments}
-                                style={{
-                                    position: 'absolute',
-                                    bottom: 24,
-                                    alignSelf: 'center',
-                                    backgroundColor: 'rgba(0,0,0,0.6)',
-                                    borderRadius: 24,
-                                    padding: 12,
-                                    zIndex: 10,
-                                }}
+                                activeOpacity={0.8}
                             >
-                                <AntDesign name="up" size={20} color="white" />
+                                <Svg width="48" height="28" viewBox="0 0 48 28" fill="none">
+                                    <Rect width="48" height="28" rx="14" fill="#F7F7F7" />
+                                    <G clipPath="url(#clip0_125_3055)">
+                                        <Path
+                                            d="M20 16L24 12L28 16"
+                                            stroke="#9DA2A9"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            fill="none" // STAFF FIX: Ensure no accidental fill
+                                        />
+                                    </G>
+                                    <Defs>
+                                        <ClipPath id="clip0_125_3055">
+                                            <Rect width="24" height="24" fill="white" transform="translate(12 2)" />
+                                        </ClipPath>
+                                    </Defs>
+                                </Svg>
                             </TouchableOpacity>
-                        )}
+                        </Animated.View>
 
                         {/* Invisible FlatList for horizontal paging only */}
                         <View style={{ position: 'absolute', opacity: 0, pointerEvents: mode === 'reading' ? 'auto' : 'none' }}>
@@ -428,6 +494,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                             keyboardHeight={keyboardHeightJS}
                             keyboardHeightSV={keyboardHeightSV}
                             contentTranslateStyle={sheetContentTranslateStyle}
+                            commentProgress={commentProgress}
                         />
                     </Animated.View>
 
@@ -436,6 +503,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                         <HeroCard
                             item={currentItem}
                             commentProgress={commentProgress}
+                            entranceProgress={entranceProgress}
                         />
                     </Animated.View>
                 </View>

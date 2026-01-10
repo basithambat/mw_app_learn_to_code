@@ -4,20 +4,21 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 
 interface UnreadPillProps {
   count: number;
   onPress: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
-export const UnreadPill: React.FC<UnreadPillProps> = ({ count, onPress }) => {
+export const UnreadPill: React.FC<UnreadPillProps> = ({ count, onPress, style }) => {
   if (count === 0) {
     return null;
   }
 
   return (
-    <TouchableOpacity onPress={onPress} style={styles.container}>
+    <TouchableOpacity onPress={onPress} style={[styles.container, style]}>
       <View style={styles.pill}>
         <Text style={styles.text}>{count} unread</Text>
       </View>

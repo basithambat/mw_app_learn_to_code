@@ -52,32 +52,32 @@ export interface CommentPersona {
 }
 
 export interface ArticleComment {
-  article_id?: string; // ID of the article associated with the comment (legacy)
-  postId?: string; // New: post ID
-  comment: string; // Content of the comment
-  body?: string; // New: comment body (same as comment)
-  created_at: string; // Date and time the comment was created
-  createdAt?: string; // New: ISO date string
-  id: string; // Unique identifier for the comment
-  likes?: string[]; // Array of user IDs who liked the comment (legacy)
-  upvotes?: number; // New: upvote count
-  downvotes?: number; // New: downvote count
-  score?: number; // New: comment score
-  parent_id: string | null; // Parent comment ID (if it's a reply)
-  parentId?: string | null; // New: parent ID
-  replies: Comment[]; // Array of replies to the comment
-  replies_count?: number; // Total number of replies
-  updated_at?: string; // Date and time the comment was last updated
-  editedAt?: string | null; // New: edited timestamp
-  state?: string; // New: comment state (visible, removed_user, etc.)
-  user?: User; // User who posted the comment (legacy - for backward compat)
-  user_id?: string; // User ID of the commenter (legacy)
-  persona?: CommentPersona; // New: persona info (public identity)
-  personaId?: string; // New: persona ID
+  article_id?: string;
+  postId?: string;
+  comment: string;
+  body?: string;
+  created_at: string;
+  createdAt?: string;
+  id: string;
+  likes?: string[];
+  upvotes?: number;
+  downvotes?: number;
+  score?: number;
+  parent_id: string | null;
+  parentId?: string | null;
+  replies: ArticleComment[]; // Recursive type
+  replies_count?: number;
+  updated_at?: string;
+  editedAt?: string | null;
+  state?: string;
+  user?: User;
+  user_id?: string;
+  persona?: CommentPersona;
+  personaId?: string;
 }
 
 import { TextInput } from 'react-native';
- export interface ExpandableInputProps {
+export interface ExpandableInputProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder: string;

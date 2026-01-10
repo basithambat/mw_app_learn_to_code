@@ -14,10 +14,10 @@ const PRODUCTION_API_URL = 'https://whatsay-api-278662370606.asia-south1.run.app
 
 export const getIngestionApiBase = () => {
   if (__DEV__) {
-    // For physical devices, use your computer's IP address
-    // For iOS simulator/Android emulator, localhost works
-    // Your IP: 192.168.0.103 (update if changed)
-    return 'http://192.168.0.103:3002';
+    // Using adb reverse proxy for reliable local development
+    // Run: adb reverse tcp:3002 tcp:3002
+    // This maps device's localhost:3002 to computer's localhost:3002
+    return 'http://localhost:3002';
   }
   // Production: Use GCP Cloud Run URL
   // If URL contains 'XXXXX', it means deployment is pending
@@ -35,7 +35,7 @@ const INGESTION_API_BASE = getIngestionApiBase();
  * Map Inshorts categories to UI category names
  */
 const CATEGORY_MAP: Record<string, string> = {
-  'all': 'All News',
+  'all': 'Curated for you',
   'business': 'Business',
   'sports': 'Sports',
   'technology': 'Technology',

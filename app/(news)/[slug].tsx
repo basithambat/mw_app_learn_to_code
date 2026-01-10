@@ -7,7 +7,12 @@ import Loader from '@/components/loader';
 import { getLast48HoursRange } from '@/utils/DataAndTimeHelper';
 
 const NewsDetails = () => {
-  const { categoryId, slug } = useLocalSearchParams<{ categoryId: string, slug: string }>();
+  const { categoryId, slug, initialTitle, initialImage } = useLocalSearchParams<{
+    categoryId: string,
+    slug: string,
+    initialTitle?: string,
+    initialImage?: string
+  }>();
   const [newsArticles, setNewsArticles] = useState<any>();
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -24,27 +29,19 @@ const NewsDetails = () => {
     })()
   }, [categoryId]);
 
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Loader />
-      </View>
-    );
-  }
-
-  if (!newsArticles || !slug) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text>News item not found</Text>
-      </View>
-    );
-  }
+  // STAFF-LEVEL OPTIMIZATION: Non-blocking render. 
+  // We show ExpandNewsItem immediately with the primary article data we have, 
+  // ensuring the Hero image appears instantly without waiting for the full category fetch.
+  const displayArticles = newsArticles || [];
+  const targetArticleExists = displayArticles.some((a: any) => a.id.toString() === slug);
 
   return (
     <View style={styles.container}>
       <ExpandNewsItem
-        items={newsArticles}
+        items={displayArticles.length > 0 ? displayArticles : []}
         initialArticleId={slug}
+        initialTitle={initialTitle}
+        initialImage={initialImage}
         isVisible={true}
         onClose={() => router.back()}
       />
@@ -68,7 +65,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
   },
   container: {
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "transparent",
     flex: 1,
   },
 });

@@ -53,15 +53,31 @@ const ArticleContent: React.FC<ArticleContentProps> = ({
     heroHeightSV,
     topInset,
 }) => {
-    // Pure style for ArticleContent - opaque and pinned
+    // P0 FIX: Article content fades out when comments open
     const contentStyle = useAnimatedStyle(() => {
+        const opacity = interpolate(
+            commentProgress.value,
+            [0, 0.4], // STAFF FIX: Widen threshold for smoother arrival
+            [1, 0],
+            Extrapolate.CLAMP
+        );
+
+        const translateY = interpolate(
+            commentProgress.value,
+            [0, 1],
+            [0, 15], // STAFF FIX: 15px glide (was 50px) for "Less Motion"
+            Extrapolate.CLAMP
+        );
+
         return {
-            paddingTop: 16, // Visual breathing room only
-            opacity: 1,
-            backgroundColor: '#F3F4F6', // FORCE GRAY BASE
+            paddingTop: 16,
+            opacity,
+            backgroundColor: 'transparent', // STAFF FIX: Use transparent to avoid layout color jumps
             flex: 1,
+            transform: [{ translateY }],
+            pointerEvents: commentProgress.value > 0.5 ? 'none' : 'auto',
         };
-    }, []);
+    }, [commentProgress]);
 
     // P0 FIX: Moved from inline to fix "View with tag not registered" crash
     const spacerStyle = useAnimatedStyle(() => {
@@ -77,6 +93,28 @@ const ArticleContent: React.FC<ArticleContentProps> = ({
         };
     }, [heroHeightSV, commentProgress, topInset]);
 
+    // P1 FIX: Black title fades out and translates up when comments open
+    const titleStyle = useAnimatedStyle(() => {
+        const opacity = interpolate(
+            commentProgress.value,
+            [0, 0.3],
+            [1, 0],
+            Extrapolate.CLAMP
+        );
+
+        const translateY = interpolate(
+            commentProgress.value,
+            [0, 0.3],
+            [0, -10], // Staff Fix: 10px glide (was 30px)
+            Extrapolate.CLAMP
+        );
+
+        return {
+            opacity,
+            transform: [{ translateY }],
+        };
+    }, [commentProgress]);
+
     return (
         <Animated.View style={contentStyle}>
             {/* RELATIVE SPACER: This view pushes the text down exactly by the hero height */}
@@ -84,11 +122,13 @@ const ArticleContent: React.FC<ArticleContentProps> = ({
             <Animated.View style={spacerStyle} />
 
             <View style={{ paddingHorizontal: 20 }}>
-                <Text className="text-[20px] font-domine mb-[12px]">
-                    {item.title}
-                </Text>
+                <Animated.View style={titleStyle}>
+                    <Text className="text-[20px] font-domine mb-[12px]">
+                        {item?.title || 'Loading...'}
+                    </Text>
+                </Animated.View>
                 <Text className="font-geist font-light mb-4 text-[16px] leading-6">
-                    {item.summary}
+                    {item?.summary || 'Extracting key insights...'}
                 </Text>
 
                 {category && (

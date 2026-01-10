@@ -40,6 +40,7 @@ import { LAYOUT } from '@/constants/layout';
 interface HeroCardProps {
     item: any;
     commentProgress: SharedValue<number>;
+    entranceProgress?: SharedValue<number>;
 }
 
 /**
@@ -50,7 +51,7 @@ interface HeroCardProps {
  * 
  * NO aspectRatio - height is controlled by design tokens
  */
-const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress }) => {
+const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress, entranceProgress }) => {
     // Unified radius shared across children for hardened clipping
     const borderRadiusSV = useDerivedValue(() => {
         return interpolate(
@@ -80,16 +81,9 @@ const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress }) => {
         return {
             height,
             width,
-            alignSelf: 'center' as const,
-            borderBottomLeftRadius: borderRadiusSV.value,
-            borderBottomRightRadius: borderRadiusSV.value,
-            // SHADOW FIX: No overflow hidden here, so shadow casts
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
+            borderRadius: borderRadiusSV.value, // Staff Fix: apply to all corners
             shadowOpacity: interpolate(commentProgress.value, [0, 1], [0, 0.15], Extrapolate.CLAMP),
-            shadowRadius: 8,
-            elevation: interpolate(commentProgress.value, [0, 1], [0, 5], Extrapolate.CLAMP),
-            backgroundColor: '#F3F4F6',
+            elevation: interpolate(commentProgress.value, [0, 1], [0, 8], Extrapolate.CLAMP),
         };
     }, [commentProgress]);
 
@@ -102,34 +96,37 @@ const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress }) => {
             Extrapolate.CLAMP
         );
 
+        const entranceOpacity = entranceProgress ? entranceProgress.value : 1;
+
         return {
-            opacity,
-            borderBottomLeftRadius: borderRadiusSV.value,
-            borderBottomRightRadius: borderRadiusSV.value,
+            opacity: opacity * entranceOpacity,
+            borderRadius: borderRadiusSV.value,
             overflow: 'hidden' as const,
         };
-    }, [commentProgress]);
+    }, [commentProgress, entranceProgress]);
 
     // Title overlay (only visible when comments open)
     const titleStyle = useAnimatedStyle(() => {
         const translateY = interpolate(
             commentProgress.value,
             [0, 1],
-            [200, 0],
+            [48, 0], // Staff Fix: 48px glide (was 200px)
             Extrapolate.CLAMP
         );
         const opacity = interpolate(
             commentProgress.value,
-            [0, 1],
+            [0, 0.4], // Staff Fix: Expedited arrival
             [0, 1],
             Extrapolate.CLAMP
         );
 
+        const entranceOpacity = entranceProgress ? entranceProgress.value : 1;
+
         return {
             transform: [{ translateY }],
-            opacity,
+            opacity: opacity * entranceOpacity,
         };
-    }, [commentProgress]);
+    }, [commentProgress, entranceProgress]);
 
     // Drag indicator
     const dragIndicatorStyle = useAnimatedStyle(() => {
@@ -140,19 +137,33 @@ const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress }) => {
             Extrapolate.CLAMP
         );
 
-        return { opacity };
-    }, [commentProgress]);
+        const entranceOpacity = entranceProgress ? entranceProgress.value : 1;
+
+        return { opacity: opacity * entranceOpacity };
+    }, [commentProgress, entranceProgress]);
 
     // Master clipping container style
     const clippingStyle = useAnimatedStyle(() => {
+        const entranceOpacity = entranceProgress ?
+            interpolate(entranceProgress.value, [0, 0.2], [0, 1], Extrapolate.CLAMP) : 1;
+
         return {
-            borderBottomLeftRadius: borderRadiusSV.value,
-            borderBottomRightRadius: borderRadiusSV.value,
+            borderRadius: borderRadiusSV.value,
+            opacity: entranceOpacity,
         };
-    }, [borderRadiusSV]);
+    }, [borderRadiusSV, entranceProgress]);
 
     return (
-        <Animated.View style={[{ alignSelf: 'center' }, heroStyle]}>
+        <Animated.View style={[
+            {
+                alignSelf: 'center',
+                backgroundColor: '#F3F4F6',
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowRadius: 8,
+            },
+            heroStyle
+        ]}>
             {/* MASTER ART BOX: The single point of clipping for Image + Gradient */}
             <Animated.View style={[
                 StyleSheet.absoluteFillObject,
@@ -163,7 +174,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress }) => {
                 clippingStyle
             ]}>
                 {/* 1. Hero Image */}
-                {item.image_url ? (
+                {item?.image_url ? (
                     <Image
                         source={{ uri: item.image_url }}
                         style={StyleSheet.absoluteFillObject}
@@ -198,7 +209,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress }) => {
                 style={[
                     {
                         position: 'absolute',
-                        bottom: 32,
+                        bottom: 32, // Staff Fix: 32px (subtle elevation)
                         left: 20,
                         right: 20,
                     },
@@ -206,7 +217,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress }) => {
                 ]}
             >
                 <Text className="text-[22px] font-domine text-white">
-                    {item.title}
+                    {item?.title}
                 </Text>
             </Animated.View>
 

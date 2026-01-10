@@ -101,7 +101,7 @@ export const FirebaseAuthProvider = ({ children }: FirebaseAuthProviderProps) =>
         const storedUser = await AsyncStorage.getItem('firebase_user');
         const storedToken = await AsyncStorage.getItem('firebase_token');
         const storedPersonas = await AsyncStorage.getItem('personas');
-        
+
         if (storedUser && storedToken) {
           // User will be set by onAuthStateChanged, but we can set token immediately
           setToken(storedToken);
@@ -112,6 +112,49 @@ export const FirebaseAuthProvider = ({ children }: FirebaseAuthProviderProps) =>
               console.warn('Failed to parse stored personas:', e);
             }
           }
+        } else if (__DEV__) {
+          // STAFF DEV BYPASS: Automatically inject a test identity for instant reaction testing
+          const mockUser = {
+            uid: 'dev-staff-123',
+            email: 'dev@whatsay.app',
+            displayName: 'Basith (Staff)',
+            photoURL: 'https://placehold.co/100x100?text=B',
+            phoneNumber: '+1234567890'
+          };
+          const mockPersonas: Persona[] = [
+            {
+              id: 'p1',
+              displayName: 'Basith (Staff)',
+              type: 'verified',
+              avatarUrl: 'https://placehold.co/100x100?text=B',
+              badge: 'google_verified',
+              isDefault: true
+            },
+            {
+              id: 'p2',
+              displayName: 'Anonymous Agent',
+              type: 'anonymous',
+              avatarUrl: null,
+              badge: null,
+              isDefault: false
+            }
+          ];
+
+          setUserState(mockUser as any);
+          setToken('mock-dev-token');
+          setPersonas(mockPersonas);
+
+          dispatch(setUser({
+            user: {
+              id: mockUser.uid,
+              email: mockUser.email,
+              name: mockUser.displayName,
+              pic: mockUser.photoURL,
+              phone: mockUser.phoneNumber,
+            },
+            token: 'mock-dev-token',
+          }));
+          console.log('🔑 Dev Bypass: Logged in as Basith (Staff)');
         }
       } catch (error) {
         console.error('Error checking stored user:', error);

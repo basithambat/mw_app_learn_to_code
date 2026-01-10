@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useDispatch, useSelector } from 'react-redux';
 import { loggedInUserDataSelector } from '@/redux/slice/userSlice';
 import { useRouter } from 'expo-router';
-import { apiAddArticleComment, apigetAllComments } from '@/api/apiComments';
+import { apiAddArticleComment, apigetAllComments, Comment as ApiComment } from '@/api/apiComments';
 import {
   commentsDataSelector,
   setComment,
@@ -46,6 +46,7 @@ interface CommentSectionModalProps {
   keyboardHeight?: number;
   keyboardHeightSV?: SharedValue<number>;
   contentTranslateStyle?: any; // NEW PROP for Fixed-Floor
+  commentProgress?: SharedValue<number>;
 }
 
 const ExpandableInput: React.FC<ExpandableInputProps> = ({
@@ -71,7 +72,7 @@ const ExpandableInput: React.FC<ExpandableInputProps> = ({
       {replyingTo && (
         <View style={styles.replyingToInner}>
           <Text style={styles.replyingToText}>
-            Replying to <Text className='capitalize'>{replyingTo?.user.name}</Text>
+            Replying to <Text className='capitalize'>{replyingTo?.persona?.displayName || replyingTo?.user?.name || 'Anonymous'}</Text>
           </Text>
           <TouchableOpacity onPress={onCancelReply}>
             <AntDesign name="close" size={16} color="#9DA2A9" />
@@ -104,7 +105,8 @@ const ExpandableInput: React.FC<ExpandableInputProps> = ({
 const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
   postId, isVisible, onClose, commentsScrollY,
   keyboardHeight = 0, keyboardHeightSV,
-  contentTranslateStyle // NEW
+  contentTranslateStyle, // NEW
+  commentProgress // NEW
 }) => {
   const dispatch = useDispatch();
   const [replies, setReplies] = useState<any>([]);
@@ -138,7 +140,9 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
     body: i === 0
       ? "This is a dummy comment to check the visual spacing and shadows."
       : `Test comment #${i + 1} to test the scrolling behavior. It should overflow nicely now.`,
-    comment: `Test comment #${i + 1}`,
+    comment: i === 0
+      ? "This is a dummy comment to check the visual spacing and shadows."
+      : `Test comment #${i + 1}`,
     upvotes: Math.floor(Math.random() * 100),
     downvotes: 0,
     score: Math.floor(Math.random() * 100),
@@ -163,15 +167,21 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
     if (showLoading) {
       dispatch(setLoading(true));
     }
+    const startTime = Date.now();
     try {
-      // scrollTo removed - using FlatList ref directly now
       const response = await apigetAllComments(postId, token || undefined, sortBy);
-      dispatch(setComment(response || []));
+
+      // STAFF FIX: Ensure shimmer shows for at least 600ms to avoid "flickering"
+      const elapsedTime = Date.now() - startTime;
+      if (showLoading && elapsedTime < 600) {
+        await new Promise(resolve => setTimeout(resolve, 600 - elapsedTime));
+      }
+
+      dispatch(setComment(response as any[] as ArticleComment[]));
       dispatch(setError(null));
     } catch (error: any) {
       console.warn("Comments Fetching Error", error);
       dispatch(setError(error.message || 'Failed to load comments'));
-      // Set empty array on error to prevent crashes
       dispatch(setComment([]));
     } finally {
       if (showLoading) {
@@ -233,6 +243,7 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
       id: `temp-${Date.now()}`,
       postId,
       personaId: selectedPersonaId,
+      parent_id: parentId || null,
       parentId: parentId || null,
       body: commentText,
       comment: commentText,
@@ -242,7 +253,7 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
       state: 'visible',
       createdAt: new Date().toISOString(),
       created_at: new Date().toISOString(),
-      persona: personas?.find(p => p.id === selectedPersonaId) || null,
+      persona: (personas?.find(p => p.id === selectedPersonaId) as any) || null,
       likes: [],
       replies: [],
       replies_count: 0,
@@ -269,7 +280,7 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
           (c.parentId === parentId || (!c.parentId && !parentId))
         );
         if (realComment) {
-          dispatch(updateComment(realComment));
+          dispatch(updateComment(realComment as any as ArticleComment));
         } else {
           // If we can't find it, reload all comments
           await loadComments(false);
@@ -314,12 +325,11 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
   const { bottom } = useSafeAreaInsets();
 
   // Create animated style for composer position & padding
-  // IDEAL FIX: Interpolate padding to vanish as keyboard rises, preventing gaps
   const composerStyle = useAnimatedStyle(() => {
     const kbHeight = keyboardHeightSV?.value ?? 0;
+    const progress = commentProgress?.value ?? (isVisible ? 1 : 0);
 
     // Interpolate padding: At 0 keyboard, we need safe area. As keyboard rises, padding goes to 0.
-    // We clamp it so once keyboard is appearing, padding is gone.
     const padding = interpolate(
       kbHeight,
       [0, 20], // Threshold: as soon as keyboard starts moving
@@ -336,8 +346,11 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
       paddingBottom: padding, // Safe area handling when KB is closed
       backgroundColor: 'transparent',
       zIndex: 100,
+      // P0 FIX: Hide composer when view is off
+      opacity: interpolate(progress, [0.7, 1], [0, 1], Extrapolate.CLAMP),
+      pointerEvents: progress > 0.9 ? 'auto' : 'none',
     };
-  }, [keyboardHeightSV, bottom]);
+  }, [keyboardHeightSV, commentProgress, isVisible, bottom]);
 
   // No early return - we keep this in the tree for 1:1 "glued" gestures
   // Visibility is controlled by parent's translation and pointerEvents
@@ -349,18 +362,18 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
 
         {/* TRANSLATABLE CONTENT: This layer moves for Docked view */}
         <Animated.View style={[{ flex: 1 }, contentTranslateStyle]}>
-          <View style={[styles.header, { paddingTop: safeAreaInsets.top + 16 }]}>
+          <View style={[styles.header, { paddingTop: 16 }]}>
             <Text style={{ fontFamily: 'Geist-Medium', fontSize: 18, color: '#000000' }}>
               All comments
             </Text>
           </View>
 
           {commentsLoading && commentsData.length === 0 && (
-            <View style={{ padding: 16 }}>
+            <>
               {[1, 2, 3].map((i) => (
                 <CommentSkeleton key={i} />
               ))}
-            </View>
+            </>
           )}
 
 
@@ -372,9 +385,9 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <UserComment
-                  comment={item}
+                  comment={item as ArticleComment}
                   navigation={navigation}
-                  onReply={() => handleReply(item)}
+                  onReply={() => handleReply(item as any)}
                   replies={replies[item.id] || []}
                   postId={postId}
                 />

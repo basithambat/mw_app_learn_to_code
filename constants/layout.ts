@@ -14,11 +14,11 @@ export const LAYOUT = {
 
     // Border radius
     HERO_RADIUS_READING: 0,
-    HERO_RADIUS_COMMENTS: 20,
+    HERO_RADIUS_COMMENTS: 24, // Staff Fix: 24px for deep rounded look
 
     // Hero heights (fixed % of screen)
     HERO_READING_HEIGHT: SCREEN_HEIGHT * 0.40,
-    HERO_COMMENTS_HEIGHT: SCREEN_HEIGHT * 0.30, // Pinned card heighten dimensions
+    HERO_COMMENTS_HEIGHT: SCREEN_HEIGHT * 0.34, // Staff Fix: 34% (was 30%) for better visibility
 
     // Screen dimensions
     SCREEN_WIDTH,

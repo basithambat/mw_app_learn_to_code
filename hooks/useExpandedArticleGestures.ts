@@ -25,7 +25,7 @@ const HORIZONTAL_FAIL_THRESHOLD = 50;
 // Distance thresholds
 const OPEN_DISTANCE = 260; // Distance to open comments
 const CLOSE_DISTANCE = 220; // Distance to close comments
-const DISMISS_THRESHOLD = 0.22 * SCREEN_HEIGHT; // 22% of screen height
+const DISMISS_THRESHOLD = 0.18 * SCREEN_HEIGHT; // P0 FIX: 18% (was 22%) - easier to complete dismiss
 
 // Velocity thresholds
 const VELOCITY_OPEN = -900; // Negative = upward
@@ -76,6 +76,10 @@ export const useExpandedArticleGestures = ({
     const directionLock = useSharedValue<DirectionLock>('none');
     const commentsScrollY = useSharedValue(0); // Synced from CommentSectionModal
 
+    // UI-THREAD STATE MACHINE (0 = reading, 1 = comments)
+    // This is the single source of truth for worklets.
+    const activeModeSV = useSharedValue(0);
+
     // Context for gesture (replaces useRef pattern)
     const gestureContext = useSharedValue({ startY: 0 });
 
@@ -85,16 +89,19 @@ export const useExpandedArticleGestures = ({
 
     const openComments = useCallback(() => {
         setMode('comments');
+        activeModeSV.value = 1;
         commentProgress.value = withSpring(1, SPRING_CONFIG_SMOOTH);
-    }, [commentProgress]);
+    }, [commentProgress, activeModeSV]);
 
     const closeComments = useCallback(() => {
         setMode('reading');
+        activeModeSV.value = 0;
         commentProgress.value = withSpring(0, SPRING_CONFIG_SNAPPY);
-    }, [commentProgress]);
+    }, [commentProgress, activeModeSV]);
 
     const dismissDetail = useCallback(() => {
         setMode('dismissing');
+        // activeModeSV.value stays at 0
         dismissY.value = withSpring(SCREEN_HEIGHT, SPRING_CONFIG_SMOOTH, (finished) => {
             if (finished) {
                 runOnJS(onDismiss)();
@@ -144,8 +151,8 @@ export const useExpandedArticleGestures = ({
                     return;
                 }
 
-                // MODE: reading
-                if (mode === 'reading') {
+                // MODE: reading (activeModeSV === 0)
+                if (activeModeSV.value === 0) {
                     // Swipe UP (negative translationY) → update commentProgress
                     if (translationY < 0) {
                         const progress = Math.min(1, Math.abs(translationY) / OPEN_DISTANCE);
@@ -157,9 +164,8 @@ export const useExpandedArticleGestures = ({
                     }
                 }
 
-                // MODE: comments
-                // Only allow drag down when scroll is at top
-                if (mode === 'comments') {
+                // MODE: comments (activeModeSV === 1)
+                else if (activeModeSV.value === 1) {
                     // PRIORITY: If Writing (keyboard visible), swipe down triggers dismiss first
                     if (isWritingSV && isWritingSV.value === 1 && translationY > 0) {
                         if (translationY > 20) {
@@ -173,6 +179,9 @@ export const useExpandedArticleGestures = ({
                         // commentProgress goes from 1 → 0 as user drags down
                         const progress = Math.max(0, 1 - translationY / CLOSE_DISTANCE);
                         commentProgress.value = progress;
+
+                        // Keep dismissY at 0 to ensure we stay on the article.
+                        dismissY.value = 0;
                     }
                 }
             })
@@ -183,34 +192,45 @@ export const useExpandedArticleGestures = ({
                 // Reset direction lock
                 directionLock.value = 'none';
 
-                // MODE: comments
-                // Close comments if threshold met
-                if (mode === 'comments') {
-                    // Check if user dragged enough OR has enough velocity to close
+                // MODE: comments (activeModeSV === 1)
+                if (activeModeSV.value === 1) {
+                    // P0 FIX: Always prioritize returning to Reading Mode
+                    // Check if user dragged enough OR has enough velocity to just close comments
                     if (commentProgress.value < 0.65 || velocityY > VELOCITY_CLOSE) {
                         // Close comments → return to reading mode
-                        commentProgress.value = withSpring(0, SPRING_CONFIG_SNAPPY);
-                        runOnJS(closeComments)();
+                        activeModeSV.value = 0;
+
+                        // STAFF FIX: Use a smoother spring and only flip JS mode after arrival to prevent pop-ins
+                        commentProgress.value = withSpring(0, { damping: 24, stiffness: 180 }, (finished) => {
+                            if (finished) runOnJS(setMode)('reading');
+                        });
+                        dismissY.value = withSpring(0, { damping: 24, stiffness: 180 });
                     } else {
                         // Snap back to fully open
                         commentProgress.value = withSpring(1, SPRING_CONFIG_SNAPPY);
+                        dismissY.value = withSpring(0, SPRING_CONFIG_SNAPPY);
                     }
                     return;
                 }
 
-                // MODE: reading
-                if (mode === 'reading') {
+                // MODE: reading (activeModeSV === 0)
+                if (activeModeSV.value === 0) {
                     // Check if user swiped up enough to open comments
                     if (commentProgress.value > 0.35 || velocityY < VELOCITY_OPEN) {
                         // Open comments
+                        activeModeSV.value = 1;
                         commentProgress.value = withSpring(1, SPRING_CONFIG_SMOOTH);
-                        runOnJS(openComments)();
+                        runOnJS(setMode)('comments');
                     }
                     // Check if user swiped down enough to dismiss screen
                     else if (dismissY.value > DISMISS_THRESHOLD || velocityY > VELOCITY_DISMISS) {
                         // Dismiss detail screen
-                        dismissY.value = withSpring(SCREEN_HEIGHT, SPRING_CONFIG_SMOOTH);
-                        runOnJS(dismissDetail)();
+                        runOnJS(setMode)('dismissing');
+                        dismissY.value = withSpring(SCREEN_HEIGHT, SPRING_CONFIG_SMOOTH, (finished) => {
+                            if (finished) {
+                                runOnJS(onDismiss)();
+                            }
+                        });
                     }
                     // RESET - snap back to neutral
                     else {
@@ -224,7 +244,7 @@ export const useExpandedArticleGestures = ({
                 // Always reset direction lock when gesture ends
                 directionLock.value = 'none';
             });
-    }, [mode, openComments, closeComments, dismissDetail, commentProgress, dismissY, commentsScrollY, directionLock, gestureContext]);
+    }, [mode, openComments, closeComments, dismissDetail, commentProgress, dismissY, commentsScrollY, directionLock, gestureContext, activeModeSV, onDismiss]);
 
     // ============================================================================
     // Derived Animated Styles

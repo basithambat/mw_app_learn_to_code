@@ -111,7 +111,7 @@ android {
 
     namespace "com.safwanambat.whatsay"
     defaultConfig {
-        applicationId "com.whatsay"
+        applicationId "com.safwanambat.whatsay"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -199,3 +199,7 @@ if (rnVersion < versionToNumber(0, 75, 0)) {
     apply from: new File(["node", "--print", "require.resolve('@react-native-community/cli-platform-android/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim(), "../native_modules.gradle");
     applyNativeModulesAppBuildGradle(project)
 }
+
+// Apply Google Services plugin for Firebase
+apply plugin: 'com.google.gms.google-services'
+

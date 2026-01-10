@@ -20,6 +20,7 @@ import Animated, {
 import { getLast48HoursRange } from '@/utils/DataAndTimeHelper';
 import { useSelector } from 'react-redux';
 import { loggedInUserDataSelector } from '@/redux/slice/userSlice';
+import { userPreferredCategoriesDataSelector } from '@/redux/slice/categorySlice';
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
@@ -45,6 +46,7 @@ const DiscoverScreen = () => {
     const isRefreshing = useSharedValue(false);
 
     const loggedInUserData = useSelector(loggedInUserDataSelector);
+    const userPreferredCategories = useSelector(userPreferredCategoriesDataSelector);
 
     const getCurrentGradientColors = () => {
         try {
@@ -70,7 +72,7 @@ const DiscoverScreen = () => {
                 console.error("Error fetching categories:", error);
             }
         })();
-    }, [location]);
+    }, [location, userPreferredCategories, loggedInUserData?.user?.id]);
 
     const handleGradientChange = () => {
         setCurrentGradientIndex((prevIndex) => (prevIndex + 1) % GRADIENT_COLORS.length);

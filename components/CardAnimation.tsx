@@ -43,10 +43,12 @@ export const Card: React.FC<CardProps> = ({
   const CARD_HEIGHT = CARD_WIDTH * (320 / 273);
   const isFirst = index === 0;
 
-  // Airbnb-grade spring configs
+  const isPressed = useSharedValue(0);
+
+  // Tinder-level spring configs (High stiffness, low mass)
   const springConfigSnap = useMemo(() => ({
-    damping: 25,
-    stiffness: 200,
+    damping: 28,
+    stiffness: 350,
     mass: 0.5,
     overshootClamping: false,
     restDisplacementThreshold: 0.01,
@@ -54,9 +56,9 @@ export const Card: React.FC<CardProps> = ({
   }), []);
 
   const springConfigSwipe = useMemo(() => ({
-    damping: 20,
-    stiffness: 150,
-    mass: 1,
+    damping: 22,
+    stiffness: 250,
+    mass: 0.8,
   }), []);
 
   const getRotationValues = (id: number, categoryIdx?: number) => {
@@ -100,20 +102,32 @@ export const Card: React.FC<CardProps> = ({
   }, [onPress]);
 
   const panGesture = Gesture.Pan()
-    .activeOffsetX([-10, 10])
+    .activeOffsetX([-2, 2]) // Tightened from 5 to 2 for instant tracking
+    .failOffsetY([-8, 8])   // Immediately hand over to ScrollView if vertical drag detected
     .onUpdate((event) => {
       if (isFirst) {
         translateX.value = event.translationX;
+        // Drive activeIndex based on horizontal progress to smooth background card transitions
+        activeIndex.value = interpolate(
+          Math.abs(event.translationX),
+          [0, SCREEN_WIDTH * 0.4],
+          [0, 1],
+          Extrapolate.CLAMP
+        );
       }
     })
-    .onEnd((event) => {
+    .onFinalize((event) => {
       if (isFirst) {
-        const direction = translateX.value > 0 ? 'right' : 'left';
-        if (Math.abs(event.velocityX) > 400 || Math.abs(translateX.value) > SCREEN_WIDTH * 0.4) {
-          // Swipe away with natural momentum
+        const direction = event.translationX > 0 ? 'right' : 'left';
+        const velocity = Math.abs(event.velocityX);
+        const position = Math.abs(event.translationX);
+
+        if (velocity > 400 || position > SCREEN_WIDTH * 0.35) {
+          // Swipe away with momentum injection: preserves the user's velocity for a physical "throw" feel
+          activeIndex.value = withSpring(1, { ...springConfigSwipe, velocity: velocity / 1000 });
           translateX.value = withSpring(
-            Math.sign(translateX.value) * SCREEN_WIDTH * 1.5,
-            springConfigSwipe,
+            Math.sign(event.translationX) * SCREEN_WIDTH * 1.5,
+            { ...springConfigSwipe, velocity: event.velocityX / 1000 },
             (finished) => {
               if (finished) {
                 runOnJS(onSwipe)(direction);
@@ -122,10 +136,27 @@ export const Card: React.FC<CardProps> = ({
           );
         } else {
           // Snap back with precision
+          activeIndex.value = withSpring(0, springConfigSnap); // Animate to 0
           translateX.value = withSpring(0, springConfigSnap);
         }
       }
     });
+
+  const tapGesture = Gesture.Tap()
+    .enabled(isFirst)
+    .onBegin(() => {
+      isPressed.value = withTiming(1, { duration: 100 });
+    })
+    .onFinalize(() => {
+      isPressed.value = withTiming(0, { duration: 100 });
+    })
+    .onEnd(() => {
+      if (isFirst) {
+        runOnJS(onPress)();
+      }
+    });
+
+  const combinedGesture = Gesture.Exclusive(panGesture, tapGesture);
 
   // Pre-calculate static transform values to avoid recalculating on every frame
   const staticTranslateY = useMemo(() => index * 1, [index]);
@@ -149,22 +180,34 @@ export const Card: React.FC<CardProps> = ({
 
   const animatedCardStyle = useAnimatedStyle(() => {
     'worklet';
-    // Emil's pattern: Use Extrapolate.CLAMP for better performance
+    const activeDepth = index - activeIndex.value;
+
+    // Linear interpolation for background card properties to ensure parallel motion
     const scale = interpolate(
       activeIndex.value,
       [index - 1, index, index + 1],
-      [0.92, 1, 1.08], // Slightly more pronounced scale diff
+      [0.92, 1, 1.08],
       Extrapolate.CLAMP
     );
 
-    const translateY = interpolate(
+    const pressScale = interpolate(isPressed.value, [0, 1], [1, 0.98], Extrapolate.CLAMP);
+
+    // Parallel Translation: Slide into place as top card leaves
+    const currentTranslateX = interpolate(
       activeIndex.value,
       [index - 1, index, index + 1],
-      [-24, 0, 0], // Deeper vertical compression
+      [(index - 1) * 15 * stackDirection, index * 15 * stackDirection, (index + 1) * 15 * stackDirection],
       Extrapolate.CLAMP
     );
 
-    // Emil's pattern: Smoother rotation interpolation
+    const currentTranslateY = interpolate(
+      activeIndex.value,
+      [index - 1, index, index + 1],
+      [(index - 1) * 1 - 24, index * 1, (index + 1) * 1], // Integrated decompression
+      Extrapolate.CLAMP
+    );
+
+    // Smoother rotation transition tied to stack depth
     const rotate = interpolate(
       isFirst ? translateX.value : activeIndex.value,
       isFirst ? [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2] : [index - 1, index, index + 1],
@@ -176,11 +219,16 @@ export const Card: React.FC<CardProps> = ({
       return {
         transform: [
           { scale },
-          { translateY: translateY + staticTranslateY },
+          { translateY: currentTranslateY },
           { rotate: `${rotate}deg` },
-          { translateX: staticTranslateX },
+          { translateX: currentTranslateX },
         ],
-        opacity: staticOpacity,
+        opacity: interpolate(
+          activeIndex.value,
+          [index - 1, index, index + 1],
+          [staticOpacity, staticOpacity, staticOpacity * 0.8], // Subtle opacity flow
+          Extrapolate.CLAMP
+        ),
         shadowOpacity: 0.15,
         shadowRadius: 3,
       };
@@ -211,14 +259,15 @@ export const Card: React.FC<CardProps> = ({
     return {
       transform: [
         { translateX: translateX.value },
-        { translateY: interpolate(Math.abs(translateX.value), [0, SCREEN_WIDTH * 0.5], [0, -4], Extrapolate.CLAMP) },
+        { translateY: interpolate(Math.abs(translateX.value), [0, 100], [0, -4], Extrapolate.CLAMP) },
         { rotate: `${rotate}deg` },
+        { scale: pressScale },
       ],
       shadowOpacity,
       shadowRadius,
       elevation,
     };
-  }, [isFirst, index, activeIndex, translateX, SCREEN_WIDTH, rotationValues, staticTranslateY, staticTranslateX, staticOpacity]);
+  });
 
   // Emil's pattern: Enhanced parallax effect with smoother interpolation
   const animatedImageStyle = useAnimatedStyle(() => {
@@ -248,28 +297,29 @@ export const Card: React.FC<CardProps> = ({
         { scale: parallaxScale }
       ]
     };
-  }, [isFirst, translateX, SCREEN_WIDTH]);
+  });
 
   return (
-    <GestureDetector gesture={panGesture}>
-      <TouchableOpacity activeOpacity={0.95} onPress={onPress}>
-        <Animated.View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }, animatedCardStyle]}>
-          {card.image ? (
-            <Animated.Image source={{ uri: card.image }} style={[styles.cardImage, animatedImageStyle]} />
-          ) : (
-            <View style={[styles.cardImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
-              <Text style={{ color: '#9CA3AF', fontSize: 14 }}>No Image</Text>
-            </View>
-          )}
-          <LinearGradient
-            colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)']}
-            style={styles.gradient}
-          >
-            <View style={StyleSheet.absoluteFill} />
-          </LinearGradient>
-          <Text style={styles.cardTitle}>{card.title}</Text>
-        </Animated.View>
-      </TouchableOpacity>
+    <GestureDetector gesture={combinedGesture}>
+      <Animated.View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }, animatedCardStyle]}>
+        {card.image ? (
+          <Animated.Image
+            source={{ uri: card.image }}
+            style={[styles.cardImage, animatedImageStyle]}
+          />
+        ) : (
+          <View style={[styles.cardImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
+            <Text style={{ color: '#9CA3AF', fontSize: 14 }}>No Image</Text>
+          </View>
+        )}
+        <LinearGradient
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.8)']}
+          style={styles.gradient}
+        >
+          <View style={StyleSheet.absoluteFill} />
+        </LinearGradient>
+        <Text style={styles.cardTitle}>{card.title}</Text>
+      </Animated.View>
     </GestureDetector>
   );
 };

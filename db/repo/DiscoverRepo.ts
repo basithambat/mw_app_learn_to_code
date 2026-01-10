@@ -69,10 +69,10 @@ export class DiscoverRepo {
           editionId,
           es.storyId,
           es.rank,
-          es.addedAt,
+          es.addedAt ?? Date.now(),
           es.reason,
-          es.updateCount,
-          es.lastUpdatedAt,
+          es.updateCount ?? 0,
+          es.lastUpdatedAt ?? Date.now(),
         ]
       );
     }
@@ -200,10 +200,37 @@ export class DiscoverRepo {
       `SELECT s.*, ei.score
        FROM explore_items ei
        JOIN stories s ON s.story_id = ei.story_id
+       LEFT JOIN user_story_state us ON us.story_id = s.story_id AND us.user_id = ?
        WHERE ei.category = ?
+       AND (us.status IS NULL OR us.status NOT IN ('read', 'dismissed'))
        ORDER BY ei.score DESC
        LIMIT ?`,
-      [categoryId, limit]
+      ['anonymous', categoryId, limit] // TODO: Pass userId correctly
+    );
+  }
+
+  async getExploreUnreadCount(userId: string, categoryId: string): Promise<number> {
+    const rows = await execSqlRows<{ count: number }>(
+      `SELECT COUNT(*) as count
+         FROM explore_items ei
+         JOIN stories s ON s.story_id = ei.story_id
+         LEFT JOIN user_story_state us ON us.story_id = s.story_id AND us.user_id = ?
+         WHERE ei.category = ?
+         AND (us.status IS NULL OR us.status NOT IN ('read', 'dismissed'))`,
+      [userId, categoryId]
+    );
+    return rows[0]?.count ?? 0;
+  }
+
+  async getAllExploreUnreadCounts(userId: string): Promise<Array<{ category: string; count: number }>> {
+    return execSqlRows<{ category: string; count: number }>(
+      `SELECT ei.category, COUNT(*) as count
+         FROM explore_items ei
+         JOIN stories s ON s.story_id = ei.story_id
+         LEFT JOIN user_story_state us ON us.story_id = s.story_id AND us.user_id = ?
+         WHERE (us.status IS NULL OR us.status NOT IN ('read', 'dismissed'))
+         GROUP BY ei.category`,
+      [userId]
     );
   }
 

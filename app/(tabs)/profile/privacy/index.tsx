@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { deletUser } from '@/api/apiUser';
 import LottieView from 'lottie-react-native';
 import { AuthPayload } from '@/types/UserTypes';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Route = Href<string>;
 
@@ -23,7 +24,7 @@ const PrivacySettingsScreen = () => {
   const openURL = async (url: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
-      
+
       if (supported) {
         await Linking.openURL(url);
       } else {
@@ -54,7 +55,7 @@ const PrivacySettingsScreen = () => {
 
     try {
       const res = await deletUser(userId);
-      if (res.deleted) {
+      if (res?.success) {
         await AsyncStorage.removeItem("user");
         dispatch(clearUser());
         router.replace("/login/loginScreen" as Route);
@@ -70,21 +71,23 @@ const PrivacySettingsScreen = () => {
     }
   };
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <View style={{ flex: 1, backgroundColor: 'white', paddingTop: insets.top }}>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-[14px] pt-5 ">
-        <TouchableOpacity onPress={() => router.back()}>
+      <View className="flex-row items-center justify-between px-4 py-4">
+        <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 items-center justify-center">
           <Feather name="arrow-left" size={24} color="black" />
         </TouchableOpacity>
-        <Text className="text-xl font-domine">Privacy Settings</Text>
-        <View className="w-8" />
+        <Text className="text-xl font-domine text-center flex-1">Privacy Settings</Text>
+        <View className="w-10" />
       </View>
 
       {/* Settings List */}
       <View className="px-[14px] mt-6">
         {/* Privacy */}
-        <TouchableOpacity 
+        <TouchableOpacity
           className="flex-row items-center justify-between py-4 border-b border-gray-100"
           onPress={() => openURL(PRIVACY_URL)}
         >
@@ -102,7 +105,7 @@ const PrivacySettingsScreen = () => {
         </TouchableOpacity>
 
         {/* Terms & Conditions */}
-        <TouchableOpacity 
+        <TouchableOpacity
           className="flex-row items-center justify-between py-4"
           onPress={() => openURL(TERMS_URL)}
         >
@@ -121,13 +124,13 @@ const PrivacySettingsScreen = () => {
       </View>
 
       {/* Delete Account Button */}
-      <View className="px-4 mt-auto mb-8">
+      <View style={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }}>
         <TouchableOpacity
-          className="bg-[#FFE9E9] rounded-xl py-4 flex justify-center items-center"
+          className="bg-[#FFF1F1] rounded-xl h-[56px] flex justify-center items-center"
           onPress={handleDeleteAccount}
         >
           {!isDeleting && (
-            <Text className="text-[#B01212] text-center text-base">
+            <Text className="text-[#D32F2F] text-center font-geist-medium text-base">
               Delete your account
             </Text>
           )}
@@ -136,15 +139,15 @@ const PrivacySettingsScreen = () => {
               autoPlay
               ref={animation}
               style={{
-                width: 20,
-                height: 20,
+                width: 24,
+                height: 24,
               }}
               source={require("@/assets/animations/loading.json")}
             />
           )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

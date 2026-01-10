@@ -8,6 +8,7 @@ import { apiCommentLikesToogle, apigetAllComments } from '@/api/apiComments';
 import { setComment } from '@/redux/slice/articlesComments';
 import { useFirebaseAuth } from '@/config/firebaseAuthContext';
 import { useRouter } from 'expo-router';
+import { LikeIcon } from '../icons/CommentIcons'; // NEW ICONS
 
 interface UserReplyProps {
   reply: ArticleComment;
@@ -50,52 +51,60 @@ const UserReply: React.FC<UserReplyProps> = ({ reply, navigation, postId }) => {
   };
 
   return (
-    <View className="pl-12 pr-4 py-5">
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="flex-row">
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} className="w-8 h-8 rounded-full mr-2" />
-          ) : (
-            <View className="w-8 h-8 rounded-full mr-2 bg-gray-300 items-center justify-center">
-              <Text className="text-white font-semibold text-xs">
-                {displayName.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
-          <View className="flex-1">
-            <View className="flex-row items-center">
-              <Text className="font-geist text-[#000000]/60 text-[12px] capitalize">
-                {displayName}
-              </Text>
-              {badge && (
-                <View className="ml-2 bg-blue-100 px-2 py-0.5 rounded">
-                  <Text className="text-blue-600 text-[10px] font-semibold">
-                    {badge === 'google_verified' ? '✓ Google' : '✓ Phone'}
-                  </Text>
-                </View>
-              )}
-            </View>
-            <Text className={`mt-1 font-geist text-[16px] ${isRemoved ? 'text-gray-400 italic' : 'text-[#000000]'}`}>
-              {replyBody}
+    <View className="pl-12 pr-4 py-4">
+      <View className="flex-row">
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} className="w-8 h-8 rounded-full mr-3" />
+        ) : (
+          <View className="w-8 h-8 rounded-full mr-3 bg-gray-100 items-center justify-center">
+            <Text className="text-gray-500 font-geist-medium text-[10px] uppercase">
+              {displayName.charAt(0)}
             </Text>
-            {reply.editedAt && (
-              <Text className="mt-1 text-gray-400 text-[10px]">(edited)</Text>
-            )}
-            <View className="flex-row mt-2 items-center">
-              <TouchableOpacity onPress={handleLike} className="flex-row items-center">
-                <AntDesign 
-                  name={hasLiked ? "heart" : "hearto"} 
-                  size={14} 
-                  color={hasLiked ? "red" : "black"} 
-                />
-                <Text className="ml-1 text-[12px]">
-                  {score > 0 ? `+${score}` : score}
+          </View>
+        )}
+        <View className="flex-1">
+          <View className="flex-row items-center">
+            <Text className="font-geist-medium text-[#222222] text-[14px] mr-2">
+              {displayName}
+            </Text>
+            <Text className="font-geist text-[#717171] text-[12px]">
+              · 3 mins ago
+            </Text>
+            {badge && (
+              <View className="ml-2 bg-blue-50 px-1.5 py-0.5 rounded">
+                <Text className="text-blue-600 text-[10px] font-semibold">
+                  ✓
                 </Text>
-              </TouchableOpacity>
-            </View>
+              </View>
+            )}
+          </View>
+          <Text className={`mt-1 font-geist text-[15px] leading-5 ${isRemoved ? 'text-gray-400 italic' : 'text-[#222222]'}`}>
+            {replyBody}
+          </Text>
+          {reply.editedAt && (
+            <Text className="mt-1 text-gray-400 text-[10px]">(edited)</Text>
+          )}
+          <View className="flex-row mt-3 items-center">
+            <TouchableOpacity
+              onPress={handleLike}
+              className="flex-row items-center"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              activeOpacity={0.7}
+            >
+              <LikeIcon
+                size={16}
+                color={hasLiked ? "#FF385C" : "#000000"}
+                opacity={hasLiked ? 1 : 0.6}
+              />
+              {score > 0 && (
+                <Text className="ml-2 font-geist text-[#717171] text-[11px]">
+                  {score}
+                </Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 };

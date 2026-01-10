@@ -7,7 +7,7 @@ export class InshortsAdapter implements SourceAdapter {
   extractionMethod: ExtractionMethod = 'html'; // Use HTML parsing (cheap, fast)
 
   categories = [
-    { id: 'all', name: 'All News', url: 'https://inshorts.com/en/read' },
+    { id: 'all', name: 'Curated for you', url: 'https://inshorts.com/en/read' },
     { id: 'business', name: 'Business', url: 'https://inshorts.com/en/read/business' },
     { id: 'sports', name: 'Sports', url: 'https://inshorts.com/en/read/sports' },
     { id: 'technology', name: 'Technology', url: 'https://inshorts.com/en/read/technology' },

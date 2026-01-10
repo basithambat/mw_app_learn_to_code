@@ -162,7 +162,9 @@ export default function RootLayout() {
                     name="(news)/[slug]"
                     options={{
                       gestureEnabled: true,
-                      animation: 'fade'
+                      animation: 'fade',
+                      presentation: 'transparentModal',
+                      contentStyle: { backgroundColor: 'transparent' }
                     }}
                   />
                   <Stack.Screen

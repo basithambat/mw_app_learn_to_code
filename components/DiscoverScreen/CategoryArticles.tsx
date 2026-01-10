@@ -55,6 +55,12 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
             );
 
             setArticles((prevData): any => {
+                // STAFF-LEVEL ATOMIC SYNC:
+                // Reset shared values on UI thread BEFORE React re-orders the list.
+                // This prevents the "new" top card from inheriting the old card's exit position.
+                translateX.value = 0;
+                activeIndex.value = 0;
+
                 const newData = prevData.filter((article: any) => article.id !== swipedArticle.id);
                 newData.push(swipedArticle);
                 return newData;
@@ -64,12 +70,14 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
         }
     }, []);
 
-    const handleItemPress = useCallback((categoryId: any, itemId: number) => {
+    const handleItemPress = useCallback((categoryId: any, itemId: number, title: string, imageUrl: string) => {
         router.push({
             pathname: '/(news)/[slug]',
             params: {
                 slug: itemId.toString(),
                 categoryId: categoryId.toString(),
+                initialTitle: title,
+                initialImage: imageUrl
             }
         });
     }, [router]);
@@ -90,26 +98,7 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
     const CARD_WIDTH = SCREEN_WIDTH * 0.75;
     const CARD_HEIGHT = CARD_WIDTH * (320 / 273);
 
-    // Calculate stack dimensions based on device type
-    const getStackDimensions = () => {
-        if (isTablet) {
-            return {
-                containerHeight: 1020,
-                stackPadding: 560,
-                containerPadding: 500
-            };
-        }
-        return {
-            containerHeight: CARD_HEIGHT + 40, // Base height on card size + padding
-            stackPadding: 10,
-            containerPadding: 0
-        };
-    };
-
-    const { containerHeight, stackPadding, containerPadding } = getStackDimensions();
     const visibleArticles = articles.slice(0, isTablet ? 4 : 3);
-    const cardContainerPaddingTop = 20; // Stable padding
-    const cardContainerMarginBottom = visibleArticles.length === 1 ? 20 : 40;
 
     return (
         <View className="pb-0 pt-8 border-b-2 border-[#F3F4F6]">
@@ -127,15 +116,15 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
                 </Text>
             </View>
 
-            {/* Imaginary/Transparent Boundary Box for the Stack */}
-            <View style={[
-                styles.cardContainer,
-                {
-                    width: SCREEN_WIDTH,
-                    height: containerHeight,
-                    paddingTop: cardContainerPaddingTop,
-                }
-            ]}>
+            {/* Stack wrapper to handle consistent spacing and stacking context */}
+            <View style={{
+                height: isTablet ? 1020 : CARD_HEIGHT,
+                marginTop: isTablet ? 0 : 40,
+                marginBottom: isTablet ? 0 : 16,
+                width: SCREEN_WIDTH,
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
                 {visibleArticles.map((item, itemIndex) => {
                     return (
                         <Card
@@ -151,17 +140,16 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
                             translateX={translateX}
                             categoryIndex={category.index}
                             onSwipe={(direction) => {
+                                // Shared values are reset INSIDE handleSwipe before the React list update
                                 handleSwipe(item, direction);
-                                translateX.value = 0;
-                                activeIndex.value = 0;
                             }}
-                            onPress={() => handleItemPress(category.id, item.id)}
+                            onPress={() => handleItemPress(category.id, item.id, item.title, item.image_url)}
                         />
                     )
                 }).reverse()}
             </View>
 
-            {/* Unread count pill below the stack */}
+            {/* Unread count pill below the stack - Exactly 16px from card bottom via marginBottom above */}
             {articles.length > 0 && (
                 <View style={styles.pillContainer}>
                     <View style={styles.pill}>
@@ -184,7 +172,6 @@ const styles = StyleSheet.create({
     },
     pillContainer: {
         alignItems: 'center',
-        marginTop: -4,
         marginBottom: 32,
     },
     pill: {

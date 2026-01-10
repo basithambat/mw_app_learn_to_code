@@ -51,6 +51,20 @@ if (Platform.OS === 'web') {
   }
 }
 
+// Initialize Native Firebase (ensure it's ready)
+let nativeFirebaseReady = false;
+if (Platform.OS !== 'web') {
+  try {
+    // Test if Firebase is initialized by accessing the auth instance
+    const testAuth = nativeAuth();
+    nativeFirebaseReady = true;
+    console.log("React Native Firebase initialized successfully");
+  } catch (e) {
+    console.warn("React Native Firebase not ready yet:", e);
+    // Firebase will auto-initialize on first use
+  }
+}
+
 // Configure Google Sign-in (Mobile Only)
 if (Platform.OS !== 'web') {
   GoogleSignin.configure({

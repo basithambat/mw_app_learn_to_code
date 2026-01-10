@@ -41,6 +41,9 @@ export const apiAddArticleComment = async (
   parentCommentId?: string,
   token?: string
 ): Promise<Comment[]> => {
+  if (token === 'mock-dev-token') {
+    return await apigetAllComments(postId, token);
+  }
   try {
     const baseUrl = getIngestionApiBase();
     const url = `${baseUrl}/v1/posts/${postId}/comments`;
@@ -64,7 +67,7 @@ export const apiAddArticleComment = async (
     }
 
     const data = await response.json();
-    
+
     // After creating, fetch all comments to return updated list
     return await apigetAllComments(postId, token);
   } catch (error: any) {
@@ -94,8 +97,9 @@ export const apigetAllComments = async (
     });
 
     if (!response.ok) {
-      // Return empty array on error to prevent crashes
-      console.warn('Error fetching comments:', response.status);
+      if (token !== 'mock-dev-token') {
+        console.warn('Error fetching comments:', response.status);
+      }
       return [];
     }
 
@@ -142,6 +146,9 @@ export const apiCommentLikesToogle = async (
   vote: 'up' | 'down' | 'none',
   token?: string
 ): Promise<{ upvotes: number; downvotes: number; score: number }> => {
+  if (token === 'mock-dev-token') {
+    return { upvotes: 1, downvotes: 0, score: 1 };
+  }
   try {
     const baseUrl = getIngestionApiBase();
     const url = `${baseUrl}/v1/comments/${commentId}/vote`;
@@ -212,6 +219,9 @@ export const apiEditComment = async (
   body: string,
   token?: string
 ): Promise<Comment> => {
+  if (token === 'mock-dev-token') {
+    return { id: commentId, body } as any;
+  }
   try {
     const baseUrl = getIngestionApiBase();
     const url = `${baseUrl}/v1/comments/${commentId}`;
@@ -245,6 +255,7 @@ export const apiDeleteComment = async (
   commentId: string,
   token?: string
 ): Promise<void> => {
+  if (token === 'mock-dev-token') return;
   try {
     const baseUrl = getIngestionApiBase();
     const url = `${baseUrl}/v1/comments/${commentId}`;

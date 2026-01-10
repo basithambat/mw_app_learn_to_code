@@ -1,30 +1,82 @@
 /**
  * Comment Skeleton Loader
- * Shows loading placeholders while comments are being fetched
+ * Shows loading placeholders with a subtle shimmer animation
  */
 
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, Dimensions } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+  interpolate,
+  Easing
+} from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+const Shimmer: React.FC<{ width: number | string; height: number; borderRadius?: number; style?: any }> = ({
+  width,
+  height,
+  borderRadius = 4,
+  style
+}) => {
+  const shimmerValue = useSharedValue(0);
+
+  useEffect(() => {
+    shimmerValue.value = withRepeat(
+      withTiming(1, { duration: 1500, easing: Easing.linear }),
+      -1,
+      false
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const translateX = interpolate(
+      shimmerValue.value,
+      [0, 1],
+      [-SCREEN_WIDTH, SCREEN_WIDTH]
+    );
+
+    return {
+      transform: [{ translateX }],
+    };
+  });
+
+  return (
+    <View style={[styles.shimmerBase, { width, height, borderRadius }, style]}>
+      <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>
+        <LinearGradient
+          colors={['transparent', 'rgba(255, 255, 255, 0.5)', 'transparent']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
+    </View>
+  );
+};
 
 export const CommentSkeleton: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.avatar} />
+        <Shimmer width={36} height={36} borderRadius={18} style={styles.avatar} />
         <View style={styles.headerContent}>
-          <View style={styles.nameLine} />
-          <View style={styles.badgeLine} />
+          <Shimmer width="40%" height={12} style={styles.nameLine} />
+          <Shimmer width="20%" height={10} style={styles.badgeLine} />
         </View>
       </View>
       <View style={styles.body}>
-        <View style={styles.bodyLine} />
-        <View style={[styles.bodyLine, { width: '80%' }]} />
-        <View style={[styles.bodyLine, { width: '60%' }]} />
+        <Shimmer width="90%" height={14} style={styles.bodyLine} />
+        <Shimmer width="80%" height={14} style={styles.bodyLine} />
+        <Shimmer width="60%" height={14} style={styles.bodyLine} />
       </View>
       <View style={styles.actions}>
-        <View style={styles.actionButton} />
-        <View style={styles.actionButton} />
-        <View style={styles.actionButton} />
+        <Shimmer width={50} height={16} style={styles.actionButton} />
+        <Shimmer width={50} height={16} style={styles.actionButton} />
       </View>
     </View>
   );
@@ -34,53 +86,38 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#F7F7F7', // Subtler border
+  },
+  shimmerBase: {
+    backgroundColor: '#EBEBEB', // More refined base color
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
-    marginBottom: 12,
+    alignItems: 'center',
+    marginBottom: 14,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#E0E0E0',
     marginRight: 12,
   },
   headerContent: {
     flex: 1,
   },
   nameLine: {
-    height: 12,
-    width: '40%',
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
     marginBottom: 6,
   },
   badgeLine: {
-    height: 10,
-    width: '20%',
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
   },
   body: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   bodyLine: {
-    height: 14,
-    width: '100%',
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   actions: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 20,
   },
   actionButton: {
-    width: 60,
-    height: 20,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
   },
 });
