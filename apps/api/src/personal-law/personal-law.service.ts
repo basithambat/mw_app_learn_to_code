@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PersonalLaw, OwnershipType } from '@prisma/client';
+import { MuslimLawService } from './muslim-law.service';
 
 export interface PersonalLawValidation {
   isValid: boolean;
@@ -12,7 +13,10 @@ export interface PersonalLawValidation {
 
 @Injectable()
 export class PersonalLawService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private muslimLawService: MuslimLawService,
+  ) { }
 
   async validateWill(willId: string): Promise<PersonalLawValidation> {
     const will = await this.prisma.will.findUnique({
@@ -21,6 +25,7 @@ export class PersonalLawService {
         profile: true,
         assets: true,
         people: true,
+        scenarios: true, // Ensure scenarios are loaded
       },
     });
 
@@ -60,7 +65,7 @@ export class PersonalLawService {
         warnings.push(
           `Asset "${asset.title}" is marked as ancestral. Under Hindu Succession Act, you can only will your share (not exceeding your coparcenary interest), not the entire property.`,
         );
-        
+
         // Check if ownership share is specified correctly
         if (!asset.ownershipShare || asset.ownershipShare === 100) {
           warnings.push(
@@ -118,9 +123,11 @@ export class PersonalLawService {
     };
   }
 
+
   private validateMuslimWill(will: any): PersonalLawValidation {
     const warnings: string[] = [];
     const disclaimers: string[] = [];
+    let isValid = true;
 
     // Check for ancestral assets
     for (const asset of will.assets || []) {
@@ -131,33 +138,44 @@ export class PersonalLawService {
       }
     }
 
-    // Check scenarios for 1/3 limit
+    // Check scenarios for 1/3 limit using MuslimLawService
     const scenarios = will.scenarios || [];
     let hasNonHeirBequests = false;
-    
+    let maxBequestPercentage = 0;
+
     for (const scenario of scenarios) {
       const allocations = (scenario.allocationJson as any)?.allocations || [];
+      let currentBequestTotal = 0;
+
       for (const allocation of allocations) {
         const person = (will.people || []).find((p: any) => p.id === allocation.personId);
+        // Only count valid non-heirs. 
+        // Note: Heirs CANNOT receive bequests without consent, 
+        // so technically any allocation to an Heir in the "Wasiyat" (Will) section 
+        // is invalid unless verified. But for 1/3 check, we usually sum up non-heirs.
         if (person && !person.isHeir) {
           hasNonHeirBequests = true;
-          break;
+          currentBequestTotal += (allocation.percentage || 0);
         }
+      }
+      if (currentBequestTotal > maxBequestPercentage) {
+        maxBequestPercentage = currentBequestTotal;
       }
     }
 
-    disclaimers.push(
-      'Under Muslim Personal Law (Sharia), bequests (Wasiyyat) to non-heirs are limited to 1/3 of the estate. The remaining 2/3 must go to Quranic heirs (spouse, children, parents, siblings).',
-    );
-    
-    if (hasNonHeirBequests) {
-      disclaimers.push(
-        'If bequests to non-heirs exceed 1/3, the excess requires consent from all heirs after your death, or it may be invalid.',
+    // Check limit (1/3 approx 33.33%)
+    if (maxBequestPercentage > 33.34) {
+      isValid = false; // Blocking validation as requested
+      warnings.push(
+        `⚠️ Islamic Estate Limit Exceeded: You have allocated ${maxBequestPercentage}% to non-heirs. You can only distribute up to 1/3 (33.33%) of your estate to non-heirs.`,
       );
     }
-    
+
     disclaimers.push(
-      'The remainder of the estate (after bequests) will be distributed according to Islamic inheritance rules (Quranic shares).',
+      'Under Muslim Personal Law (Sharia), bequests (Wasiyyat) to non-heirs are limited to 1/3 of the estate.',
+    );
+    disclaimers.push(
+      'The remaining 2/3 (or more) is automatically distributed to your Quranic heirs (Parents, Spouse, Children) to ensure family rights are protected.',
     );
 
     // Check for missing Quranic heirs
@@ -172,11 +190,16 @@ export class PersonalLawService {
       );
     }
 
+    // Add Faraid Explanation Note
+    if (hasChildren || hasParents || hasSpouse) {
+      disclaimers.push('⚖️ Faraid Distribution: Your heirs (Parents/Children/Spouse) will receive fixed shares from the remaining estate.');
+    }
+
     return {
-      isValid: true,
+      isValid,
       warnings,
       disclaimers,
-      allowedDistribution: true,
+      allowedDistribution: isValid,
       templateType: 'muslim',
     };
   }
@@ -191,7 +214,7 @@ export class PersonalLawService {
         warnings.push(
           `Asset "${asset.title}" is marked as ancestral. Under Indian Succession Act, 1925, you can only will your share of ancestral property, not the entire property.`,
         );
-        
+
         if (!asset.ownershipShare || asset.ownershipShare === 100) {
           warnings.push(
             `Asset "${asset.title}": Specify your actual share percentage for ancestral property.`,
@@ -261,16 +284,16 @@ export class PersonalLawService {
       'MOTHER',
       'FATHER',
     ];
-    
+
     const secondaryHeirRelationships = [
       'BROTHER',
       'SISTER',
       'GRANDFATHER',
       'GRANDMOTHER',
     ];
-    
-    return primaryHeirRelationships.includes(relationship) || 
-           secondaryHeirRelationships.includes(relationship);
+
+    return primaryHeirRelationships.includes(relationship) ||
+      secondaryHeirRelationships.includes(relationship);
   }
 
   /**
@@ -279,7 +302,7 @@ export class PersonalLawService {
    */
   computeMuslimInheritanceShares(people: any[]): Map<string, number> {
     const shares = new Map<string, number>();
-    
+
     // Find Quranic heirs
     const spouse = people.find((p) => p.relationship === 'SPOUSE');
     const sons = people.filter((p) => p.relationship === 'SON');
@@ -332,7 +355,7 @@ export class PersonalLawService {
 
   getWillTemplate(personalLaw: PersonalLaw): { type: string; content: string } {
     const templateType = this.getTemplateType(personalLaw);
-    
+
     switch (personalLaw) {
       case PersonalLaw.HINDU:
         return {

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/inheritance_service.dart';
+import '../services/people_service.dart';
 
 class InheritanceSpouseScreen extends StatefulWidget {
   final String? willId;
@@ -59,15 +60,47 @@ class _InheritanceSpouseScreenState extends State<InheritanceSpouseScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final List<Map<String, dynamic>> allocations = [
+        {
+          'personId': widget.spouse!['id'],
+          'percentage': _percentage.toInt(),
+        },
+      ];
+
+      // If spouse gets less than 100%, distribute the rest to children
+      if (_percentage < 100) {
+        final peopleService = PeopleService();
+        final people = await peopleService.getPeople(widget.willId!);
+        final children = people.where((p) => p['relationship'] == 'CHILD').toList();
+        
+        if (children.isNotEmpty) {
+          final remainingPercentage = 100 - _percentage.toInt();
+          final perChild = remainingPercentage ~/ children.length;
+          final extra = remainingPercentage % children.length;
+          
+          for (int i = 0; i < children.length; i++) {
+            allocations.add({
+              'personId': children[i]['id'],
+              'percentage': perChild + (i < extra ? 1 : 0),
+            });
+          }
+        } else {
+          // If no children, spouse must get 100% or we have a logic gap
+          // For now, let's keep it 100% or show error
+          if (_percentage < 100) {
+             ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Total allocation must be 100%. Please adjust or add children.')),
+            );
+            setState(() => _isLoading = false);
+            return;
+          }
+        }
+      }
+
       final data = {
         'type': 'USER_DIES_FIRST',
         'allocationJson': {
-          'allocations': [
-            {
-              'personId': widget.spouse!['id'],
-              'percentage': _percentage.toInt(),
-            },
-          ]
+          'allocations': allocations
         },
       };
 

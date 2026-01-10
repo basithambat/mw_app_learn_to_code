@@ -55,6 +55,95 @@ class _InheritanceNoSurvivorsScreenState extends State<InheritanceNoSurvivorsScr
     }
   }
 
+  void _updateAllocation(int index, double value) {
+    // Check if beneficiary is non-heir (Friend/Charity)
+    final person = _beneficiaries[index]['person'];
+    final relationship = person['relationship']?.toString().toUpperCase();
+    final isNonHeir = relationship == 'FRIEND' || relationship == 'CHARITY';
+
+    if (isNonHeir && value > 33.3) {
+      _showMuslimLimitWarning(index);
+      return; 
+    }
+  
+    setState(() {
+      _beneficiaries[index]['percentage'] = value;
+    });
+  }
+
+  void _showMuslimLimitWarning(int index) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.warning_amber_rounded, size: 48, color: Color(0xFFE6AD18)),
+            const SizedBox(height: 16),
+            Text(
+              'Islamic Estate Limit Reached',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.frankRuhlLibre(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Under Islamic laws of inheritance, you can only distribute up to 1/3 (33.33%) of your estate to non-heirs (friends, charity).',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.lato(
+                fontSize: 16,
+                color: AppTheme.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'The remaining 2/3 is automatically distributed to your Quranic heirs (Parents, Spouse, Children) to ensure family rights are protected.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.lato(
+                fontSize: 16,
+                color: AppTheme.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            PrimaryButton(
+              text: 'Auto-Adjust to 33%',
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  _beneficiaries[index]['percentage'] = 33.0;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.lato(
+                  fontSize: 16,
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _save() async {
     if (widget.willId == null) return;
 
@@ -173,60 +262,87 @@ class _InheritanceNoSurvivorsScreenState extends State<InheritanceNoSurvivorsScr
                     ),
                     const SizedBox(height: 32),
                     // Beneficiaries
-                    ..._beneficiaries.map((beneficiary) {
+                    ..._beneficiaries.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final beneficiary = entry.value;
                       final person = beneficiary['person'] as Map<String, dynamic>;
-                      final percentage = beneficiary['percentage'] as double;
+                      final percentage = (beneficiary['percentage'] as double);
+
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFFD0D0D0),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: person['photoUrl'] != null
-                                    ? Image.network(
-                                        person['photoUrl'],
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
-                                            _buildPlaceholderPhoto(),
-                                      )
-                                    : _buildPlaceholderPhoto(),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${person['fullName']} gets ${percentage.toInt()}%',
-                                      style: GoogleFonts.lato(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppTheme.textPrimary,
-                                      ),
-                                    ),
-                                    Text(
-                                      person['relationship'] ?? 'Beneficiary',
-                                      style: GoogleFonts.lato(
-                                        fontSize: 14,
-                                        color: AppTheme.textSecondary,
-                                      ),
-                                    ),
-                                  ],
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFFD0D0D0),
                                 ),
                               ),
-                            ],
-                          ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: person['photoUrl'] != null
+                                        ? Image.network(
+                                            person['photoUrl'],
+                                            width: 40,
+                                            height: 40,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                _buildPlaceholderPhoto(),
+                                          )
+                                        : _buildPlaceholderPhoto(),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          person['fullName'] ?? 'Beneficiary',
+                                          style: GoogleFonts.lato(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppTheme.textPrimary,
+                                          ),
+                                        ),
+                                        Text(
+                                          person['relationship'] ?? 'Beneficiary',
+                                          style: GoogleFonts.lato(
+                                            fontSize: 14,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    '${percentage.toInt()}%',
+                                    style: GoogleFonts.frankRuhlLibre(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Slider(
+                              value: percentage,
+                              min: 0,
+                              max: 100,
+                              divisions: 100,
+                              activeColor: AppTheme.primaryColor,
+                              inactiveColor: AppTheme.primaryLight,
+                              onChanged: (value) {
+                                _updateAllocation(index, value);
+                              },
+                            ),
+                          ],
                         ),
                       );
                     }),

@@ -129,6 +129,12 @@ enum SyncProvider {
   OTHER
 }
 
+enum ConsentStatus {
+  PENDING
+  GIVEN
+  REFUSED
+}
+
 //
 // Models
 //
@@ -192,6 +198,7 @@ model Will {
   assistantThreads       AssistantThread[]
   creditBureauConsents   CreditBureauConsent[]
   investmentSyncConsents InvestmentSyncConsent[]
+  consents               Consent[]
 }
 
 model WillProfile {
@@ -236,6 +243,7 @@ model WillPerson {
   guardianAs          GuardianAssignment[] @relation("GuardianPerson")
   alternateGuardianAs GuardianAssignment[] @relation("AlternateGuardianPerson")
   executorAssignments ExecutorAssignment[]
+  consents            Consent[]
 }
 
 model GuardianAssignment {
@@ -335,7 +343,24 @@ model ConsentVideo {
   updatedAt DateTime @updatedAt
 }
 
+
+model Consent {
+  id        String        @id @default(cuid())
+  willId    String
+  will      Will          @relation(fields: [willId], references: [id], onDelete: Cascade)
+  
+  heirId    String
+  heir      WillPerson    @relation(fields: [heirId], references: [id])
+  
+  status    ConsentStatus @default(PENDING)
+  videoUrl  String?
+  
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
 model Asset {
+
   id     String @id @default(cuid())
   willId String
   will   Will   @relation(fields: [willId], references: [id], onDelete: Cascade)

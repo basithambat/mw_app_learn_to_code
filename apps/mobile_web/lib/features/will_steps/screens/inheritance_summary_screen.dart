@@ -146,6 +146,9 @@ class _InheritanceSummaryScreenState extends State<InheritanceSummaryScreen> {
                         // Navigate to no survivors screen
                       },
                     ),
+                    const SizedBox(height: 32),
+                    // Faraid Distribution Info Card (Muslim Law)
+                    _buildFaraidInfoCard(),
                   ],
                 ),
               ),
@@ -288,6 +291,97 @@ class _InheritanceSummaryScreenState extends State<InheritanceSummaryScreen> {
         color: AppTheme.lightGray.withOpacity(0.78),
         shape: BoxShape.circle,
       ),
+    );
+  }
+
+  Widget _buildFaraidInfoCard() {
+    // Check if we have children with specific distributions
+    final hasChildren = _people.any((p) => 
+      p['relationship'] == 'SON' || p['relationship'] == 'DAUGHTER');
+    final hasParents = _people.any((p) => 
+      p['relationship'] == 'MOTHER' || p['relationship'] == 'FATHER');
+    final hasSpouse = _people.any((p) => p['relationship'] == 'SPOUSE');
+
+    if (!hasChildren && !hasParents && !hasSpouse) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9), // Light green background
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF81C784)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.balance, color: Color(0xFF388E3C), size: 24),
+              const SizedBox(width: 8),
+              Text(
+                'Faraid Distribution Applied',
+                style: GoogleFonts.frankRuhlLibre(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1B5E20),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Based on your family structure, the remaining estate is allocated as follows:',
+            style: GoogleFonts.lato(
+              fontSize: 14,
+              color: const Color(0xFF2E7D32),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (hasParents) ...[
+            _buildFaraidItem(
+              icon: Icons.elderly,
+              text: 'Parents: Your Father and Mother receive 1/6th each (approx 16.6%) because you have children.',
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (hasChildren) ...[
+            _buildFaraidItem(
+              icon: Icons.child_care,
+              text: 'Children: The remainder is divided among your children using the 2:1 ratio (Sons receive double the share of Daughters), as prescribed in Sharia.',
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (hasSpouse) ...[
+            _buildFaraidItem(
+              icon: Icons.favorite,
+              text: 'Spouse: Receives 1/8th (if children exist) or 1/4th (if no children) of your estate.',
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFaraidItem({required IconData icon, required String text}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: const Color(0xFF388E3C), size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.lato(
+              fontSize: 14,
+              color: const Color(0xFF2E7D32),
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
