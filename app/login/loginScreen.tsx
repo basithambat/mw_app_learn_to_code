@@ -96,9 +96,9 @@ const LoginScreen = () => {
 
           {/* Build Number - Below buttons */}
           <View className="mt-4 items-center">
-            <Text 
-              className="text-[10px] font-geist text-center" 
-              style={{ 
+            <Text
+              className="text-[10px] font-geist text-center"
+              style={{
                 color: '#666666',
                 opacity: 0.8
               }}

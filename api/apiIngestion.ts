@@ -10,18 +10,14 @@ import { getImageUrlWithFallback } from "@/utils/categoryFallbackImages";
 // Production API URL - GCP Cloud Run (Mumbai/asia-south1)
 // This will be set automatically when API is deployed
 // To get the URL: node get-production-api-url.js
-const PRODUCTION_API_URL = 'https://whatsay-api-jsewdobsva-el.a.run.app'; // Production API deployed
+const PRODUCTION_API_URL = 'https://whatsay-api-278662370606.asia-south1.run.app'; // Production API deployed
 
 export const getIngestionApiBase = () => {
   if (__DEV__) {
     // For physical devices, use your computer's IP address
     // For iOS simulator/Android emulator, localhost works
-    // Your IP: 192.168.0.101 (update if changed)
-    // For physical device: use IP, for emulator: use localhost
-    const isPhysicalDevice = true; // Set to false if using emulator
-    return isPhysicalDevice 
-      ? 'http://192.168.0.101:3000' 
-      : 'http://localhost:3000';
+    // Your IP: 192.168.0.103 (update if changed)
+    return 'http://192.168.0.103:3002';
   }
   // Production: Use GCP Cloud Run URL
   // If URL contains 'XXXXX', it means deployment is pending
@@ -88,17 +84,17 @@ export const getIngestionFeed = async (category?: string, limit: number = 20) =>
     params.append('limit', limit.toString());
 
     console.log(`[Ingestion] Fetching feed from: ${INGESTION_API_BASE}/api/feed?${params.toString()}`);
-    
+
     // Add timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
+
     const response = await fetch(`${INGESTION_API_BASE}/api/feed?${params.toString()}`, {
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       throw new Error(`Ingestion API error: ${response.status}`);
     }
@@ -120,17 +116,17 @@ export const getIngestionFeed = async (category?: string, limit: number = 20) =>
 export const getIngestionCategories = async () => {
   try {
     const response = await fetch(`${INGESTION_API_BASE}/api/sources`);
-    
+
     if (!response.ok) {
       throw new Error(`Ingestion API error: ${response.status}`);
     }
 
     const data = await response.json();
     const sources = data.sources || [];
-    
+
     // For now, we only support Inshorts
     const inshortsSource = sources.find((s: any) => s.id === 'inshorts');
-    
+
     if (!inshortsSource) {
       return [];
     }
@@ -183,7 +179,7 @@ export const getIngestionArticlesByCategory = async (
         const originalImageUrl = item.image_url || item.image_storage_url || null;
         // Use fallback image if original is not available
         const imageUrl = getImageUrlWithFallback(originalImageUrl, categoryId);
-        
+
         return {
           id: item.id,
           title: item.title || item.title_original || '',

@@ -28,7 +28,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 export default function RootLayout() {
   // Track splash screen visibility for version display
   const [splashVisible, setSplashVisible] = useState(true);
-  
+
   // Load fonts with error handling - make it completely non-blocking
   const [fontsLoaded, error] = useFonts(FONTS);
 
@@ -36,7 +36,7 @@ export default function RootLayout() {
   let latitude: number | null = null;
   let longitude: number | null = null;
   let errorMsg: string | null = null;
-  
+
   try {
     const locationData = useLocation();
     latitude = locationData.latitude;
@@ -80,7 +80,7 @@ export default function RootLayout() {
         setSplashVisible(false);
         try {
           await SplashScreen.hideAsync();
-        } catch {}
+        } catch { }
       }
     };
 
@@ -129,54 +129,54 @@ export default function RootLayout() {
                   </View>
                 )}
                 <Stack
-                screenOptions={{
-                  headerShown: false,
-                  animation: 'none',
-                  gestureEnabled: false
-                }}
-              >
-                <Stack.Screen name="index" />
-                <Stack.Screen
-                  name="login/loginScreen"
-                  options={{
-                    gestureEnabled: true,
-                    animation: 'fade'
+                  screenOptions={{
+                    headerShown: false,
+                    animation: 'none',
+                    gestureEnabled: false
                   }}
-                />
-                <Stack.Screen
-                  name="(tabs)/profileScreen"
-                  options={{
-                    gestureEnabled: true,
-                    animation: 'fade'
-                  }}
-                />
-                <Stack.Screen
-                  name="discoverScreens"
-                  options={{
-                    gestureEnabled: true,
-                    animation: 'fade',
+                >
+                  <Stack.Screen name="index" />
+                  <Stack.Screen
+                    name="login/loginScreen"
+                    options={{
+                      gestureEnabled: true,
+                      animation: 'fade'
+                    }}
+                  />
+                  <Stack.Screen
+                    name="(tabs)/profileScreen"
+                    options={{
+                      gestureEnabled: true,
+                      animation: 'fade'
+                    }}
+                  />
+                  <Stack.Screen
+                    name="discoverScreens"
+                    options={{
+                      gestureEnabled: true,
+                      animation: 'fade',
 
-                  }}
-                />
-                <Stack.Screen
-                  name="(news)/[slug]"
-                  options={{
-                    gestureEnabled: true,
-                    animation: 'fade'
-                  }}
-                />
-                <Stack.Screen
-                  name="login/mobile"
-                  options={{
-                    gestureEnabled: true,
-                    animation: 'fade'
-                  }}
-                />
-              </Stack>
-            </GestureHandlerRootView>
-          </SafeAreaProvider>
-        </AuthProvider>
-      </FirebaseAuthProvider>
+                    }}
+                  />
+                  <Stack.Screen
+                    name="(news)/[slug]"
+                    options={{
+                      gestureEnabled: true,
+                      animation: 'fade'
+                    }}
+                  />
+                  <Stack.Screen
+                    name="login/mobile"
+                    options={{
+                      gestureEnabled: true,
+                      animation: 'fade'
+                    }}
+                  />
+                </Stack>
+              </GestureHandlerRootView>
+            </SafeAreaProvider>
+          </AuthProvider>
+        </FirebaseAuthProvider>
       </PersistGate>
     </Provider>
   );

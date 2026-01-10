@@ -4,6 +4,9 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
+# Install openssl for Prisma
+RUN apt-get update -y && apt-get install -y openssl
+
 # Copy package files
 COPY package*.json ./
 COPY tsconfig.json ./
@@ -29,6 +32,9 @@ RUN npm run build
 FROM node:20-slim
 
 WORKDIR /app
+
+# Install openssl for Prisma
+RUN apt-get update -y && apt-get install -y openssl
 
 # Copy package files
 COPY package.json package-lock.json* ./

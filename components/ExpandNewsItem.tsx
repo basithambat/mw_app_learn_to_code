@@ -4,19 +4,19 @@ import { AntDesign } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styled } from 'nativewind';
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { 
-    View, 
-    Text, 
-    Image, 
+import {
+    View,
+    Text,
+    Image,
     FlatList,
     Platform,
     TouchableOpacity
 } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { 
+import Animated, {
     useAnimatedStyle,
     interpolate,
-    Extrapolate 
+    Extrapolate
 } from 'react-native-reanimated';
 import CommentSectionModal from '@/components/comment/commentSectionModal';
 import { getAllCategories } from '@/api/apiCategories';
@@ -55,16 +55,16 @@ interface ExpandNewsItemProps {
     onClose: () => void;
 }
 
-const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({ 
-    items, 
-    initialArticleId, 
-    isVisible, 
-    onClose 
+const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
+    items,
+    initialArticleId,
+    isVisible,
+    onClose
 }) => {
     const flatListRef = useRef<FlatList>(null);
     const [categories, setCategories] = useState<CategoryType[]>([]);
     const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-    const { 
+    const {
         animatedValues,
         panGesture,
         imageAnimatedStyle,
@@ -75,14 +75,14 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         modalAnimatedStyle
     } = useNewsItemAnimations(isCommentModalVisible, onClose);
     const [activeArticle, setActiveArticle] = useState(initialArticleId);
-    
+
     // Calculate initial index based on the ID
     const initialIndex = useMemo(() => {
         const index = items.findIndex((item: any) => item.id == initialArticleId);
         return index >= 0 ? index : 0;
     }, [items, initialArticleId]);
 
-    const currentIndexRef = useRef(initialIndex); 
+    const currentIndexRef = useRef(initialIndex);
 
     // Reset currentIndexRef when initialArticleId changes (component reopened with different article)
     useEffect(() => {
@@ -91,12 +91,12 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
             setIsCommentModalVisible(false);
             return;
         }
-        
+
         // Component is visible - reset all state
         currentIndexRef.current = initialIndex;
         setActiveArticle(initialArticleId);
         setIsCommentModalVisible(false); // Reset comment modal state
-        
+
         // Ensure FlatList scrolls to correct position when reopened
         if (flatListRef.current) {
             // Use multiple attempts to ensure scroll works
@@ -124,7 +124,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                     }
                 }
             };
-            
+
             // Try immediately
             requestAnimationFrame(() => {
                 scrollToCorrectPosition();
@@ -197,13 +197,13 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
 
     const handleScroll = useCallback((event: any) => {
         if (!isVisible) return; // Don't update if component is not visible
-        
+
         const offsetX = event.nativeEvent.contentOffset.x;
         const slideIndex = Math.round(offsetX / SCREEN_DIMENSIONS.width);
-        
+
         // Clamp index to valid range
         const validIndex = Math.max(0, Math.min(slideIndex, items.length - 1));
-        
+
         if (validIndex !== currentIndexRef.current) {
             currentIndexRef.current = validIndex;
             if (items[validIndex]) {
@@ -234,65 +234,66 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
 
         return (
             <Animated.View
-                style={[{ 
-                    width: SCREEN_DIMENSIONS.width, 
-                    backgroundColor: isCommentModalVisible ? '#F3F4F6' : 'white', 
+                style={[{
+                    width: SCREEN_DIMENSIONS.width,
+                    backgroundColor: isCommentModalVisible ? '#F3F4F6' : 'white',
                 }, containerAnimatedStyle]}
                 collapsable={false} // Prevent view collapsing for smoother animations
                 pointerEvents={isCommentModalVisible ? 'none' : 'auto'} // Allow touches to pass through when comment modal is open
             >
-                <GestureDetector gesture={!isCommentModalVisible ? panGesture : undefined}>
-                    <Animated.View 
+                <GestureDetector gesture={panGesture}>
+                    <Animated.View
                         style={[
                             imageWrapperStyle,
                             imageAnimatedStyle
                         ]}
                     >
-                    {item.image_url ? (
-                        <StyledImage 
-                            source={{ uri: item.image_url }} 
-                            style={IMAGE_STYLE} 
-                            resizeMode="cover" 
-                        />
-                    ) : (
-                        <View style={[IMAGE_STYLE, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
-                            <Text style={{ color: '#9CA3AF', fontSize: 16 }}>No Image</Text>
-                        </View>
-                    )}
-                    <Animated.View style={[GRADIENT_STYLE, gradientAnimatedStyle]}>
-                        <LinearGradient 
-                            colors={['transparent', 'rgba(0,0,0,0.8)']} 
-                            style={{ flex: 1 }} 
-                        />
-                    </Animated.View>
-
-                    <Animated.View style={[
-                        {
-                            position: 'absolute',
-                            bottom: 32,
-                            left: 20,
-                            right: 20,
-                        },
-                        titleAnimatedStyle
-                    ]}>
-                        {isCommentModalVisible && (
-                            <Text className="text-[22px] font-domine text-white">
-                                {item.title}
-                            </Text>
+                        {item.image_url ? (
+                            <StyledImage
+                                source={{ uri: item.image_url }}
+                                style={IMAGE_STYLE}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <View style={[IMAGE_STYLE, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
+                                <Text style={{ color: '#9CA3AF', fontSize: 16 }}>No Image</Text>
+                            </View>
                         )}
-                    </Animated.View>
+                        <Animated.View style={[GRADIENT_STYLE, gradientAnimatedStyle]}>
+                            <LinearGradient
+                                colors={['transparent', 'rgba(0,0,0,0.8)']}
+                                style={{ flex: 1 }}
+                            />
+                        </Animated.View>
 
-                    <Animated.View style={[
-                        {
-                            position: 'absolute',
-                            bottom: 12,
-                            alignSelf: 'center',
-                        },
-                        dragIndicatorAnimatedStyle
-                    ]}>
-                        {isCommentModalVisible && (
-                            <View className='h-[4px] w-[24px] rounded-full bg-[#FFFFFF]/20' />
-                        )}
+                        <Animated.View style={[
+                            {
+                                position: 'absolute',
+                                bottom: 32,
+                                left: 20,
+                                right: 20,
+                            },
+                            titleAnimatedStyle
+                        ]}>
+                            {isCommentModalVisible && (
+                                <Text className="text-[22px] font-domine text-white">
+                                    {item.title}
+                                </Text>
+                            )}
+                        </Animated.View>
+
+                        <Animated.View style={[
+                            {
+                                position: 'absolute',
+                                bottom: 12,
+                                alignSelf: 'center',
+                            },
+                            dragIndicatorAnimatedStyle
+                        ]}>
+                            {isCommentModalVisible && (
+                                <View className='h-[4px] w-[24px] rounded-full bg-[#FFFFFF]/20' />
+                            )}
+                        </Animated.View>
                     </Animated.View>
                 </GestureDetector>
 
@@ -334,7 +335,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                         gap: 4
                     }}>
                         {items.map((_, idx) => (
-                            <View 
+                            <View
                                 key={idx}
                                 style={{
                                     flex: 1,
@@ -348,7 +349,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                 )}
 
                 {!isCommentModalVisible && (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         className="absolute bottom-[40px] self-center bg-[#F7F7F7] rounded-full px-[20px] py-[8px]"
                         onPress={handleUpButtonPress}
                         activeOpacity={0.7}
