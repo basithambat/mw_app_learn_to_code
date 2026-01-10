@@ -347,7 +347,7 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
 
         {/* TRANSLATABLE CONTENT: This layer moves for Docked view */}
         <Animated.View style={[{ flex: 1 }, contentTranslateStyle]}>
-          <View style={[styles.header, { paddingTop: 24 }]}>
+          <View style={styles.header}>
             <Text style={{ fontFamily: 'Geist-Medium', fontSize: 18, color: '#000000' }}>
               All comments
             </Text>

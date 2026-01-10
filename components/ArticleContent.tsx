@@ -65,13 +65,6 @@ const ArticleContent: React.FC<ArticleContentProps> = ({
 
     // P0 FIX: Moved from inline to fix "View with tag not registered" crash
     const spacerStyle = useAnimatedStyle(() => {
-        const currentScale = interpolate(
-            commentProgress.value,
-            [0, 1],
-            [1, 0.94],
-            Extrapolate.CLAMP
-        );
-
         const topAnchor = interpolate(
             commentProgress.value,
             [0, 1],
@@ -80,7 +73,7 @@ const ArticleContent: React.FC<ArticleContentProps> = ({
         );
 
         return {
-            height: (topAnchor / currentScale) + heroHeightSV.value
+            height: topAnchor + heroHeightSV.value
         };
     }, [heroHeightSV, commentProgress, topInset]);
 

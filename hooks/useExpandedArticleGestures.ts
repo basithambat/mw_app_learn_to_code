@@ -223,46 +223,19 @@ export const useExpandedArticleGestures = ({
     // Container style (for ExpandNewsItem root)
     // Combines reading AND dismiss transformations
     const containerStyle = useAnimatedStyle(() => {
-        // Reading transformations (from commentProgress)
-        const readingScale = interpolate(
-            commentProgress.value,
-            [0, 1],
-            [1, 0.94],
-            Extrapolate.CLAMP
-        );
-        // REMOVED: hardcoded readingTranslateY. Now using stickyTopCompensator.
-
-        // Dismiss transformations (from dismissY)
-        const dismissScale = interpolate(
-            dismissY.value,
-            [0, SCREEN_HEIGHT],
-            [1, 0.88],
-            Extrapolate.CLAMP
-        );
-
-        // Combined transformations
-        const combinedScale = readingScale * dismissScale;
-
-        // REVERT: Manual Sticky Top Scaling (transformOrigin crashed on Android)
-        // React Native scales from center. To keep top edge sticky at 'top',
-        // we must compensate for the scale translation: -(1 - scale) * Height / 2
-        const stickyTopCompensator = -((1 - combinedScale) * SCREEN_HEIGHT) / 2;
-        const combinedTranslateY = stickyTopCompensator + dismissY.value;
-
         return {
             transform: [
-                { translateY: combinedTranslateY },
-                { scale: combinedScale }
+                { translateY: dismissY.value },
             ],
         };
-    }, [commentProgress, dismissY]);
+    }, [dismissY]);
 
     // Dim style (background overlay when comments open)
     const dimStyle = useAnimatedStyle(() => {
         const dimOpacity = interpolate(
             commentProgress.value,
             [0, 1],
-            [0, 0.55],
+            [0, 0.42], // Slightly lighter for modern feel
             Extrapolate.CLAMP
         );
 

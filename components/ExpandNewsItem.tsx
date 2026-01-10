@@ -116,24 +116,15 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     const heroLayerStyle = useAnimatedStyle(() => {
         const isWriting = uiStateSV.value === 2;
 
-        const currentScale = interpolate(
-            commentProgress.value,
-            [0, 1],
-            [1, 0.94],
-            Extrapolate.CLAMP
-        );
-
-        // SENIOR DESIGN FIX: Scale-Compensated Top Anchor
-        // Since the plane is scaled from top:0, a point at 'y' moves to 'y * scale'.
-        // To keep it at 'targetTop', we set 'y = targetTop / scale'.
+        // Simplify: Direct top anchor without scale division
         const topAnchor = interpolate(
             commentProgress.value,
             [0, 1],
             [0, top],
             Extrapolate.CLAMP
         );
-        const compensatedTop = topAnchor / currentScale;
 
+        // Parallax scroll offset
         const scrollOffset = interpolate(
             commentProgress.value,
             [0, 1],
@@ -143,16 +134,18 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
 
         return {
             position: 'absolute' as const,
-            top: compensatedTop,
+            top: topAnchor,
             left: 0,
             right: 0,
-            zIndex: isWriting ? 10 : 40, // Top priority
+            zIndex: isWriting ? 10 : 40,
             elevation: isWriting ? 10 : 40,
             overflow: 'hidden' as const,
             pointerEvents: isWriting ? 'none' : 'auto',
-            transform: [{ translateY: scrollOffset }]
+            transform: [
+                { translateY: scrollOffset + dismissY.value }
+            ]
         };
-    }, [uiStateSV, commentProgress, articleScrollY, top]);
+    }, [uiStateSV, commentProgress, articleScrollY, top, dismissY]);
 
     // Sheet layer style - CRITICAL: Position driven by gesture progress for zero-lag reversibility
     // Sheet layer style - NOW A STATIC FULL-SCREEN MASK
@@ -345,7 +338,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                                     left: 0,
                                     right: 0,
                                     bottom: 0,
-                                    backgroundColor: '#F3F4F6', // Sync background color
+                                    backgroundColor: 'black', // Reverted to black for better "dim" feel
                                     zIndex: 10,
                                 },
                                 dimStyle
@@ -461,7 +454,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                     </Animated.View>
 
                     {/* PLANE 3: HERO CARD (Persistent Top layer) */}
-                    <Animated.View style={[heroLayerStyle, containerStyle]}>
+                    <Animated.View style={[heroLayerStyle]}>
                         <HeroCard
                             item={currentItem}
                             commentProgress={commentProgress}
