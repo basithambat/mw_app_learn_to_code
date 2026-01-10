@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/constants/app_enums.dart';
 import '../services/inheritance_service.dart';
 import '../services/people_service.dart';
 
@@ -23,11 +25,29 @@ class _InheritanceSpouseScreenState extends State<InheritanceSpouseScreen> {
   final _inheritanceService = InheritanceService();
   double _percentage = 100.0;
   bool _isLoading = false;
+  List<dynamic> _children = [];
 
   @override
   void initState() {
     super.initState();
-    _loadScenario();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (widget.willId == null) return;
+    try {
+      final peopleService = PeopleService();
+      final people = await peopleService.getPeople(widget.willId!);
+      setState(() {
+        _children = people.where((p) => 
+          p['relationship'] == RelationshipType.SON || 
+          p['relationship'] == RelationshipType.DAUGHTER
+        ).toList();
+      });
+      await _loadScenario();
+    } catch (e) {
+      // Ignore
+    }
   }
 
   Future<void> _loadScenario() async {
@@ -71,7 +91,10 @@ class _InheritanceSpouseScreenState extends State<InheritanceSpouseScreen> {
       if (_percentage < 100) {
         final peopleService = PeopleService();
         final people = await peopleService.getPeople(widget.willId!);
-        final children = people.where((p) => p['relationship'] == 'CHILD').toList();
+        final children = people.where((p) => 
+          p['relationship'] == RelationshipType.SON || 
+          p['relationship'] == RelationshipType.DAUGHTER
+        ).toList();
         
         if (children.isNotEmpty) {
           final remainingPercentage = 100 - _percentage.toInt();
@@ -196,10 +219,13 @@ class _InheritanceSpouseScreenState extends State<InheritanceSpouseScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'If you wish your wife to inherit less than 100, rest of the estate will be given to your children equally',
+                      _children.isNotEmpty 
+                        ? 'You have ${_children.length} children added. The remaining ${(100 - _percentage.toInt())}% will be shared among them.'
+                        : 'No children added. Spouse will inherit 100% of the estate.',
                       style: GoogleFonts.lato(
                         fontSize: 14,
-                        color: AppTheme.textSecondary,
+                        fontWeight: _children.isNotEmpty ? FontWeight.w500 : FontWeight.normal,
+                        color: _children.isNotEmpty ? AppTheme.primaryColor : AppTheme.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -277,18 +303,22 @@ class _InheritanceSpouseScreenState extends State<InheritanceSpouseScreen> {
           activeColor: AppTheme.primaryColor,
           inactiveColor: AppTheme.primaryLight,
           onChanged: (value) {
-            setState(() {
-              _percentage = value;
-            });
+            if (value.round() != _percentage.round()) {
+              HapticFeedback.lightImpact();
+              setState(() {
+                _percentage = value.roundToDouble();
+              });
+            }
           },
         ),
         // Tick marks and labels
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildTickMark(70),
-            _buildTickMark(80),
-            _buildTickMark(90),
+            _buildTickMark(0),
+            _buildTickMark(25),
+            _buildTickMark(50),
+            _buildTickMark(75),
             _buildTickMark(100),
           ],
         ),

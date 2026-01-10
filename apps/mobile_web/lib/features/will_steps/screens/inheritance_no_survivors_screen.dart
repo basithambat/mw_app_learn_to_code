@@ -56,10 +56,10 @@ class _InheritanceNoSurvivorsScreenState extends State<InheritanceNoSurvivorsScr
   }
 
   void _updateAllocation(int index, double value) {
-    // Check if beneficiary is non-heir (Friend/Charity)
+    // Check if beneficiary is non-heir (uses isBeneficiary flag instead of relationship strings)
     final person = _beneficiaries[index]['person'];
-    final relationship = person['relationship']?.toString().toUpperCase();
-    final isNonHeir = relationship == 'FRIEND' || relationship == 'CHARITY';
+    // Non-heirs are those explicitly marked as beneficiaries (friends, charities, etc.)
+    final isNonHeir = person['isBeneficiary'] == true;
 
     if (isNonHeir && value > 33.3) {
       _showMuslimLimitWarning(index);

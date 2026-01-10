@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_enums.dart';
 import '../services/people_service.dart';
 import 'inheritance_spouse_screen.dart';
 import 'inheritance_children_screen.dart';
@@ -51,15 +52,14 @@ class _InheritanceScreenState extends State<InheritanceScreen> {
 
   void _startInheritanceFlow() {
     final spouse = _people.firstWhere(
-      (p) => p['relationship'] == 'SPOUSE',
+      (p) => p['relationship'] == RelationshipType.SPOUSE,
       orElse: () => null,
     );
-    final children = _people.where((p) {
-      final rel = p['relationship']?.toString().toUpperCase() ?? '';
-      return rel == 'SON' || rel == 'DAUGHTER' || rel == 'CHILD';
-    }).map((p) => p as Map<String, dynamic>).toList();
+    final children = _people.where((p) =>
+      RelationshipType.isChild(p['relationship']?.toString())
+    ).map((p) => p as Map<String, dynamic>).toList();
     final mother = _people.firstWhere(
-      (p) => p['relationship'] == 'MOTHER',
+      (p) => p['relationship'] == RelationshipType.MOTHER,
       orElse: () => null,
     );
 

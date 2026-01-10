@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/constants/app_enums.dart';
 import '../services/inheritance_service.dart';
 import '../services/people_service.dart';
 import '../services/will_service.dart';
@@ -261,7 +263,7 @@ class _InheritanceChildrenScreenState extends State<InheritanceChildrenScreen> {
                                 ),
                               ],
                             ),
-                            if (_personalLaw == 'MUSLIM')
+                            if (_personalLaw == PersonalLaw.MUSLIM)
                                Padding(
                                  padding: const EdgeInsets.only(top: 4, bottom: 8),
                                  child: Container(
@@ -287,24 +289,25 @@ class _InheritanceChildrenScreenState extends State<InheritanceChildrenScreen> {
                               min: 0,
                               max: 100,
                               divisions: 100,
-                              activeColor: _personalLaw == 'MUSLIM' ? Colors.grey : AppTheme.primaryColor,
+                              activeColor: _personalLaw == PersonalLaw.MUSLIM ? Colors.grey : AppTheme.primaryColor,
                               inactiveColor: AppTheme.primaryLight,
-                              onChanged: _personalLaw == 'MUSLIM' ? null : (value) {
-                                setState(() {
-                                  _percentages[childId] = value;
-                                });
+                              onChanged: _personalLaw == PersonalLaw.MUSLIM ? null : (value) {
+                                if (value.round() != percentage.round()) {
+                                  HapticFeedback.lightImpact();
+                                  setState(() {
+                                    _percentages[childId] = value.roundToDouble();
+                                  });
+                                }
                               },
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                _buildTickMark(20),
-                                _buildTickMark(30),
-                                _buildTickMark(40),
+                                _buildTickMark(0),
+                                _buildTickMark(25),
                                 _buildTickMark(50),
-                                _buildTickMark(60),
-                                _buildTickMark(70),
-                                _buildTickMark(80),
+                                _buildTickMark(75),
+                                _buildTickMark(100),
                               ],
                             ),
                           ],
