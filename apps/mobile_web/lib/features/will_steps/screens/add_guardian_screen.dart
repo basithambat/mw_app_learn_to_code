@@ -77,7 +77,6 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
       );
       if (image != null) {
         setState(() {
-          _photo = null; 
           _pickedPhoto = image;
         });
       }

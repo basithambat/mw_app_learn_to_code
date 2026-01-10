@@ -65,7 +65,6 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
       );
       if (image != null) {
         setState(() {
-          _photo = null; // Clear old File if any
           _pickedPhoto = image;
         });
       }
