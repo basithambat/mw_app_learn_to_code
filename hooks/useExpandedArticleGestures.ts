@@ -230,20 +230,6 @@ export const useExpandedArticleGestures = ({
         };
     }, [dismissY]);
 
-    // Dim style (background overlay when comments open)
-    const dimStyle = useAnimatedStyle(() => {
-        const dimOpacity = interpolate(
-            commentProgress.value,
-            [0, 1],
-            [0, 0.42], // Slightly lighter for modern feel
-            Extrapolate.CLAMP
-        );
-
-        return {
-            opacity: dimOpacity,
-        };
-    }, [commentProgress]);
-
     // Comments sheet style (bottom sheet modal)
     const commentsSheetStyle = useAnimatedStyle(() => {
         const sheetTranslateY = interpolate(
@@ -280,7 +266,6 @@ export const useExpandedArticleGestures = ({
 
         // Animated styles
         containerStyle,
-        dimStyle,
         commentsSheetStyle,
 
         // Helper actions

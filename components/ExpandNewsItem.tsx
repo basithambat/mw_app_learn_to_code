@@ -329,23 +329,6 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                 <View style={{ flex: 1 }}>
                     {/* PLANE 1: ARTICLE CONTENT (Text and Scroll) */}
                     <Animated.View style={[{ flex: 1, zIndex: 1 }, containerStyle]}>
-                        {/* Dim overlay when comments are open */}
-                        <Animated.View
-                            style={[
-                                {
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    backgroundColor: 'black', // Reverted to black for better "dim" feel
-                                    zIndex: 10,
-                                },
-                                dimStyle
-                            ]}
-                            pointerEvents="none"
-                        />
-
                         <Animated.ScrollView
                             scrollEnabled={mode === 'reading'}
                             showsVerticalScrollIndicator={false}
