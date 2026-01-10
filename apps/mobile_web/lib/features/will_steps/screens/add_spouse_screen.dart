@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../../core/services/upload_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/people_service.dart';
@@ -28,10 +30,12 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
   final _peopleService = PeopleService();
   final _authService = AuthService();
   final _imagePicker = ImagePicker();
+  final _uploadService = UploadService();
   DateTime? _dateOfBirth;
   String? _relationship; // 'HUSBAND' or 'WIFE'
   String? _photoUrl;
-  File? _photo;
+  XFile? _pickedPhoto;
+  // File? _photo; // Removed in favor of XFile
   bool _isLoading = false;
 
   @override
@@ -61,7 +65,8 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
       );
       if (image != null) {
         setState(() {
-          _photo = File(image.path);
+          _photo = null; // Clear old File if any
+          _pickedPhoto = image;
         });
       }
     } catch (e) {
@@ -104,6 +109,14 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // 1. Upload photo if selected
+      if (_pickedPhoto != null) {
+        final uploadedUrl = await _uploadService.uploadPhoto(_pickedPhoto!);
+        if (uploadedUrl != null) {
+          _photoUrl = uploadedUrl;
+        }
+      }
+
       // Convert relationship to backend enum format
       String relationshipEnum = 'SPOUSE'; // Default to SPOUSE
       if (_relationship == 'HUSBAND' || _relationship == 'WIFE') {
@@ -131,13 +144,13 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
       } else {
         // Demo mode - just return success
         if (mounted) {
-          Navigator.pop(context, {'saved': true});
+          Navigator.pop(context, {'saved': true, 'data': data});
         }
         return;
       }
 
       if (mounted) {
-        Navigator.pop(context, {'saved': true});
+        Navigator.pop(context, {'saved': true, 'data': data});
       }
     } catch (e) {
       // Log full error for debugging
@@ -257,17 +270,34 @@ class _AddSpouseScreenState extends State<AddSpouseScreen> {
                           color: AppTheme.accentGreen.withOpacity(0.3),
                         ),
                       ),
-                      child: _photoUrl != null
+                      child: _pickedPhoto != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                _photoUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    _buildPhotoPlaceholder(),
-                              ),
+                              child: kIsWeb
+                                  ? Image.network(
+                                      _pickedPhoto!.path,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildPhotoPlaceholder(),
+                                    )
+                                  : Image.file(
+                                      File(_pickedPhoto!.path),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildPhotoPlaceholder(),
+                                    ),
                             )
-                          : _buildPhotoPlaceholder(),
+                          : _photoUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    _photoUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        _buildPhotoPlaceholder(),
+                                  ),
+                                )
+                              : _buildPhotoPlaceholder(),
                     ),
                   ),
                 ],

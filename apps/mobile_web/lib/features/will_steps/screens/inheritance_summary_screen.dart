@@ -208,8 +208,10 @@ class _InheritanceSummaryScreenState extends State<InheritanceSummaryScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          if (scenario != null && scenario['distributions'] != null)
-            ...(scenario['distributions'] as List).map((dist) {
+          if (scenario != null && 
+              scenario['allocationJson'] != null && 
+              scenario['allocationJson']['allocations'] != null)
+            ...(scenario['allocationJson']['allocations'] as List).map((dist) {
               final person = _getPersonById(dist['personId'].toString());
               if (person == null) return const SizedBox.shrink();
               return Padding(

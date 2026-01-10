@@ -58,10 +58,14 @@ class AuthService {
   Future<void> mockLogin() async {
     final prefs = await SharedPreferences.getInstance();
     
-    // Check if already logged in
+    // Check if already logged in with a real token
     final existingToken = prefs.getString('auth_token');
+    if (existingToken != null && !existingToken.startsWith('mock_')) {
+      return; // Already logged in with real token
+    }
+
     if (existingToken != null) {
-      return; // Already logged in
+      await prefs.remove('auth_token'); // Clear mock token
     }
 
     try {
@@ -99,13 +103,22 @@ class AuthService {
     // If mock credentials, use mock login
     if (isMockCredentials(phone, otp)) {
       await mockLogin();
-      return {
-        'accessToken': 'mock_jwt_token_7042063370_278823',
-        'user': {
-          'id': 'mock_user_7042063370',
-          'phone': phone,
-        },
-      };
+      
+      // After mockLogin, we should have a real token in prefs
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      
+      if (token != null && !token.startsWith('mock_')) {
+        return {
+          'accessToken': token,
+          'user': {
+            'id': prefs.getString('user_id'),
+            'phone': phone,
+          },
+        };
+      }
+      
+      throw Exception('Backend not available for mock login. Please check connection to $ApiClient.baseUrl');
     }
     
     // Otherwise, use real API

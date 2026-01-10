@@ -4,7 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/routes/app_routes.dart';
 import '../services/will_service.dart';
 import '../../../core/widgets/floating_assistant_button.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import '../../../core/widgets/safe_svg_picture.dart';
 
 class DashboardScreen extends StatefulWidget {
   final bool onboardingCompleted;
@@ -376,7 +376,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             top: 44,
             child: Row(
               children: [
-                SvgPicture.asset(
+                SafeSvgPicture.asset(
                   'assets/icons/logo_icon.svg',
                   width: 24,
                   height: 24,

@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { PeopleService } from './people.service';
 import { CreatePersonDto, UpdatePersonDto } from './dto/person.dto';
 import { CreateGuardianDto } from './dto/guardian.dto';
+import { BulkGuardianDto } from './dto/bulk-guardian.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('people')
@@ -20,7 +21,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class PeopleController {
-  constructor(private readonly peopleService: PeopleService) {}
+  constructor(private readonly peopleService: PeopleService) { }
 
   @Post()
   @ApiOperation({ summary: 'Add a family member to a will' })
@@ -99,5 +100,18 @@ export class PeopleController {
   @ApiResponse({ status: 404, description: 'Will not found' })
   async getGuardians(@Request() req, @Param('willId') willId: string) {
     return this.peopleService.getGuardians(willId, req.user.id);
+  }
+
+  @Post('guardians/bulk')
+  @ApiOperation({ summary: 'Assign a guardian to multiple minor children' })
+  @ApiResponse({ status: 201, description: 'Guardians assigned successfully' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
+  @ApiResponse({ status: 404, description: 'Will or person not found' })
+  async createGuardianBulk(
+    @Request() req,
+    @Param('willId') willId: string,
+    @Body() bulkGuardianDto: BulkGuardianDto,
+  ) {
+    return this.peopleService.assignGuardiansBulk(willId, req.user.id, bulkGuardianDto);
   }
 }

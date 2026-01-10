@@ -34,13 +34,21 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor(), new TransformInterceptor());
 
   // CORS configuration for Flutter web/mobile
-  const corsOrigins = process.env.CORS_ORIGIN?.split(',') || [
-    'http://localhost:8080',
-    'http://localhost:3000',
-    'http://192.168.0.101:3000', // Local network IP for mobile devices
-  ];
   app.enableCors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      // Allow localhost in development
+      if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+        callback(null, true);
+        return;
+      }
+      
+      const corsOrigins = process.env.CORS_ORIGIN?.split(',') || [];
+      if (corsOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

@@ -168,6 +168,16 @@ class _FamilyScreenState extends State<FamilyScreen> {
         },
       );
       if (result != null && (result as Map)['saved'] == true) {
+        if (result['data'] != null) {
+          setState(() {
+            final newChild = Map<String, dynamic>.from(result['data']);
+            // Generate temporary ID if missing (for demo/offline)
+            if (newChild['id'] == null) {
+              newChild['id'] = 'temp-child-${DateTime.now().millisecondsSinceEpoch}';
+            }
+            _people.add(newChild);
+          });
+        }
         await _loadPeople();
       }
     }
@@ -372,6 +382,21 @@ class _FamilyScreenState extends State<FamilyScreen> {
                                 },
                               );
                               if (result != null && (result as Map)['saved'] == true) {
+                                if (result['data'] != null) {
+                                  setState(() {
+                                    // Remove old spouse if exists
+                                    _people.removeWhere((p) => 
+                                      p['relationship'] == 'SPOUSE' || 
+                                      p['relationship'] == 'HUSBAND' || 
+                                      p['relationship'] == 'WIFE'
+                                    );
+                                    // Add new spouse data
+                                    final newSpouse = Map<String, dynamic>.from(result['data']);
+                                    // Preserve ID if it existed
+                                    if (spouse['id'] != null) newSpouse['id'] = spouse['id'];
+                                    _people.add(newSpouse);
+                                  });
+                                }
                                 _loadPeople();
                               }
                             },
@@ -389,6 +414,17 @@ class _FamilyScreenState extends State<FamilyScreen> {
                                 },
                               );
                               if (result != null && (result as Map)['saved'] == true) {
+                                if (result['data'] != null) {
+                                  setState(() {
+                                    // Remove old spouse if exists (just in case)
+                                    _people.removeWhere((p) => 
+                                      p['relationship'] == 'SPOUSE' || 
+                                      p['relationship'] == 'HUSBAND' || 
+                                      p['relationship'] == 'WIFE'
+                                    );
+                                    _people.add(result['data']);
+                                  });
+                                }
                                 _loadPeople();
                               }
                             },

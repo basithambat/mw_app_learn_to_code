@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../../core/services/upload_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/people_service.dart';
@@ -27,9 +29,12 @@ class _AddChildScreenState extends State<AddChildScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _peopleService = PeopleService();
+  final _uploadService = UploadService();
+  final _imagePicker = ImagePicker();
   DateTime? _dateOfBirth;
   String? _relationship; // 'SON' or 'DAUGHTER'
   String? _photoUrl;
+  XFile? _pickedPhoto;
   bool _isLoading = false;
 
   @override
@@ -52,10 +57,21 @@ class _AddChildScreenState extends State<AddChildScreen> {
   }
 
   Future<void> _pickPhoto() async {
-    // TODO: Implement photo picker
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Photo picker coming soon')),
-    );
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        setState(() {
+          _pickedPhoto = image;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick photo: ${e.toString()}')),
+      );
+    }
   }
 
   Future<void> _save() async {
@@ -76,6 +92,14 @@ class _AddChildScreenState extends State<AddChildScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // 1. Upload photo if selected
+      if (_pickedPhoto != null) {
+        final uploadedUrl = await _uploadService.uploadPhoto(_pickedPhoto!);
+        if (uploadedUrl != null) {
+          _photoUrl = uploadedUrl;
+        }
+      }
+
       final data = {
         'fullName': _nameController.text,
         'dateOfBirth': DateFormat('yyyy-MM-dd').format(_dateOfBirth!),
@@ -94,7 +118,7 @@ class _AddChildScreenState extends State<AddChildScreen> {
       }
 
       if (mounted) {
-        Navigator.pop(context, {'saved': true});
+        Navigator.pop(context, {'saved': true, 'data': data});
       }
     } catch (e) {
       if (mounted) {
@@ -164,17 +188,34 @@ class _AddChildScreenState extends State<AddChildScreen> {
                           color: AppTheme.accentGreen.withOpacity(0.3),
                         ),
                       ),
-                      child: _photoUrl != null
+                      child: _pickedPhoto != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                _photoUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    _buildPhotoPlaceholder(),
-                              ),
+                              child: kIsWeb
+                                  ? Image.network(
+                                      _pickedPhoto!.path,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildPhotoPlaceholder(),
+                                    )
+                                  : Image.file(
+                                      File(_pickedPhoto!.path),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildPhotoPlaceholder(),
+                                    ),
                             )
-                          : _buildPhotoPlaceholder(),
+                          : _photoUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    _photoUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        _buildPhotoPlaceholder(),
+                                  ),
+                                )
+                              : _buildPhotoPlaceholder(),
                     ),
                   ),
                 ],

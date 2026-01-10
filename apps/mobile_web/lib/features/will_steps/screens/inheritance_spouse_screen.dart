@@ -37,12 +37,15 @@ class _InheritanceSpouseScreenState extends State<InheritanceSpouseScreen> {
         (s) => s['type'] == 'USER_DIES_FIRST',
         orElse: () => null,
       );
-      if (scenario != null && scenario['distributions'] != null) {
-        final distributions = scenario['distributions'] as List;
-        if (distributions.isNotEmpty) {
-          setState(() {
-            _percentage = (distributions[0]['percentage'] ?? 100.0).toDouble();
-          });
+      if (scenario != null && scenario['allocationJson'] != null) {
+        final allocationJson = scenario['allocationJson'];
+        if (allocationJson['allocations'] != null) {
+          final distributions = allocationJson['allocations'] as List;
+          if (distributions.isNotEmpty) {
+            setState(() {
+              _percentage = (distributions[0]['percentage'] ?? 100.0).toDouble();
+            });
+          }
         }
       }
     } catch (e) {
@@ -58,12 +61,14 @@ class _InheritanceSpouseScreenState extends State<InheritanceSpouseScreen> {
     try {
       final data = {
         'type': 'USER_DIES_FIRST',
-        'distributions': [
-          {
-            'personId': widget.spouse!['id'],
-            'percentage': _percentage.toInt(),
-          },
-        ],
+        'allocationJson': {
+          'allocations': [
+            {
+              'personId': widget.spouse!['id'],
+              'percentage': _percentage.toInt(),
+            },
+          ]
+        },
       };
 
       final scenarios = await _inheritanceService.getScenarios(widget.willId!);

@@ -6,7 +6,7 @@ import { RelationshipType, StepStatus } from '@prisma/client';
 
 @Injectable()
 export class PeopleService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(willId: string, userId: string, createPersonDto: CreatePersonDto) {
     // Verify will ownership
@@ -348,6 +348,85 @@ export class PeopleService {
         alternateGuardian: true,
       },
     });
+  }
+
+  async assignGuardiansBulk(willId: string, userId: string, dto: {
+    guardianPersonId: string;
+    childPersonIds: string[];
+    alternateGuardianPersonId?: string;
+  }) {
+    // Verify will ownership
+    const will = await this.prisma.will.findFirst({
+      where: { id: willId, userId },
+    });
+
+    if (!will) {
+      throw new NotFoundException(`Will with ID ${willId} not found`);
+    }
+
+    // Verify guardian exists and is an adult
+    const guardian = await this.prisma.willPerson.findFirst({
+      where: { id: dto.guardianPersonId, willId },
+    });
+
+    if (!guardian) {
+      throw new NotFoundException(`Guardian person not found`);
+    }
+
+    if (guardian.isMinor) {
+      throw new BadRequestException('Guardian must be an adult');
+    }
+
+    // Verify alternate guardian if provided
+    if (dto.alternateGuardianPersonId) {
+      const alternateGuardian = await this.prisma.willPerson.findFirst({
+        where: { id: dto.alternateGuardianPersonId, willId },
+      });
+
+      if (!alternateGuardian) {
+        throw new NotFoundException(`Alternate guardian person not found`);
+      }
+
+      if (alternateGuardian.isMinor) {
+        throw new BadRequestException('Alternate guardian must be an adult');
+      }
+    }
+
+    const assignments = [];
+    for (const childId of dto.childPersonIds) {
+      // Verify child exists and is a minor
+      const child = await this.prisma.willPerson.findFirst({
+        where: { id: childId, willId },
+      });
+
+      if (!child) {
+        throw new NotFoundException(`Child person ${childId} not found`);
+      }
+
+      if (!child.isMinor) {
+        throw new BadRequestException(`Child ${child.fullName} is not a minor`);
+      }
+
+      // Upsert: Remove existing assignment and create new one
+      await this.prisma.guardianAssignment.deleteMany({
+        where: { willId, childPersonId: childId },
+      });
+
+      const assignment = await this.prisma.guardianAssignment.create({
+        data: {
+          willId,
+          childPersonId: childId,
+          guardianPersonId: dto.guardianPersonId,
+          alternateGuardianPersonId: dto.alternateGuardianPersonId,
+        },
+      });
+      assignments.push(assignment);
+    }
+
+    // Update step status
+    await this.updateStepStatus(willId);
+
+    return assignments;
   }
 
   private async updateStepStatus(willId: string) {

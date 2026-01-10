@@ -25,7 +25,7 @@ class ApiClient {
     } else {
       // For physical devices, use your computer's local IP address
       // Change this to your actual local IP (e.g., 192.168.0.101)
-      return 'http://192.168.0.101:3000/api';
+      return 'http://192.168.0.103:3000/api';
     }
   }
 
@@ -96,11 +96,16 @@ class ApiClient {
           
           String message = 'An error occurred';
           if (data is Map<String, dynamic>) {
-            message = data['message'] ?? 
-                     data['error'] ??
-                     (data['errors'] is List && (data['errors'] as List).isNotEmpty
-                         ? (data['errors'] as List).first.toString()
-                         : message);
+            final dynamic rawMessage = data['message'] ?? data['error'];
+            if (rawMessage is List) {
+              message = rawMessage.first.toString();
+            } else if (rawMessage != null) {
+              message = rawMessage.toString();
+            }
+            
+            if (data['errors'] is List && (data['errors'] as List).isNotEmpty) {
+              message = (data['errors'] as List).first.toString();
+            }
           } else if (data is String) {
             message = data;
           }

@@ -46,7 +46,7 @@ class _InheritanceNoSurvivorsScreenState extends State<InheritanceNoSurvivorsScr
         (s) => s['type'] == 'NO_ONE_SURVIVES',
         orElse: () => null,
       );
-      if (scenario != null && scenario['distributions'] != null) {
+      if (scenario != null && scenario['allocationJson'] != null) {
         // Load existing distributions
         // This would need to map person IDs to actual person objects
       }
@@ -68,7 +68,9 @@ class _InheritanceNoSurvivorsScreenState extends State<InheritanceNoSurvivorsScr
 
       final data = {
         'type': 'NO_ONE_SURVIVES',
-        'distributions': distributions,
+        'allocationJson': {
+          'allocations': distributions,
+        },
       };
 
       final scenarios = await _inheritanceService.getScenarios(widget.willId!);

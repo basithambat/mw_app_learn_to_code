@@ -43,13 +43,16 @@ class _InheritanceChildrenScreenState extends State<InheritanceChildrenScreen> {
         (s) => s['type'] == 'SPOUSE_DIES_FIRST',
         orElse: () => null,
       );
-      if (scenario != null && scenario['distributions'] != null) {
-        final distributions = scenario['distributions'] as List;
-        setState(() {
-          for (var dist in distributions) {
-            _percentages[dist['personId'].toString()] = (dist['percentage'] ?? 0.0).toDouble();
-          }
-        });
+      if (scenario != null && scenario['allocationJson'] != null) {
+        final allocationJson = scenario['allocationJson'];
+        if (allocationJson['allocations'] != null) {
+          final distributions = allocationJson['allocations'] as List;
+          setState(() {
+            for (var dist in distributions) {
+              _percentages[dist['personId'].toString()] = (dist['percentage'] ?? 0.0).toDouble();
+            }
+          });
+        }
       }
     } catch (e) {
       // Use default equal distribution
@@ -79,7 +82,9 @@ class _InheritanceChildrenScreenState extends State<InheritanceChildrenScreen> {
 
       final data = {
         'type': 'SPOUSE_DIES_FIRST',
-        'distributions': distributions,
+        'allocationJson': {
+          'allocations': distributions,
+        },
       };
 
       final scenarios = await _inheritanceService.getScenarios(widget.willId!);

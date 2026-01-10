@@ -43,18 +43,25 @@ class _ArrangementsScreenState extends State<ArrangementsScreen> {
     }
 
     try {
-      final [executors, witnesses] = await Future.wait([
+      final results = await Future.wait([
         _arrangementsService.getExecutors(widget.willId!),
         _arrangementsService.getWitnesses(widget.willId!),
+        _willService.getWill(widget.willId!),
       ]);
+
+      final executors = results[0] as List;
+      final witnesses = results[1] as List;
+      final willData = results[2] as Map<String, dynamic>;
 
       setState(() {
         _hasExecutor = executors.isNotEmpty;
         _hasWitnesses = witnesses.length >= 2;
-        // TODO: Check signature and consent status from API
+        _hasSignature = willData['signature'] != null;
+        _hasConsent = willData['consentVideo'] != null;
         _isLoading = false;
       });
     } catch (e) {
+      print('Error loading status: $e');
       setState(() => _isLoading = false);
     }
   }

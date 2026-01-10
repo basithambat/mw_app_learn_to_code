@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../../core/services/upload_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../services/people_service.dart';
@@ -28,11 +30,13 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
   final _nameController = TextEditingController();
   final _peopleService = PeopleService();
   final _imagePicker = ImagePicker();
+  final _uploadService = UploadService();
   DateTime? _dateOfBirth;
   String? _relationship;
   Set<String> _selectedChildrenIds = {};
   String? _photoUrl;
-  File? _photo;
+  XFile? _pickedPhoto;
+  // File? _photo; // Replaced by XFile
   bool _isLoading = false;
 
   @override
@@ -66,10 +70,22 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
   }
 
   Future<void> _pickPhoto() async {
-    // TODO: Implement photo picker
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Photo picker coming soon')),
-    );
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        setState(() {
+          _photo = null; 
+          _pickedPhoto = image;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick photo: ${e.toString()}')),
+      );
+    }
   }
 
   Future<void> _save() async {
@@ -96,23 +112,46 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final data = {
+      // 1. Upload photo if selected
+      if (_pickedPhoto != null) {
+        final uploadedUrl = await _uploadService.uploadPhoto(_pickedPhoto!);
+        if (uploadedUrl != null) {
+          _photoUrl = uploadedUrl;
+        }
+      }
+
+      // 2. Create or update the person (the guardian)
+      final personData = {
         'fullName': _nameController.text,
         'dateOfBirth': DateFormat('yyyy-MM-dd').format(_dateOfBirth!),
         'relationship': _relationship,
-        'guardianFor': _selectedChildrenIds.toList(),
         if (_photoUrl != null) 'photoUrl': _photoUrl,
       };
 
+      String guardianId;
       if (widget.existingGuardian != null && widget.willId != null) {
-        await _peopleService.updatePerson(
+        final updatedPerson = await _peopleService.updatePerson(
           widget.willId!,
           widget.existingGuardian!['id'],
-          data,
+          personData,
         );
+        guardianId = updatedPerson['id'];
       } else if (widget.willId != null) {
-        await _peopleService.assignGuardian(widget.willId!, data);
+        final newPerson = await _peopleService.addPerson(widget.willId!, personData);
+        guardianId = newPerson['id'];
+      } else {
+        // Demo mode
+        if (mounted) {
+          Navigator.pop(context, {'saved': true});
+        }
+        return;
       }
+
+      // 3. Bulk assign the person as guardian for selected children
+      await _peopleService.assignGuardiansBulk(widget.willId!, {
+        'guardianPersonId': guardianId,
+        'childPersonIds': _selectedChildrenIds.toList(),
+      });
 
       if (mounted) {
         Navigator.pop(context, {'saved': true});
@@ -177,17 +216,34 @@ class _AddGuardianScreenState extends State<AddGuardianScreen> {
                           color: AppTheme.accentGreen.withOpacity(0.3),
                         ),
                       ),
-                      child: _photoUrl != null
+                      child: _pickedPhoto != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                _photoUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    _buildPhotoPlaceholder(),
-                              ),
+                              child: kIsWeb
+                                  ? Image.network(
+                                      _pickedPhoto!.path,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildPhotoPlaceholder(),
+                                    )
+                                  : Image.file(
+                                      File(_pickedPhoto!.path),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          _buildPhotoPlaceholder(),
+                                    ),
                             )
-                          : _buildPhotoPlaceholder(),
+                          : _photoUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    _photoUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        _buildPhotoPlaceholder(),
+                                  ),
+                                )
+                              : _buildPhotoPlaceholder(),
                     ),
                   ),
                 ],
