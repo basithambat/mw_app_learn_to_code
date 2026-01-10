@@ -108,9 +108,15 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     // Track article scroll for gesture gating
     const articleScrollY = useSharedValue(0);
 
-    // Hero layer style - uses uiStateSV + pointerEvents for overlay
+    // Airbnb Fix: Stable writing lift (0 -> 1) controlled by keyboardVisibleSV
+    // This removes jitter and coupling to raw pixel height during the transition.
+    const writingLiftSV = useDerivedValue(() => {
+        return withTiming(keyboardVisibleSV.value, { duration: 200 });
+    });
+
+    // Hero layer style - uses writingLiftSV for stable layer depth
     const heroLayerStyle = useAnimatedStyle(() => {
-        const isWriting = keyboardHeightSV.value > 10;
+        const isWriting = keyboardVisibleSV.value === 1;
 
         // Simplify: Direct top anchor without scale division
         const topAnchor = interpolate(
@@ -133,6 +139,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
             top: topAnchor,
             left: 0,
             right: 0,
+            // Stable zIndex based on visibility state (no flicker)
             zIndex: isWriting ? 10 : 40,
             elevation: isWriting ? 10 : 40,
             overflow: 'hidden' as const,
@@ -141,23 +148,23 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                 { translateY: scrollOffset + dismissY.value }
             ]
         };
-    }, [commentProgress, articleScrollY, top, dismissY, keyboardHeightSV]);
+    }, [commentProgress, articleScrollY, top, dismissY, keyboardVisibleSV]);
 
-    // Sheet layer style - CRITICAL: Position driven by gesture progress for zero-lag reversibility
     // Sheet layer style - NOW A STATIC FULL-SCREEN MASK
     const sheetLayerStyle = useAnimatedStyle(() => {
-        const isWriting = keyboardHeightSV.value > 10;
+        const isWriting = keyboardVisibleSV.value === 1;
         return {
             position: 'absolute' as const,
             left: 0,
             right: 0,
             top: 0,
             bottom: 0,
+            // Stable layering based on visibility state
             zIndex: isWriting ? 50 : 20,
             elevation: isWriting ? 50 : 0,
             pointerEvents: mode === 'comments' ? 'auto' : 'none',
         };
-    }, [mode, keyboardHeightSV]);
+    }, [mode, keyboardVisibleSV]);
 
     // NEW: Content-only translation to preserve the physical floor for the composer
     const sheetContentTranslateStyle = useAnimatedStyle(() => {
@@ -169,22 +176,35 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
             Extrapolate.CLAMP
         );
 
-        // 2. Writing Offset: Smoothly lifts the sheet as keyboard appears
-        // We lift it from dockedTop (progressTop) to 0.
-        // Formula: progressTop - (kbProgress * progressTop) = progressTop * (1 - kbProgress)
-        // However, it's simpler to just subtract the keyboard-driven translate.
-        const kbProgress = interpolate(keyboardHeightSV.value, [0, 200], [0, 1], Extrapolate.CLAMP);
-        const finalTranslate = progressTop * (1 - kbProgress);
+        // 2. Writing Offset: Smoothly lifts the sheet using writingLiftSV
+        // This decouples the movement from raw keyboard height jitter.
+        const finalTranslate = progressTop * (1 - writingLiftSV.value);
 
         return {
             flex: 1,
             backgroundColor: '#F3F4F6',
-            borderTopLeftRadius: interpolate(keyboardHeightSV.value, [0, 50], [22, 0], Extrapolate.CLAMP),
-            borderTopRightRadius: interpolate(keyboardHeightSV.value, [0, 50], [22, 0], Extrapolate.CLAMP),
+            // Radius only applies during Writing mode (0 in Docked)
+            borderTopLeftRadius: writingLiftSV.value * 22,
+            borderTopRightRadius: writingLiftSV.value * 22,
             overflow: 'hidden' as const,
             transform: [{ translateY: finalTranslate }]
         };
-    }, [top, commentProgress, keyboardHeightSV]);
+    }, [top, commentProgress, writingLiftSV]);
+
+    // Re-implement Dim Style for the Writing state
+    const dimLayerStyle = useAnimatedStyle(() => {
+        return {
+            opacity: writingLiftSV.value * 0.85,
+            backgroundColor: 'black',
+            position: 'absolute' as const,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 45, // Between hero (40) and sheet (50)
+            pointerEvents: 'none' as const,
+        };
+    }, [writingLiftSV]);
 
     // Reset when component becomes visible
     useEffect(() => {
@@ -292,7 +312,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
             <GestureDetector gesture={verticalPanGesture}>
                 <View style={{ flex: 1 }}>
                     {/* PLANE 1: ARTICLE CONTENT (Text and Scroll) */}
-                    <Animated.View style={[{ flex: 1, zIndex: 1 }, containerStyle]}>
+                    <Animated.View style={[{ flex: 1, zIndex: 1, backgroundColor: '#F3F4F6' }, containerStyle]}>
                         <Animated.ScrollView
                             scrollEnabled={mode === 'reading'}
                             showsVerticalScrollIndicator={false}
@@ -386,6 +406,9 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                             />
                         </View>
                     </Animated.View>
+
+                    {/* AIRBNB DIM LAYER: Only dims when writingLiftSV > 0 */}
+                    <Animated.View style={dimLayerStyle} />
 
                     {/* PLANE 2: COMMENTS SHEET (Isolation) */}
                     <Animated.View style={[sheetLayerStyle]}>
