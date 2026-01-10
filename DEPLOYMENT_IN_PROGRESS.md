@@ -1,54 +1,70 @@
-# 🚀 Deployment In Progress - Mumbai
+# 🚀 API Deployment In Progress
 
-## ✅ Completed Steps
+## ✅ Fixed Issues
 
-1. **US Resources Deleted** ✅
-   - No double charges
+1. **TypeScript Compilation Error** - Fixed
+   - File: `ingestion-platform/src/index.ts` line 56
+   - Issue: `app.log.error()` type mismatch
+   - Fix: Changed to `app.log.error({ err: error }, 'Health check failed')`
 
-2. **Mumbai Infrastructure Ready** ✅
-   - Cloud SQL: `RUNNABLE`
-   - Redis: `READY`
-   - Storage: Created
+2. **Build Now Succeeds** - ✅
+   - TypeScript compilation passes
+   - Ready for Docker build
 
-3. **Secrets Updated** ✅
-   - Database and Redis connection strings
+## 🔄 Current Status
 
-4. **API Deployment Started** ⏳
-   - Using same approach as US (that worked)
-   - Memory: 512Mi (matching US)
-   - No VPC connector (using Cloud SQL connector)
-   - Simplified secrets (DATABASE_URL, REDIS_URL only)
-   - Running in background
+**Deployment is running in the background...**
 
----
+This will take 10-15 minutes. The deployment will:
+1. Build Docker image from source
+2. Push to Container Registry
+3. Deploy to Cloud Run (Mumbai region)
+4. Configure connections (Cloud SQL, Secrets)
 
-## ⏳ Current Status
+## 📋 What Happens Next
 
-**API Deployment:** Building container (5-10 minutes)
+Once deployment completes, you'll get:
+- ✅ API URL (e.g., `https://whatsay-api-XXXXX-as.a.run.app`)
+- ✅ Health endpoint ready
+- ✅ Database connected
+- ✅ Redis connected
 
-**Check Status:**
+## 🔍 Check Status
+
 ```bash
+# Check if service exists
+gcloud run services list --region asia-south1 --project gen-lang-client-0803362165
+
+# Get URL when ready
 gcloud run services describe whatsay-api \
   --region asia-south1 \
-  --project gen-lang-client-0803362165
+  --project gen-lang-client-0803362165 \
+  --format="value(status.url)"
 ```
 
-**Or list all services:**
-```bash
-gcloud run services list \
-  --region asia-south1 \
-  --project gen-lang-client-0803362165
-```
+## 📋 Next Steps After Deployment
+
+1. **Get API URL:**
+   ```bash
+   node get-production-api-url.js
+   ```
+
+2. **Update Frontend:**
+   ```bash
+   node update-api-url.js
+   ```
+
+3. **Test API:**
+   ```bash
+   curl https://your-api-url/health
+   curl https://your-api-url/api/sources
+   ```
+
+4. **Complete Deployment:**
+   ```bash
+   node complete-deployment.js
+   ```
 
 ---
 
-## 📋 After Deployment Completes
-
-1. Verify health endpoint
-2. Run database migrations
-3. Deploy worker
-4. Set up scheduler
-
----
-
-**Deployment following the exact US approach that worked!** 🎯
+**Deployment is running - check back in 10-15 minutes!** ⏳

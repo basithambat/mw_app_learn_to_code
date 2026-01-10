@@ -53,7 +53,7 @@ app.get('/health', async () => {
     await prisma.$queryRaw`SELECT 1`;
     return { status: 'healthy', timestamp: new Date().toISOString() };
   } catch (error) {
-    app.log.error('Health check failed:', error);
+    app.log.error({ err: error }, 'Health check failed');
     throw new Error('Unhealthy');
   }
 });

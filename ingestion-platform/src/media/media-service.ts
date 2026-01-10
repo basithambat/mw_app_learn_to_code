@@ -17,8 +17,8 @@ export class MediaService {
   constructor() {
     this.s3Client = getS3Client();
     const config = getS3Config();
-    this.bucket = config.bucket;
-    this.publicBaseUrl = config.publicBaseUrl;
+    this.bucket = config.bucket || 'content-bucket';
+    this.publicBaseUrl = config.publicBaseUrl || 'http://localhost:9000/content-bucket';
   }
 
   /**

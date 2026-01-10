@@ -1,48 +1,64 @@
-# ⚡ Quick Start - App on Phone in 30 Seconds!
+# ⚡ Quick Start - Immediate Access
 
-## ✅ Fastest Method (No Build Needed!)
+## ✅ Starting Expo Dev Server
 
-**Since your app is already installed:**
-1. ✅ Metro bundler starting...
-2. ✅ App will auto-connect
-3. ✅ Done!
+**Starting Metro bundler to push app to your device immediately...**
 
 ---
 
 ## 🚀 What's Happening
 
-1. **Metro bundler is starting** (in background)
-2. **App will reload** on your phone
-3. **App connects to Metro** automatically
-4. **App loads and runs!**
+1. ✅ **Expo Dev Server** - Starting Metro bundler
+2. ⏳ **Connecting to Device** - Will connect to A059P
+3. ⏳ **Pushing Changes** - App will update on device
+
+**Time:** 30-60 seconds (not 15 minutes!)
 
 ---
 
-## 📱 On Your Phone
+## 📱 Device
 
-**The app should:**
-1. Open automatically
-2. Connect to Metro bundler
-3. Load JavaScript bundle
-4. Run!
-
-**If it shows Dev Launcher:**
-- It should auto-connect
-- Or enter: `exp://192.168.0.101:8081`
+- **Device ID:** A059P
+- **Connection:** Will connect automatically
+- **App:** Will open/update on device
 
 ---
 
-## ✅ Status
+## 🔍 What You'll See
 
-- ✅ App installed on device
-- ✅ Metro bundler starting
-- ✅ Connection URL: `exp://192.168.0.101:8081`
-- ✅ App reloaded
+**In terminal:**
+- Metro bundler starting
+- QR code (if needed)
+- Connection URL
+- "Opening on A059P"
+
+**On device:**
+- App will open/update
+- Latest code with production API
+- All changes applied
 
 ---
 
-## 🎉 Done!
+## ✅ Production API
 
-**No build needed - app is running via Metro!**
+- **URL:** `https://whatsay-api-jsewdobsva-el.a.run.app`
+- **Status:** Configured and ready
+- **Will connect:** Automatically
 
-**This is the fastest way - instant connection!** 🚀
+---
+
+## 🎯 This is Much Faster!
+
+**Instead of:**
+- ❌ Full native build (15 minutes)
+- ❌ APK compilation
+- ❌ Installation process
+
+**We're using:**
+- ✅ Expo dev client (already on device)
+- ✅ Metro bundler (30 seconds)
+- ✅ Hot reload (instant updates)
+
+---
+
+**App will be on your device in 30-60 seconds!** 🚀

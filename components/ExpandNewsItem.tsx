@@ -8,13 +8,16 @@ import {
     View, 
     Text, 
     Image, 
-    Animated, 
     FlatList,
     Platform,
     TouchableOpacity
 } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Reanimated from 'react-native-reanimated';
+import Animated, { 
+    useAnimatedStyle,
+    interpolate,
+    Extrapolate 
+} from 'react-native-reanimated';
 import CommentSectionModal from '@/components/comment/commentSectionModal';
 import { getAllCategories } from '@/api/apiCategories';
 import { CategoryType } from '@/types/CategoryTypes';
@@ -61,7 +64,16 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     const flatListRef = useRef<FlatList>(null);
     const [categories, setCategories] = useState<CategoryType[]>([]);
     const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-    const { animatedValues } = useNewsItemAnimations(isCommentModalVisible, onClose);
+    const { 
+        animatedValues,
+        panGesture,
+        imageAnimatedStyle,
+        gradientAnimatedStyle,
+        titleAnimatedStyle,
+        contentAnimatedStyle,
+        dragIndicatorAnimatedStyle,
+        modalAnimatedStyle
+    } = useNewsItemAnimations(isCommentModalVisible, onClose);
     const [activeArticle, setActiveArticle] = useState(initialArticleId);
     
     // Calculate initial index based on the ID
@@ -139,7 +151,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
         })();
     }, []);
 
-    const { panGesture, scrollEnabled, animatedStyle } = useCombinedSwipe({
+    const { scrollEnabled, animatedStyle } = useCombinedSwipe({
         data: items,
         currentIndex: currentIndexRef.current,
         onSwipeLeft: (index) => {
@@ -212,13 +224,20 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
             borderBottomLeftRadius: isCommentModalVisible ? 20 : 0,
         };
 
+        // Emil's pattern: Use Reanimated animated styles
+        const containerAnimatedStyle = useAnimatedStyle(() => {
+            'worklet';
+            return {
+                transform: [{ scale: animatedValues.scale.value }],
+            };
+        }, []);
+
         return (
             <Animated.View
                 style={[{ 
                     width: SCREEN_DIMENSIONS.width, 
                     backgroundColor: isCommentModalVisible ? '#F3F4F6' : 'white', 
-                    transform: [{ scale: animatedValues.scale }] 
-                }]}
+                }, containerAnimatedStyle]}
                 collapsable={false} // Prevent view collapsing for smoother animations
                 pointerEvents={isCommentModalVisible ? 'none' : 'auto'} // Allow touches to pass through when comment modal is open
             >
@@ -226,12 +245,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                     <Animated.View 
                         style={[
                             imageWrapperStyle,
-                            {
-                                width: animatedValues.imageSize.interpolate({
-                                    inputRange: [54, 100],
-                                    outputRange: ['54%', '100%'],
-                                }),
-                            }
+                            imageAnimatedStyle
                         ]}
                     >
                     {item.image_url ? (
@@ -245,23 +259,22 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                             <Text style={{ color: '#9CA3AF', fontSize: 16 }}>No Image</Text>
                         </View>
                     )}
-                    <Animated.View style={[
-                        GRADIENT_STYLE, 
-                        { opacity: animatedValues.gradientOpacity }
-                    ]}>
+                    <Animated.View style={[GRADIENT_STYLE, gradientAnimatedStyle]}>
                         <LinearGradient 
                             colors={['transparent', 'rgba(0,0,0,0.8)']} 
                             style={{ flex: 1 }} 
                         />
                     </Animated.View>
 
-                    <Animated.View style={{
-                        position: 'absolute',
-                        bottom: 32,
-                        left: 20,
-                        right: 20,
-                        transform: [{ translateY: animatedValues.titlePosition }],
-                    }}>
+                    <Animated.View style={[
+                        {
+                            position: 'absolute',
+                            bottom: 32,
+                            left: 20,
+                            right: 20,
+                        },
+                        titleAnimatedStyle
+                    ]}>
                         {isCommentModalVisible && (
                             <Text className="text-[22px] font-domine text-white">
                                 {item.title}
@@ -269,31 +282,21 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                         )}
                     </Animated.View>
 
-                    <Animated.View style={{
-                        position: 'absolute',
-                        bottom: 12,
-                        alignSelf: 'center',
-                        transform: [{
-                            translateY: animatedValues.dragIndicator
-                        }],
-                    }}>
+                    <Animated.View style={[
+                        {
+                            position: 'absolute',
+                            bottom: 12,
+                            alignSelf: 'center',
+                        },
+                        dragIndicatorAnimatedStyle
+                    ]}>
                         {isCommentModalVisible && (
                             <View className='h-[4px] w-[24px] rounded-full bg-[#FFFFFF]/20' />
                         )}
                     </Animated.View>
                 </GestureDetector>
 
-                <Animated.View 
-                    style={{
-                        opacity: animatedValues.contentOpacity,
-                        transform: [{
-                            translateY: animatedValues.contentOpacity.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [50, 0],
-                            })
-                        }],
-                    }}
-                >
+                <Animated.View style={contentAnimatedStyle}>
                     <StyledView className="p-[16px]">
                         <Text className="text-[20px] font-domine mb-[12px]">
                             {item.title}
@@ -364,7 +367,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     }), []);
 
     return (
-        <Reanimated.View style={[{ flex: 1, marginTop: 50 }]}>
+        <Animated.View style={[{ flex: 1, marginTop: 50 }]}>
             <Animated.View style={[
                 { flex: 1, backgroundColor: 'white' },
                 animatedStyle
@@ -423,7 +426,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                 isVisible={isCommentModalVisible}
                 onClose={handleCommentModalClose}
             />
-        </Reanimated.View>
+        </Animated.View>
     );
 };
 

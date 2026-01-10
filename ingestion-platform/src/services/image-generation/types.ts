@@ -62,7 +62,7 @@ export class GeminiNanoBananaProvider implements ImageGenerationProvider {
         throw new Error(`Gemini image generation failed: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       
       // Handle response - Gemini returns inlineData with base64
       if (data.candidates?.[0]?.content?.parts) {

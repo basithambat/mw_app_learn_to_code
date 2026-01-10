@@ -34,7 +34,7 @@ export class SerpAPIImageProvider implements ImageSearchProvider {
         throw new Error(`SerpAPI error: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       const images = data.images_results || [];
 
       return images.slice(0, limit).map((img: any) => ({
@@ -88,7 +88,7 @@ export class SerperImageProvider implements ImageSearchProvider {
         throw new Error(`Serper error: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       const images = data.images || [];
 
       return images.slice(0, limit).map((img: any) => ({

@@ -72,7 +72,7 @@ export class FirecrawlEngine {
       body: JSON.stringify(payload),
     });
 
-    const result = await response.json();
+    const result = await response.json() as any;
     
     // Firecrawl v2 API response structure:
     // If async: { success: true, id: "...", urlTrace: [] }
@@ -97,7 +97,7 @@ export class FirecrawlEngine {
     }
     
     // Fallback: return as-is
-    return result;
+    return result as ExtractResponse;
   }
 
   /**
@@ -117,7 +117,7 @@ export class FirecrawlEngine {
       body: JSON.stringify(payload),
     });
 
-    return response.json();
+    return response.json() as Promise<ExtractResponse>;
   }
 
   /**
@@ -132,7 +132,7 @@ export class FirecrawlEngine {
           method: 'GET',
         });
         
-        const result = await response.json();
+        const result = await response.json() as any;
         
         // If job is complete, return the data
         if (result.data && Array.isArray(result.data) && result.data.length > 0) {

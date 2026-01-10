@@ -1,151 +1,252 @@
 import { useRef, useMemo, useCallback, useEffect } from 'react';
-import { Animated, Easing, PanResponder, PanResponderGestureState, Dimensions, Platform, InteractionManager } from 'react-native';
+import { Dimensions, Platform, InteractionManager } from 'react-native';
+import { Gesture } from 'react-native-gesture-handler';
+import {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+  interpolate,
+  Extrapolate,
+  SharedValue,
+} from 'react-native-reanimated';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-interface AnimatedValues {
-  imageSize: Animated.Value;
-  gradientOpacity: Animated.Value;
-  scale: Animated.Value;
-  titlePosition: Animated.Value;
-  dragIndicator: Animated.Value;
-  contentOpacity: Animated.Value;
-  modalY: Animated.Value;
-}
+// Emil Kowalski's recommended spring configs for natural, responsive animations
+const SPRING_CONFIG_SNAPPY = {
+  damping: 20,
+  stiffness: 300,
+  mass: 0.8,
+};
+
+const SPRING_CONFIG_SMOOTH = {
+  damping: 25,
+  stiffness: 200,
+  mass: 1,
+};
+
+const SPRING_CONFIG_BOUNCY = {
+  damping: 15,
+  stiffness: 350,
+  mass: 0.5,
+};
+
+// Timing config for non-spring animations
+const TIMING_CONFIG = {
+  duration: Platform.select({ ios: 250, android: 300 }),
+};
 
 const SWIPE_THRESHOLD = 100;
-const ANIMATION_CONFIG = {
-  duration: Platform.select({ ios: 250, android: 300 }),
-  easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-};
-// Optimized spring config for smoother animations - Airbnb style (Snappy & Fluid)
-const SPRING_CONFIG = {
-  damping: 30,
-  stiffness: 350,
-  mass: 1,
-  overshootClamping: false,
-  restDisplacementThreshold: 0.01,
-  restSpeedThreshold: 0.01,
-};
+const SWIPE_VELOCITY_THRESHOLD = 500; // Velocity-based threshold (Emil's pattern)
 
-export const useNewsItemAnimations = (isCommentSectionOpen: boolean, onClose: () => void) => {
-  const animatedValuesRef = useRef<AnimatedValues>({
-    imageSize: new Animated.Value(100),
-    gradientOpacity: new Animated.Value(0),
-    scale: new Animated.Value(1),
-    titlePosition: new Animated.Value(1),
-    dragIndicator: new Animated.Value(1),
-    contentOpacity: new Animated.Value(1),
-    modalY: new Animated.Value(0),
-  });
+interface AnimatedValues {
+  imageSize: SharedValue<number>;
+  gradientOpacity: SharedValue<number>;
+  scale: SharedValue<number>;
+  titlePosition: SharedValue<number>;
+  dragIndicator: SharedValue<number>;
+  contentOpacity: SharedValue<number>;
+  modalY: SharedValue<number>;
+}
 
-  const animatedValues = useMemo(() => animatedValuesRef.current, []);
+export const useNewsItemAnimations = (
+  isCommentSectionOpen: boolean,
+  onClose: () => void
+) => {
+  // Emil Kowalski pattern: Use SharedValue instead of Animated.Value
+  const imageSize = useSharedValue(100);
+  const gradientOpacity = useSharedValue(0);
+  const scale = useSharedValue(1);
+  const titlePosition = useSharedValue(200);
+  const dragIndicator = useSharedValue(12);
+  const contentOpacity = useSharedValue(1);
+  const modalY = useSharedValue(0);
 
-  const closeModal = useCallback(() => {
-    Animated.timing(animatedValues.modalY, {
-      toValue: screenHeight,
-      duration: ANIMATION_CONFIG.duration,
-      useNativeDriver: true,
-      easing: ANIMATION_CONFIG.easing,
-    }).start(() => {
-      // Use InteractionManager to defer reset until animations complete
-      InteractionManager.runAfterInteractions(() => {
-        animatedValues.modalY.setValue(0);
-        onClose();
-      });
-    });
-  }, [animatedValues.modalY, onClose]);
+  const animatedValues = useMemo<AnimatedValues>(
+    () => ({
+      imageSize,
+      gradientOpacity,
+      scale,
+      titlePosition,
+      dragIndicator,
+      contentOpacity,
+      modalY,
+    }),
+    []
+  );
 
-  const panResponder = useMemo(() => {
-    return PanResponder.create({
-      onMoveShouldSetPanResponder: (_, { dy, dx }) => {
-        // Optimized: Remove throttling - let native driver handle it
-        return Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 5 && !isCommentSectionOpen;
-      },
-      onPanResponderMove: Animated.event(
-        [null, { dy: animatedValues.modalY }],
-        { 
-          useNativeDriver: true,
-          listener: undefined, // Remove listener to avoid JS thread overhead
+  // Emil's pattern: Use velocity-aware animations
+  const closeModal = useCallback(
+    (velocity?: number) => {
+      'worklet';
+      // Use velocity if provided for more natural feel
+      const targetY = screenHeight;
+      
+      modalY.value = withSpring(
+        targetY,
+        velocity && Math.abs(velocity) > SWIPE_VELOCITY_THRESHOLD
+          ? SPRING_CONFIG_BOUNCY
+          : SPRING_CONFIG_SMOOTH,
+        (finished) => {
+          if (finished) {
+            runOnJS(() => {
+              InteractionManager.runAfterInteractions(() => {
+                modalY.value = 0;
+                onClose();
+              });
+            })();
+          }
         }
-      ),
-      onPanResponderRelease: (_, gestureState) => {
-        if (!isCommentSectionOpen) {
-          handlePanResponderRelease(gestureState);
-        }
-      },
-    });
-  }, [isCommentSectionOpen, animatedValues.modalY, handlePanResponderRelease]);
+      );
+    },
+    [modalY, onClose]
+  );
 
-  const handlePanResponderRelease = useCallback((gestureState: PanResponderGestureState) => {
-    if (!isCommentSectionOpen) {
-      if (gestureState.dy > SWIPE_THRESHOLD || gestureState.vy > 5) {
-        closeModal();
-      } else {
-        // Use optimized spring config for smoother bounce-back
-        Animated.spring(animatedValues.modalY, {
-          toValue: 0,
-          useNativeDriver: true,
-          ...SPRING_CONFIG,
-        }).start();
-      }
-    }
-  }, [isCommentSectionOpen, animatedValues.modalY, closeModal]);
-
-  useEffect(() => {
-    const createTiming = (value: Animated.Value, toValue: number, useNative: boolean = true) =>
-      Animated.timing(value, {
-        toValue,
-        duration: ANIMATION_CONFIG.duration,
-        easing: ANIMATION_CONFIG.easing,
-        useNativeDriver: useNative,
-      });
-
-    const nativeAnimations = [
-      createTiming(animatedValues.titlePosition, isCommentSectionOpen ? 0 : 200),
-      createTiming(animatedValues.contentOpacity, isCommentSectionOpen ? 0 : 1),
-      createTiming(animatedValues.scale, isCommentSectionOpen ? 1 : 1),
-    ];
-
-    const nonNativeAnimations = [
-      createTiming(animatedValues.imageSize, isCommentSectionOpen ? 94 : 100, false),
-      createTiming(animatedValues.gradientOpacity, isCommentSectionOpen ? 1 : 0, false),
-    ];
-
-    const dragIndicatorAnimation = Animated.sequence([
-      // First spring: Optimized for smoother initial movement
-      Animated.spring(animatedValues.dragIndicator, {
-        toValue: isCommentSectionOpen ? -12 : 14,
-        useNativeDriver: true,
-        damping: 15,
-        stiffness: 300,
-        mass: 0.8,
-      }),
-      // Second spring: Optimized settling animation
-      Animated.spring(animatedValues.dragIndicator, {
-        toValue: isCommentSectionOpen ? -2 : 12,
-        useNativeDriver: true,
-        damping: 20,
-        stiffness: 200,
-        mass: 1,
+  // Emil's pattern: Create pan gesture with proper worklet handling
+  const panGesture = useMemo(() => {
+    return Gesture.Pan()
+      .activeOffsetY([10, -10]) // Only activate on vertical movement
+      .failOffsetX([-10, 10]) // Fail on horizontal movement
+      .onUpdate((event) => {
+        'worklet';
+        // Add resistance to swipe down
+        const resistance = 0.5;
+        modalY.value = Math.max(0, event.translationY * resistance);
+        
+        // Update opacity and scale based on drag distance (Emil's pattern)
+        const progress = Math.min(1, modalY.value / screenHeight);
+        opacity.value = 1 - progress * 0.5;
+        scale.value = 1 - progress * 0.1;
       })
-    ]);
+      .onEnd((event) => {
+        'worklet';
+        const { translationY, velocityY } = event;
+        
+        // Velocity-based decision (Emil's pattern)
+        const shouldClose =
+          translationY > SWIPE_THRESHOLD || velocityY > SWIPE_VELOCITY_THRESHOLD;
+        
+        if (shouldClose) {
+          closeModal(velocityY);
+        } else {
+          // Spring back with velocity
+          modalY.value = withSpring(0, SPRING_CONFIG_SNAPPY);
+          opacity.value = withSpring(1, SPRING_CONFIG_SNAPPY);
+          scale.value = withSpring(1, SPRING_CONFIG_SNAPPY);
+        }
+      });
+  }, [modalY, closeModal]);
 
-    Animated.parallel([
-      Animated.parallel(nativeAnimations),
-      Animated.parallel(nonNativeAnimations),
-      dragIndicatorAnimation,
-    ]).start();
+  // Track opacity and scale for modal drag
+  const opacity = useSharedValue(1);
+  const modalScale = useSharedValue(1);
 
-    return () => {
-      nativeAnimations.forEach(anim => anim.stop());
-      nonNativeAnimations.forEach(anim => anim.stop());
-      dragIndicatorAnimation.stop();
+  // Emil's pattern: Animate state changes with proper spring physics
+  useEffect(() => {
+    // Image size animation (non-native, so use timing)
+    imageSize.value = withTiming(
+      isCommentSectionOpen ? 94 : 100,
+      TIMING_CONFIG
+    );
+
+    // Gradient opacity (non-native)
+    gradientOpacity.value = withTiming(
+      isCommentSectionOpen ? 1 : 0,
+      TIMING_CONFIG
+    );
+
+    // Native animations use spring for natural feel
+    titlePosition.value = withSpring(
+      isCommentSectionOpen ? 0 : 200,
+      SPRING_CONFIG_SNAPPY
+    );
+
+    contentOpacity.value = withSpring(
+      isCommentSectionOpen ? 0 : 1,
+      SPRING_CONFIG_SNAPPY
+    );
+
+    scale.value = withSpring(1, SPRING_CONFIG_SNAPPY);
+
+    // Drag indicator: Emil's pattern - sequence of springs for micro-interactions
+    if (isCommentSectionOpen) {
+      dragIndicator.value = withSpring(-12, SPRING_CONFIG_BOUNCY, () => {
+        dragIndicator.value = withSpring(-2, SPRING_CONFIG_SMOOTH);
+      });
+    } else {
+      dragIndicator.value = withSpring(14, SPRING_CONFIG_BOUNCY, () => {
+        dragIndicator.value = withSpring(12, SPRING_CONFIG_SMOOTH);
+      });
+    }
+  }, [isCommentSectionOpen, imageSize, gradientOpacity, titlePosition, contentOpacity, scale, dragIndicator]);
+
+  // Emil's pattern: Animated styles using worklets
+  const modalAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    return {
+      transform: [
+        { translateY: modalY.value },
+        { scale: modalScale.value },
+      ],
+      opacity: opacity.value,
     };
-  }, [isCommentSectionOpen, animatedValues]);
+  }, []);
+
+  const imageAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    return {
+      width: `${imageSize.value}%`,
+    };
+  }, []);
+
+  const gradientAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    return {
+      opacity: gradientOpacity.value,
+    };
+  }, []);
+
+  const titleAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    return {
+      transform: [{ translateY: titlePosition.value }],
+    };
+  }, []);
+
+  const contentAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    const opacityValue = contentOpacity.value;
+    const translateY = interpolate(
+      opacityValue,
+      [0, 1],
+      [50, 0],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      opacity: opacityValue,
+      transform: [{ translateY }],
+    };
+  }, []);
+
+  const dragIndicatorAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    return {
+      transform: [{ translateY: dragIndicator.value }],
+    };
+  }, []);
 
   return {
     animatedValues,
     closeModal,
+    panGesture,
+    modalAnimatedStyle,
+    imageAnimatedStyle,
+    gradientAnimatedStyle,
+    titleAnimatedStyle,
+    contentAnimatedStyle,
+    dragIndicatorAnimatedStyle,
   };
 };

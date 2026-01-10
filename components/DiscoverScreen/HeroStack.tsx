@@ -67,22 +67,28 @@ export const HeroStack: React.FC<HeroStackProps> = ({
               }
             })
             .onEnd((event) => {
+              'worklet';
               if (isFirst) {
-                if (Math.abs(event.velocityX) > 400 || Math.abs(translateX.value) > SCREEN_WIDTH * 0.4) {
+                const { velocityX } = event;
+                const velocityThreshold = 500; // Emil's pattern: velocity-based decisions
+                const distanceThreshold = SCREEN_WIDTH * 0.35;
+                
+                // Emil's pattern: Use velocity for more natural feel
+                if (Math.abs(velocityX) > velocityThreshold || Math.abs(translateX.value) > distanceThreshold) {
                   const direction = translateX.value > 0 ? 'right' : 'left';
+                  // Use velocity-aware spring
                   translateX.value = withSpring(
-                    Math.sign(translateX.value) * SCREEN_WIDTH,
-                    {
-                      damping: 15,
-                      stiffness: 150,
-                      mass: 0.5,
-                    }
+                    Math.sign(translateX.value) * SCREEN_WIDTH * 1.2,
+                    Math.abs(velocityX) > velocityThreshold
+                      ? { damping: 15, stiffness: 350, mass: 0.5 } // Bouncy for fast swipes
+                      : { damping: 20, stiffness: 300, mass: 0.8 } // Snappy for slow swipes
                   );
                   removeCard(item, direction);
                 } else {
                   translateX.value = withSpring(0, {
                     damping: 20,
-                    stiffness: 200,
+                    stiffness: 300,
+                    mass: 0.8,
                   });
                 }
               }
@@ -100,25 +106,26 @@ export const HeroStack: React.FC<HeroStackProps> = ({
 
         const animatedCardStyle = useAnimatedStyle(() => {
           'worklet';
+          // Emil's pattern: Use Extrapolate.CLAMP for better performance
           const scale = interpolate(
             activeIndex.value,
             [index - 1, index, index + 1],
             [0.95, 1, 1.05],
-            'clamp'
+            Extrapolate.CLAMP
           );
 
           const translateY = interpolate(
             activeIndex.value,
             [index - 1, index, index + 1],
             [-18, 0, 0],
-            'clamp'
+            Extrapolate.CLAMP
           );
 
           const rotate = interpolate(
             isFirst ? translateX.value : activeIndex.value,
             isFirst ? [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2] : [index - 1, index, index + 1],
             isFirst ? [-10, 0, 10] : [3, 0, -3],
-            'clamp'
+            Extrapolate.CLAMP
           );
 
           if (!isFirst) {

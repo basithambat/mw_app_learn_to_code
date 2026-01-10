@@ -21,11 +21,26 @@
         "resourceClass": "m-medium",
         "autoIncrement": true,
         "simulator": false
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "image": "latest",
+        "resourceClass": "m-medium",
+        "autoIncrement": true
       }
     },
     "androidapk": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "developmentClient": false
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle",
+        "image": "latest",
+        "resourceClass": "m-medium",
+        "autoIncrement": true
       }
     }
   },

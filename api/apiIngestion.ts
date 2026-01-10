@@ -5,7 +5,13 @@ import { getImageUrlWithFallback } from "@/utils/categoryFallbackImages";
 // Ingestion Platform API Base URL
 // For local development, use your computer's IP address for physical devices
 // For simulator/emulator, localhost works
-// For production, update this to your ingestion platform URL
+// For production, uses GCP Cloud Run URL (Mumbai region)
+
+// Production API URL - GCP Cloud Run (Mumbai/asia-south1)
+// This will be set automatically when API is deployed
+// To get the URL: node get-production-api-url.js
+const PRODUCTION_API_URL = 'https://whatsay-api-jsewdobsva-el.a.run.app'; // Production API deployed
+
 export const getIngestionApiBase = () => {
   if (__DEV__) {
     // For physical devices, use your computer's IP address
@@ -17,7 +23,14 @@ export const getIngestionApiBase = () => {
       ? 'http://192.168.0.101:3000' 
       : 'http://localhost:3000';
   }
-  return 'http://localhost:3000'; // Update for production
+  // Production: Use GCP Cloud Run URL
+  // If URL contains 'XXXXX', it means deployment is pending
+  if (PRODUCTION_API_URL.includes('XXXXX')) {
+    console.warn('[Ingestion] Production API URL not set. Run: node get-production-api-url.js');
+    // Fallback to localhost for now (will fail in production, but allows build)
+    return 'http://localhost:3000';
+  }
+  return PRODUCTION_API_URL;
 };
 
 const INGESTION_API_BASE = getIngestionApiBase();

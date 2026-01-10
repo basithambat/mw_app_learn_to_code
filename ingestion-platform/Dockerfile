@@ -1,6 +1,6 @@
 # Multi-stage build for production
-# Use Debian-based image for better compatibility with native dependencies
-FROM node:18-slim AS builder
+# Use Node 20 for better compatibility with modern packages
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
@@ -11,11 +11,13 @@ COPY tsconfig.json ./
 # Copy Prisma schema (needed for generate)
 COPY prisma ./prisma
 
-# Install dependencies
-RUN npm ci
+# Install all dependencies (including dev dependencies for Prisma)
+# Use npm install for better compatibility with lock file
+RUN npm install
 
-# Generate Prisma client
-RUN npx prisma generate
+# Generate Prisma client with correct OpenSSL for Node 20
+# Set binary target for Debian (Node 20 slim uses Debian)
+RUN npx prisma generate --generator client
 
 # Copy source code
 COPY . .
@@ -24,15 +26,16 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:18-slim
+FROM node:20-slim
 
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json package-lock.json* ./
 
 # Install production dependencies only
-RUN npm ci --only=production
+# Use npm install for better compatibility
+RUN npm install --only=production --legacy-peer-deps
 
 # Note: Playwright browsers not installed in container (too large)
 # Playwright will work if needed, but may be slower without pre-installed browsers

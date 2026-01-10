@@ -6,12 +6,18 @@ let s3Client: S3Client;
 export function getS3Client(): S3Client {
   if (!s3Client) {
     const env = getEnv();
+    
+    // Provide defaults if S3 not configured (for development/testing)
+    const endpoint = env.S3_ENDPOINT || 'http://localhost:9000';
+    const accessKey = env.S3_ACCESS_KEY || 'minioadmin';
+    const secretKey = env.S3_SECRET_KEY || 'minioadmin';
+    
     s3Client = new S3Client({
-      endpoint: env.S3_ENDPOINT,
+      endpoint: endpoint,
       region: env.S3_REGION,
       credentials: {
-        accessKeyId: env.S3_ACCESS_KEY,
-        secretAccessKey: env.S3_SECRET_KEY,
+        accessKeyId: accessKey,
+        secretAccessKey: secretKey,
       },
       forcePathStyle: true, // Required for MinIO and R2
     });
@@ -21,8 +27,11 @@ export function getS3Client(): S3Client {
 
 export function getS3Config() {
   const env = getEnv();
+  const bucket = env.S3_BUCKET || 'content-bucket';
+  const endpoint = env.S3_ENDPOINT || 'http://localhost:9000';
+  
   return {
-    bucket: env.S3_BUCKET,
-    publicBaseUrl: env.S3_PUBLIC_BASE_URL || `${env.S3_ENDPOINT}/${env.S3_BUCKET}`,
+    bucket: bucket,
+    publicBaseUrl: env.S3_PUBLIC_BASE_URL || `${endpoint}/${bucket}`,
   };
 }

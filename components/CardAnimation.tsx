@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
   runOnJS,
   interpolate,
+  Extrapolate,
   SharedValue,
 } from 'react-native-reanimated';
 
@@ -41,6 +42,19 @@ export const Card: React.FC<CardProps> = ({
   const CARD_WIDTH = SCREEN_WIDTH * 0.75;
   const CARD_HEIGHT = CARD_WIDTH * (320 / 273);
   const isFirst = index === 0;
+
+  // Emil Kowalski's recommended spring configs for card animations
+  const springConfigSnappy = useMemo(() => ({
+    damping: 20,
+    stiffness: 300,
+    mass: 0.8,
+  }), []);
+
+  const springConfigBouncy = useMemo(() => ({
+    damping: 15,
+    stiffness: 350,
+    mass: 0.5,
+  }), []);
 
   const getRotationValues = (categoryIdx: number) => {
     switch (categoryIdx) {
@@ -83,23 +97,26 @@ export const Card: React.FC<CardProps> = ({
         }
       })
       .onEnd((event) => {
+        'worklet';
         if (isFirst) {
-          if (Math.abs(event.velocityX) > 400 || Math.abs(translateX.value) > SCREEN_WIDTH * 0.4) {
+          const { velocityX } = event;
+          const velocityThreshold = 500; // Emil's pattern: velocity-based decisions
+          const distanceThreshold = SCREEN_WIDTH * 0.35; // Slightly lower for better UX
+          
+          // Emil's pattern: Use velocity for more natural feel
+          if (Math.abs(velocityX) > velocityThreshold || Math.abs(translateX.value) > distanceThreshold) {
             const direction = translateX.value > 0 ? 'right' : 'left';
+            // Use velocity-aware spring for natural exit animation
             translateX.value = withSpring(
-              Math.sign(translateX.value) * SCREEN_WIDTH,
-              {
-                damping: 15,
-                stiffness: 150,
-                mass: 0.5,
-              }
+              Math.sign(translateX.value) * SCREEN_WIDTH * 1.2, // Slight overshoot for natural feel
+              velocityX && Math.abs(velocityX) > velocityThreshold
+                ? springConfigBouncy
+                : springConfigSnappy
             );
             removeCard(direction);
           } else {
-            translateX.value = withSpring(0, {
-              damping: 20,
-              stiffness: 200,
-            });
+            // Spring back with snappy config
+            translateX.value = withSpring(0, springConfigSnappy);
           }
         }
       });
@@ -129,25 +146,27 @@ export const Card: React.FC<CardProps> = ({
 
   const animatedCardStyle = useAnimatedStyle(() => {
     'worklet';
+    // Emil's pattern: Use Extrapolate.CLAMP for better performance
     const scale = interpolate(
       activeIndex.value,
       [index - 1, index, index + 1],
       [0.95, 1, 1.05],
-      'clamp'
+      Extrapolate.CLAMP
     );
 
     const translateY = interpolate(
       activeIndex.value,
       [index - 1, index, index + 1],
       [-18, 0, 0],
-      'clamp'
+      Extrapolate.CLAMP
     );
 
+    // Emil's pattern: Smoother rotation interpolation
     const rotate = interpolate(
       isFirst ? translateX.value : activeIndex.value,
       isFirst ? [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2] : [index - 1, index, index + 1],
       isFirst ? rotationValues.first : rotationValues.rest,
-      'clamp'
+      Extrapolate.CLAMP
     );
 
     if (!isFirst) {
@@ -170,20 +189,32 @@ export const Card: React.FC<CardProps> = ({
     };
   }, [isFirst, index, activeIndex, translateX, SCREEN_WIDTH, rotationValues, staticTranslateY, staticTranslateX, staticOpacity]);
 
-  // Subtle parallax effect for the image
+  // Emil's pattern: Enhanced parallax effect with smoother interpolation
   const animatedImageStyle = useAnimatedStyle(() => {
     'worklet';
     if (!isFirst) return {};
     
+    // Emil's pattern: Use Extrapolate.CLAMP for better performance
     const parallaxX = interpolate(
       translateX.value,
       [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-      [-30, 0, 30], // Shift image 30px opposite to movement
-      'clamp'
+      [-30, 0, 30], // Shift image 30px opposite to movement for depth
+      Extrapolate.CLAMP
+    );
+    
+    // Add subtle scale for depth effect (Emil's pattern)
+    const parallaxScale = interpolate(
+      Math.abs(translateX.value),
+      [0, SCREEN_WIDTH / 2],
+      [1, 1.05],
+      Extrapolate.CLAMP
     );
     
     return {
-      transform: [{ translateX: parallaxX }]
+      transform: [
+        { translateX: parallaxX },
+        { scale: parallaxScale }
+      ]
     };
   }, [isFirst, translateX, SCREEN_WIDTH]);
 

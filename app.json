@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.safwanambat.whatsay",
-      "buildNumber": "16",
+      "buildNumber": "17",
       "infoPlist": {
         "CFBundleIconName": "AppIcon",
         "UIBackgroundModes": [],
@@ -63,7 +63,7 @@
       "ACCESS_COARSE_LOCATION"
       ],
       "package": "com.safwanambat.whatsay",
-      "versionCode": 10,
+      "versionCode": 11,
     },
     "web": {
       "bundler": "metro",

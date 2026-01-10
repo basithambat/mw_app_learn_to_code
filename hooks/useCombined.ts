@@ -67,38 +67,47 @@ export const useCombinedSwipe = ({
   const opacity = useSharedValue(1);
   const scale = useSharedValue(1);
 
-  // Spring config matching original Animated.spring values
-  const springConfig = {
+  // Emil Kowalski's recommended spring configs
+  const springConfigSnappy = {
     damping: 20,
     stiffness: 300,
-    mass: 0.5,
+    mass: 0.8,
   };
 
-  const springConfigOut = {
+  const springConfigSmooth = {
     damping: 25,
     stiffness: 200,
-    mass: 0.6,
+    mass: 1,
+  };
+
+  const springConfigBouncy = {
+    damping: 15,
+    stiffness: 350,
+    mass: 0.5,
   };
 
   const resetAnimations = useCallback(() => {
     'worklet';
-    translateY.value = withSpring(0, springConfig);
-    opacity.value = withSpring(1, springConfig);
-    scale.value = withSpring(1, springConfig);
+    // Emil's pattern: Use snappy config for quick reset
+    translateY.value = withSpring(0, springConfigSnappy);
+    opacity.value = withSpring(1, springConfigSnappy);
+    scale.value = withSpring(1, springConfigSnappy);
   }, []);
 
   const animateOut = useCallback(() => {
     'worklet';
-    translateY.value = withSpring(SCREEN_HEIGHT, springConfigOut);
-    opacity.value = withSpring(0, springConfigOut);
-    scale.value = withSpring(0.95, springConfigOut);
-    
-    // Call onSwipeDown after animation completes
-    runOnJS(() => {
-      InteractionManager.runAfterInteractions(() => {
-        if (onSwipeDown) onSwipeDown();
-      });
-    })();
+    // Emil's pattern: Use smooth config for exit animations
+    translateY.value = withSpring(SCREEN_HEIGHT, springConfigSmooth, (finished) => {
+      if (finished) {
+        runOnJS(() => {
+          InteractionManager.runAfterInteractions(() => {
+            if (onSwipeDown) onSwipeDown();
+          });
+        })();
+      }
+    });
+    opacity.value = withSpring(0, springConfigSmooth);
+    scale.value = withSpring(0.95, springConfigSmooth);
   }, [onSwipeDown]);
 
   // Shared value for direction lock (worklet-compatible)
@@ -185,13 +194,25 @@ export const useCombinedSwipe = ({
             return;
           }
           
-          // Handle swipe down with live animation
+          // Emil's pattern: Handle swipe down with live animation and resistance
           if (translationY > 0) {
-            translateY.value = translationY * 0.5; // Add resistance to the swipe
-            const newOpacity = Math.max(0, 1 - (translationY / SCREEN_HEIGHT) * 2);
-            opacity.value = newOpacity;
-            const newScale = Math.max(0.95, 1 - (translationY / SCREEN_HEIGHT) * 0.2);
-            scale.value = newScale;
+            const resistance = 0.5; // Resistance factor for natural feel
+            translateY.value = translationY * resistance;
+            
+            // Emil's pattern: Use interpolation for smoother opacity/scale transitions
+            const progress = Math.min(1, translationY / SCREEN_HEIGHT);
+            opacity.value = interpolate(
+              progress,
+              [0, 1],
+              [1, 0.3],
+              Extrapolate.CLAMP
+            );
+            scale.value = interpolate(
+              progress,
+              [0, 1],
+              [1, 0.95],
+              Extrapolate.CLAMP
+            );
           }
         }
 
