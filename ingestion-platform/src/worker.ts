@@ -10,6 +10,7 @@ import { processEnrichJob } from './workers/enrich';
 import { processRewriteJob } from './workers/rewrite';
 import { processImageJob } from './workers/image';
 import { getPrismaClient } from './config/db';
+import { getRedisClient } from './config/redis';
 import { IngestionJobData } from './queue/types';
 import { Job } from 'bullmq';
 import http from 'http';
@@ -103,14 +104,25 @@ export async function startWorkers(enableServer = true) {
   const dbSemaphore = getDbSemaphore();
 
   const ingestionWorker = createWorker<IngestionJobData>(INGESTION_QUEUE_NAME, async (job: Job<IngestionJobData>) => {
-    console.log(`Processing ingestion job ${job.id} (runId: ${job.data.runId})`);
+    const { sourceId, runId, category } = job.data;
+    console.log(`[Worker] Starting ingestion job ${job.id} (runId: ${runId})`);
+
+    const redis = getRedisClient();
+    const lockKey = `ingest:lock:${sourceId}:${category || 'all'}`;
     let token: string | null = null;
+    let lockAcquired = false;
 
     try {
-      // Acquire semaphore slot
-      token = await dbSemaphore.acquire(60000); // Ingestion can be slow, 60s wait
+      // 1. Single-Flight Lock (Staff Requirement)
+      // Prevent overlapping runs for the same source/category
+      const acquired = await redis.set(lockKey, 'locked', 'PX', 15 * 60 * 1000, 'NX'); // 15 min lock
+      if (!acquired) {
+        console.warn(`[Worker] Ingestion for ${sourceId}:${category || 'all'} already in progress. Skipping job ${job.id}.`);
+        return { skipped: true, reason: 'Parallel run detected' };
+      }
+      lockAcquired = true;
 
-      // Create/Update run record
+      // Create/Update run record (Quick DB ops, no semaphore needed for occasional writes)
       await prisma.ingestionRun.upsert({
         where: { runId: job.data.runId },
         create: {
@@ -122,10 +134,11 @@ export async function startWorkers(enableServer = true) {
         update: { status: 'running' },
       });
 
+      // HEAVY NETWORK CALL (Outside semaphore)
       const stats = await ingestionProcessor.process(job.data);
       console.log(`Ingestion job ${job.id} completed. Stats:`, stats);
 
-      // Update run record
+      // Final update
       await prisma.ingestionRun.update({
         where: { runId: job.data.runId },
         data: {
@@ -134,6 +147,8 @@ export async function startWorkers(enableServer = true) {
           stats: stats as any,
         },
       });
+      return stats;
+
     } catch (error) {
       console.error(`Ingestion job ${job.id} failed:`, error);
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -151,8 +166,10 @@ export async function startWorkers(enableServer = true) {
       }
       throw error;
     } finally {
-      if (token) {
-        await dbSemaphore.release(token);
+      // Release single-flight lock
+      if (lockAcquired) {
+        await redis.del(lockKey);
+        console.log(`[Worker] Single-flight lock released for ${sourceId}.`);
       }
     }
   });

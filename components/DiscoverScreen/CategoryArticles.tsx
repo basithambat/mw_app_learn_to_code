@@ -34,6 +34,7 @@ type CategoryIconKey = 'categoryKey' | string;
 
 const CategoryArticles = ({ category }: { category: CategoryType }) => {
     const [articles, setArticles] = useState<any[]>([])
+    const [isStale, setIsStale] = useState(false);
     const { width: SCREEN_WIDTH } = useWindowDimensions();
     const isTablet = SCREEN_WIDTH >= 768;
 
@@ -87,7 +88,18 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
             const { from, to } = getLast48HoursRange();
             const categoryId = category.id as string;
             try {
-                const response = await getAllArticlesByCategories(categoryId, from, to);
+                let response = await getAllArticlesByCategories(categoryId, from, to);
+
+                // Staff Requirement: Feed UX Safety Net
+                // If no items in last 48h, fetch the latest available items
+                if (response.length === 0) {
+                    const fallbackFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
+                    response = await getAllArticlesByCategories(categoryId, fallbackFrom, to);
+                    if (response.length > 0) {
+                        setIsStale(true);
+                    }
+                }
+
                 setArticles(response)
             } catch (error) {
                 console.log("error", error);
@@ -114,6 +126,11 @@ const CategoryArticles = ({ category }: { category: CategoryType }) => {
                 <Text className={`font-domine ${isTablet ? 'text-[24px]' : 'text-[20px]'}`}>
                     {category.name}
                 </Text>
+                {isStale && (
+                    <View className="ml-2 bg-amber-100 px-2 py-0.5 rounded">
+                        <Text className="text-[10px] text-amber-700 font-medium">OLDER STORIES</Text>
+                    </View>
+                )}
             </View>
 
             {/* Stack wrapper to handle consistent spacing and stacking context */}

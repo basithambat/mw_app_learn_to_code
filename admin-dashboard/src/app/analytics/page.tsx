@@ -5,7 +5,7 @@ import api from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { TrendingUp, Target, Activity, Zap, ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
+import { TrendingUp, Target, Activity, Zap, ArrowUpRight, ArrowDownRight, RefreshCw, AlertCircle } from "lucide-react";
 
 export default function AnalyticsPage() {
     const [loading, setLoading] = useState(true);
@@ -92,6 +92,13 @@ export default function AnalyticsPage() {
                     icon={Zap}
                     color="text-yellow-500"
                 />
+                <MetricCard
+                    title="Dead Letter Queue"
+                    value={stats?.queues?.deadLetter?.waiting || 0}
+                    icon={AlertCircle}
+                    color="text-red-500"
+                    description="Jobs needing manual intervention"
+                />
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -106,6 +113,7 @@ export default function AnalyticsPage() {
                             { label: "Enrichment", val: stats?.queues?.enrichment?.waiting || 0, color: "bg-orange-500" },
                             { label: "Rewriting", val: stats?.queues?.rewriting?.waiting || 0, color: "bg-green-500" },
                             { label: "Images", val: stats?.queues?.imageResolution?.waiting || 0, color: "bg-purple-500" },
+                            { label: "Dead Letter", val: stats?.queues?.deadLetter?.waiting || 0, color: "bg-red-500" },
                         ].map((item) => (
                             <div key={item.label} className="space-y-2">
                                 <div className="flex items-center justify-between text-xs">

@@ -8,7 +8,7 @@ import { getDbSemaphore } from '../lib/dbSemaphore';
 const prisma = getPrismaClient();
 const resolver = new ImageResolverService();
 const mediaService = new MediaService();
-const dbSemaphore = getDbSemaphore(6); // Global cap: 6 concurrent DB jobs
+const dbSemaphore = getDbSemaphore(4); // Global cap: 6 concurrent DB jobs
 
 /**
  * Validate image URL (content-type, size, dimensions)
@@ -51,12 +51,7 @@ export async function processImageJob(job: Job<{ contentId: string; runId: strin
   let dbTimeMs = 0;
 
   try {
-    // Acquire semaphore slot
-    const acquireStart = Date.now();
-    token = await dbSemaphore.acquire(30000);
-    acquireWaitMs = Date.now() - acquireStart;
-
-    // DB read (quick)
+    // 1. DB read (quick, no semaphore needed)
     const dbReadStart = Date.now();
     const content = await prisma.contentItem.findUnique({
       where: { id: contentId },
@@ -74,6 +69,7 @@ export async function processImageJob(job: Job<{ contentId: string; runId: strin
       return;
     }
 
+    // 3. Resolve Image (NETWORK - NO SEMAPHORE) 
     try {
       // Priority 1: Use OG image if available and valid
       if (content.ogImageUrl) {
@@ -95,6 +91,8 @@ export async function processImageJob(job: Job<{ contentId: string; runId: strin
             );
             networkTimeMs += Date.now() - networkStart;
 
+            // DB write (WITH SEMAPHORE)
+            token = await dbSemaphore.acquire(30000);
             const dbWriteStart = Date.now();
             await prisma.contentItem.update({
               where: { id: contentId },
@@ -108,6 +106,9 @@ export async function processImageJob(job: Job<{ contentId: string; runId: strin
                 }
               }
             });
+            await dbSemaphore.release(token);
+            token = null; // Mark as released
+
             dbTimeMs += Date.now() - dbWriteStart;
             console.log(`[Image] Used OG image for ${contentId}`);
             return; // Done!
@@ -166,10 +167,12 @@ export async function processImageJob(job: Job<{ contentId: string; runId: strin
         await resolver.triggerUnsplashDownload(result.metadata.downloadLocation);
       }
 
-      // Update DB based on source
+      // Update DB (WITH SEMAPHORE) 
       const imageStatus = result.source === 'web_found' ? 'web_found' :
         result.source === 'generated' ? 'generated' : 'none';
 
+      token = await dbSemaphore.acquire(30000);
+      const dbWriteStart = Date.now();
       await prisma.contentItem.update({
         where: { id: contentId },
         data: {
@@ -178,7 +181,7 @@ export async function processImageJob(job: Job<{ contentId: string; runId: strin
           imageSourcePageUrl: result.metadata?.sourcePageUrl || null,
           imageStorageUrl: storageUrl,
           imagePrompt: result.prompt,
-          imageModel: result.source === 'generated' ? (result.metadata?.model || 'gemini-2.5-flash-image') : null,
+          imageModel: result.source === 'generated' ? (result.metadata?.model || 'gemini-2.0-flash-image') : null,
           imageMetadata: {
             ...result.metadata,
             contentType: contentType,
@@ -186,6 +189,10 @@ export async function processImageJob(job: Job<{ contentId: string; runId: strin
           }
         }
       });
+      await dbSemaphore.release(token);
+      token = null; // Mark as released
+
+      dbTimeMs += Date.now() - dbWriteStart;
 
       // Log success metrics
       console.log(JSON.stringify({

@@ -12,7 +12,7 @@ import { getImageUrlWithFallback } from "@/utils/categoryFallbackImages";
 // This will be set automatically when API is deployed
 // Production API URL - GCP Cloud Run (Mumbai/asia-south1)
 // This will be set automatically when API is deployed
-const PRODUCTION_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://whatsay-api-278662370606.asia-south1.run.app';
+const PRODUCTION_API_URL = 'https://whatsay-api-278662370606.asia-south1.run.app';
 
 export const getIngestionApiBase = () => {
   if (__DEV__) {

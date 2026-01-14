@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { getPrismaClient } from '../config/db';
 import { requireAdmin, AuthenticatedRequest } from '../middleware/auth-middleware';
-import { rewriteQueue, imageQueue, ingestionQueue, enrichQueue } from '../queue/setup';
+import { rewriteQueue, imageQueue, ingestionQueue, enrichQueue, dlq } from '../queue/setup';
 
 import { v4 as uuidv4 } from 'uuid';
 import { getAllAdapters } from '../adapters/registry';
@@ -600,11 +600,12 @@ export async function adminRoutes(app: FastifyInstance) {
                 : 100;
 
             // 3. Queue Stats
-            const [ingestStats, enrichStats, rewriteStats, imageStats] = await Promise.all([
+            const [ingestStats, enrichStats, rewriteStats, imageStats, dlqStats] = await Promise.all([
                 ingestionQueue.getJobCounts(),
                 enrichQueue.getJobCounts(),
                 rewriteQueue.getJobCounts(),
-                imageQueue.getJobCounts()
+                imageQueue.getJobCounts(),
+                dlq.getJobCounts()
             ]);
 
             // 4. Source Health
@@ -624,7 +625,8 @@ export async function adminRoutes(app: FastifyInstance) {
                     ingestion: ingestStats,
                     enrichment: enrichStats,
                     rewriting: rewriteStats,
-                    imageResolution: imageStats
+                    imageResolution: imageStats,
+                    deadLetter: dlqStats
                 },
                 timestamp: new Date().toISOString()
             };

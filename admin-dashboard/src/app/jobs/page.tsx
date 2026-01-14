@@ -63,14 +63,20 @@ export default function JobsPage() {
     const [status, setStatus] = useState("failed");
     const [loading, setLoading] = useState(true);
     const [retryingId, setRetryingId] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const fetchJobs = async () => {
         try {
             setLoading(true);
-            const response = await api.get(`/admin/jobs/${queue}`, {
-                params: { status }
-            });
-            setJobs(response.data);
+            if (queue === "dead-letter") {
+                const response = await api.get(`/admin/dlq`);
+                setJobs(response.data);
+            } else {
+                const response = await api.get(`/admin/jobs/${queue}`, {
+                    params: { status }
+                });
+                setJobs(response.data);
+            }
         } catch (error) {
             console.error("Failed to fetch jobs", error);
         } finally {
@@ -85,15 +91,32 @@ export default function JobsPage() {
     const handleRetry = async (jobId: string) => {
         try {
             setRetryingId(jobId);
-            await api.post(`/admin/jobs/${queue}/${jobId}/retry`);
-            // Remove from list after retry if we are in failed tab
-            if (status === "failed") {
+            if (queue === "dead-letter") {
+                await api.post(`/admin/dlq/${jobId}/requeue`);
+            } else {
+                await api.post(`/admin/jobs/${queue}/${jobId}/retry`);
+            }
+            // Remove from list after retry/requeue if we are in failed/dlq tab
+            if (status === "failed" || queue === "dead-letter") {
                 setJobs(jobs.filter(j => j.id !== jobId));
             }
         } catch (error) {
             console.error("Failed to retry job", error);
         } finally {
             setRetryingId(null);
+        }
+    };
+
+    const handleDelete = async (jobId: string) => {
+        if (!confirm("Permanently delete this job from DLQ?")) return;
+        try {
+            setDeletingId(jobId);
+            await api.delete(`/admin/dlq/${jobId}`);
+            setJobs(jobs.filter(j => j.id !== jobId));
+        } catch (error) {
+            console.error("Failed to delete job", error);
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -160,11 +183,14 @@ export default function JobsPage() {
                         <TabsTrigger value="image" className="gap-2">
                             <ImageIcon className="w-3.5 h-3.5" /> Image Res
                         </TabsTrigger>
+                        <TabsTrigger value="dead-letter" className="gap-2 text-red-500 data-[state=active]:bg-red-500 data-[state=active]:text-white">
+                            <AlertCircle className="w-3.5 h-3.5" /> Dead Letter
+                        </TabsTrigger>
                     </TabsList>
 
                     <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-muted-foreground uppercase">Status:</span>
-                        <Select value={status} onValueChange={setStatus}>
+                        <Select value={status} onValueChange={setStatus} disabled={queue === "dead-letter"}>
                             <SelectTrigger className="w-[140px] h-9">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
@@ -242,7 +268,7 @@ export default function JobsPage() {
                                             )}
                                             <TableCell className="text-right pr-6">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    {status === "failed" && (
+                                                    {(status === "failed" || queue === "dead-letter") && (
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
@@ -251,7 +277,19 @@ export default function JobsPage() {
                                                             disabled={retryingId === job.id}
                                                         >
                                                             <Play className={cn("w-3 h-3", retryingId === job.id && "animate-spin")} />
-                                                            Retry
+                                                            {queue === "dead-letter" ? "Requeue" : "Retry"}
+                                                        </Button>
+                                                    )}
+                                                    {queue === "dead-letter" && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-8 gap-1.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                            onClick={() => handleDelete(job.id)}
+                                                            disabled={deletingId === job.id}
+                                                        >
+                                                            <XCircle className={cn("w-3 h-3", deletingId === job.id && "animate-spin")} />
+                                                            Delete
                                                         </Button>
                                                     )}
                                                     <Button variant="ghost" size="icon" className="h-8 w-8">

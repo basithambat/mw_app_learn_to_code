@@ -6,7 +6,7 @@ import { getDbSemaphore } from '../lib/dbSemaphore';
 
 const prisma = getPrismaClient();
 const enrichmentService = new EnrichmentService();
-const dbSemaphore = getDbSemaphore(6); // Global cap: 6 concurrent DB jobs
+const dbSemaphore = getDbSemaphore(4); // Global cap: 4 concurrent DB jobs (Staff recommendation)
 
 export async function processEnrichJob(job: Job<{ contentId: string; runId: string }>) {
   const { contentId, runId } = job.data;
@@ -17,12 +17,7 @@ export async function processEnrichJob(job: Job<{ contentId: string; runId: stri
   let dbTimeMs = 0;
 
   try {
-    // Acquire semaphore slot
-    const acquireStart = Date.now();
-    token = await dbSemaphore.acquire(30000);
-    acquireWaitMs = Date.now() - acquireStart;
-
-    // DB read (quick)
+    // 1. DB read (quick, no semaphore needed)
     const dbReadStart = Date.now();
     const content = await prisma.contentItem.findUnique({
       where: { id: contentId },
@@ -33,7 +28,7 @@ export async function processEnrichJob(job: Job<{ contentId: string; runId: stri
       throw new Error(`Content item ${contentId} not found`);
     }
 
-    // Idempotency: if enrichment_status is 'done', skip
+    // Idempotency: skip if done
     if (content.enrichmentStatus === 'done') {
       console.log(`Skipping enrichment for ${contentId}, already done.`);
       await triggerNextStages(contentId, runId);
@@ -41,25 +36,26 @@ export async function processEnrichJob(job: Job<{ contentId: string; runId: stri
     }
 
     if (!content.sourceUrl) {
-      const dbWriteStart = Date.now();
+      // Simple update, no semaphore needed for occasional skip
       await prisma.contentItem.update({
         where: { id: contentId },
-        data: {
-          enrichmentStatus: 'done', // No URL to enrich
-        },
+        data: { enrichmentStatus: 'done' },
       });
-      dbTimeMs += Date.now() - dbWriteStart;
       await triggerNextStages(contentId, runId);
       return;
     }
 
-    // Network call FIRST (outside DB transaction)
+    // 2. Network call FIRST (NO SEMAPHORE - holds no slots while waiting for external API)
     const networkStart = Date.now();
     const result = await enrichmentService.enrich(content.sourceUrl);
     networkTimeMs = Date.now() - networkStart;
 
-    // DB write LAST (short and focused)
+    // 3. DB write LAST (WITH SEMAPHORE - short and focused)
     const dbWriteStart = Date.now();
+    const acquireStart = Date.now();
+    token = await dbSemaphore.acquire(30000);
+    acquireWaitMs = Date.now() - acquireStart;
+
     await prisma.contentItem.update({
       where: { id: contentId },
       data: {

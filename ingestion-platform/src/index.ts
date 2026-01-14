@@ -38,17 +38,16 @@ const app = Fastify({
 // Register CORS
 app.register(fastifyCors, {
   origin: process.env.NODE_ENV === 'production'
-    ? [/whatsay\.app$/, /expo\.dev$/]
+    ? ['https://whatsay.app', 'https://studio.whatsay.app', 'https://whatsay-app-three.vercel.app']
     : true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
 });
 
-// P1-01 FIX: Rate limiting enabled with Redis
-// Uses existing Redis connection for distributed rate limiting
+// P1-07 FIX: Enforce Rate Limiting (Redis-backed, Fail-open)
 const env = getEnv();
 app.register(rateLimit, {
   global: true,
-  max: 120,
+  max: 100,
   timeWindow: '1 minute',
   redis: getRedisClient(),
   // Cloud Run proxy correctness - use X-Forwarded-For
@@ -57,6 +56,8 @@ app.register(rateLimit, {
     const ip = Array.isArray(xff) ? xff[0] : xff?.toString().split(',')[0]?.trim();
     return ip || req.ip;
   },
+  continueExceeding: true,
+  skipOnError: true, // Fail-open (Staff requirement)
 });
 
 
@@ -111,6 +112,14 @@ app.get('/api/sources', async () => {
       categories: a.categories || [],
     })),
   };
+});
+
+// ADMIN: Reset Semaphore (Temporary for stabilization)
+app.post('/api/admin/system/reset-semaphore', async (request, reply) => {
+  const { getDbSemaphore } = require('./lib/dbSemaphore');
+  const dbSemaphore = getDbSemaphore();
+  await dbSemaphore.reset();
+  return { status: 'success', message: 'DbSemaphore reset' };
 });
 
 // POST /api/jobs/run

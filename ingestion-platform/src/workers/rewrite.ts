@@ -8,7 +8,7 @@ import { getDbSemaphore } from '../lib/dbSemaphore';
 
 const prisma = getPrismaClient();
 const llmService = new LLMService();
-const dbSemaphore = getDbSemaphore(6); // Global cap: 6 concurrent DB jobs
+const dbSemaphore = getDbSemaphore(4); // Global cap: 6 concurrent DB jobs
 
 export async function processRewriteJob(job: Job<{ contentId: string; runId: string }>) {
   const { contentId, runId } = job.data;
@@ -19,12 +19,7 @@ export async function processRewriteJob(job: Job<{ contentId: string; runId: str
   let dbTimeMs = 0;
 
   try {
-    // Acquire semaphore slot
-    const acquireStart = Date.now();
-    token = await dbSemaphore.acquire(30000);
-    acquireWaitMs = Date.now() - acquireStart;
-
-    // DB read (quick)
+    // 1. DB read (No semaphore needed)
     const dbReadStart = Date.now();
     const content = await prisma.contentItem.findUnique({
       where: { id: contentId },
@@ -35,7 +30,7 @@ export async function processRewriteJob(job: Job<{ contentId: string; runId: str
       throw new Error(`Content item ${contentId} not found`);
     }
 
-    // Idempotency check via rewrite_hash
+    // Idempotency check 
     const promptVersion = 'v1';
     const env = getEnv() as any;
     const model = env.GOOGLE_API_KEY ? 'gemini-2.0-flash' :
@@ -52,7 +47,7 @@ export async function processRewriteJob(job: Job<{ contentId: string; runId: str
       return;
     }
 
-    // LLM call FIRST (network, can be slow)
+    // 2. LLM call FIRST (NETWORK - NO SEMAPHORE)
     const llmStart = Date.now();
     const result = await llmService.rewriteContent(
       content.titleOriginal,
@@ -60,8 +55,12 @@ export async function processRewriteJob(job: Job<{ contentId: string; runId: str
     );
     llmTimeMs = Date.now() - llmStart;
 
-    // DB write LAST (short and focused)
+    // 3. DB write LAST (WITH SEMAPHORE)
     const dbWriteStart = Date.now();
+    const acquireStart = Date.now();
+    token = await dbSemaphore.acquire(30000);
+    acquireWaitMs = Date.now() - acquireStart;
+
     await prisma.contentItem.update({
       where: { id: contentId },
       data: {

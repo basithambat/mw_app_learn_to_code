@@ -75,21 +75,22 @@ async function enqueueJob(sourceId: string, category?: string) {
   const runId = uuidv4();
   console.log(`Enqueuing job for ${sourceId} ${category ? `(${category})` : ''} - runId: ${runId}`);
 
-  await ingestionQueue.add('ingest-source', {
-    sourceId,
-    category,
-    runId,
-  });
-
-  // Create run record
+  // 1. Create run record (status=running) BEFORE enqueuing
   await prisma.ingestionRun.create({
     data: {
       id: uuidv4(),
       runId,
       sourceId,
       category,
-      status: 'queued',
+      status: 'running', // Mark as running immediately
     },
+  });
+
+  // 2. Enqueue job with runId
+  await ingestionQueue.add('ingest-source', {
+    sourceId,
+    category,
+    runId,
   });
 }
 
