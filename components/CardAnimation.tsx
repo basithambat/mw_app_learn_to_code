@@ -15,7 +15,7 @@ import Animated, {
 
 interface CardProps {
   card: {
-    id: number;
+    id: number | string;
     title: string;
     image: any;
   };
@@ -89,7 +89,9 @@ export const Card: React.FC<CardProps> = ({
     return { first: [-15, 0, 15], rest: [angle, 0, -angle / 2] };
   };
 
-  const rotationValues = getRotationValues(card.id, categoryIndex);
+  const cardIdAsNumber = typeof card.id === 'number' ? card.id :
+    card.id.split('-').reduce((acc, part) => acc + parseInt(part, 16), 0);
+  const rotationValues = getRotationValues(cardIdAsNumber, categoryIndex);
 
   const removeCard = useCallback((direction: 'left' | 'right') => {
     'worklet';

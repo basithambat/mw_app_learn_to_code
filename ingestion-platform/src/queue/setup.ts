@@ -54,7 +54,8 @@ export function createWorker<T>(
     processor,
     {
       connection: getRedisClient(),
-      concurrency: 5,
+      concurrency: 1, // Set to 1 for stability. Cloud Run instances handle jobs serially to avoid pool exhaustion.
+      lockDuration: 300000, // 5 minutes
       limiter: {
         max: 10,
         duration: 1000,

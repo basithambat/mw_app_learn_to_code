@@ -40,11 +40,7 @@ RUN apt-get update -y && apt-get install -y openssl
 COPY package.json package-lock.json* ./
 
 # Install production dependencies only
-# Use npm install for better compatibility
 RUN npm install --only=production --legacy-peer-deps
-
-# Note: Playwright browsers not installed in container (too large)
-# Playwright will work if needed, but may be slower without pre-installed browsers
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist

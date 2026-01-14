@@ -10,6 +10,7 @@ const envSchema = z.object({
   S3_ACCESS_KEY: z.string().min(1).optional(),
   S3_SECRET_KEY: z.string().min(1).optional(),
   S3_BUCKET: z.string().min(1).optional(),
+  S3_BUCKET_NAME: z.string().min(1).optional(),
   S3_PUBLIC_BASE_URL: z.string().url().optional(),
   S3_REGION: z.string().default('us-east-1'),
   APP_BASE_URL: z.string().url().default('http://localhost:3000'),
@@ -24,6 +25,10 @@ const envSchema = z.object({
   SERPER_API_KEY: z.string().optional(),
   // Nano Banana (optional - for image generation fallback)
   NANO_BANANA_API_KEY: z.string().optional(),
+  UNSPLASH_ACCESS_KEY: z.string().optional(),
+  UNSPLASH_API_KEY: z.string().optional(),
+  TOGETHER_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
   ENABLE_SCHEDULER: z.string().optional(),
   // Firebase Admin SDK (optional - for token verification)
   FIREBASE_SERVICE_ACCOUNT: z.string().optional(),

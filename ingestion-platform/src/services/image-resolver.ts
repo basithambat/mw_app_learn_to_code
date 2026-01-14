@@ -1,10 +1,12 @@
 import { MediaService } from '../media/media-service';
-import { ImageSearchProvider, MockImageSearchProvider, SerpAPIImageProvider, SerperImageProvider, ImageSearchResult } from './image-search/types';
-import { ImageGenerationProvider, MockNanoBananaProvider, GeminiNanoBananaProvider } from './image-generation/types';
+import { ImageSearchProvider, MockImageSearchProvider, SerpAPIImageProvider, SerperImageProvider, ImageSearchResult, UnsplashImageProvider } from './image-search/types';
+import { ImageGenerationProvider, MockNanoBananaProvider, GeminiNanoBananaProvider, TogetherImageProvider } from './image-generation/types';
+
 import { getPrismaClient } from '../config/db';
 import { createHash } from 'crypto';
 import { getEnv } from '../config/env';
 import axios from 'axios';
+import { ImagePolicyService } from './image-policy';
 
 export interface ResolveResult {
   url: string;
@@ -15,38 +17,74 @@ export interface ResolveResult {
     width?: number;
     height?: number;
     model?: string;
+    policy?: string;
+    source?: string;
+    attribution?: {
+      photographerName: string;
+      photographerUrl: string;
+      unsplashUrl: string;
+    };
+    downloadLocation?: string;
     [key: string]: any;
   };
 }
 
 export class ImageResolverService {
-  private searchProvider: ImageSearchProvider;
-  private genProvider: ImageGenerationProvider;
+  private serpProvider: ImageSearchProvider;
+  private unsplashProvider: ImageSearchProvider;
+  private togetherProvider: ImageGenerationProvider;
+  private geminiProvider: ImageGenerationProvider;
+  private policyService: ImagePolicyService;
   private prisma = getPrismaClient();
+
 
   constructor() {
     const env = getEnv() as any;
-    
-    // Initialize SERP provider based on env
+
+    // Priority 2: SERP/Serper (paid web search)
     if (env.SERPAPI_KEY) {
-      this.searchProvider = new SerpAPIImageProvider(env.SERPAPI_KEY);
-      console.log('[ImageResolver] Using SerpAPI');
+      this.serpProvider = new SerpAPIImageProvider(env.SERPAPI_KEY);
+      console.log('[ImageResolver] Using SerpAPI for web search');
     } else if (env.SERPER_API_KEY) {
-      this.searchProvider = new SerperImageProvider(env.SERPER_API_KEY);
-      console.log('[ImageResolver] Using Serper');
+      this.serpProvider = new SerperImageProvider(env.SERPER_API_KEY);
+      console.log('[ImageResolver] Using Serper for web search');
     } else {
-      this.searchProvider = new MockImageSearchProvider();
-      console.warn('[ImageResolver] No SERP API key found, using mock');
+      this.serpProvider = new MockImageSearchProvider();
+      console.warn('[ImageResolver] No SERP API key, using mock');
     }
-    
-    // Initialize image generation provider (use Gemini if API key available)
-    if (env.GOOGLE_API_KEY) {
-      this.genProvider = new GeminiNanoBananaProvider(env.GOOGLE_API_KEY);
-      console.log('[ImageResolver] Using Gemini Nano Banana for image generation');
+
+    // Priority 3: Unsplash (free high-quality editorial)
+    const unsplashKey = env.UNSPLASH_ACCESS_KEY || env.UNSPLASH_API_KEY;
+    if (unsplashKey) {
+      this.unsplashProvider = new UnsplashImageProvider(unsplashKey);
+      console.log('[ImageResolver] Using Unsplash for editorial photos');
     } else {
-      this.genProvider = new MockNanoBananaProvider();
-      console.warn('[ImageResolver] No Google API key found, using mock image generation');
+      this.unsplashProvider = new MockImageSearchProvider();
+      console.warn('[ImageResolver] No Unsplash key, skipping editorial search');
     }
+
+    // Priority 4: Together AI (low-cost generation)
+    const togetherKey = env.TOGETHER_API_KEY;
+    if (togetherKey) {
+      this.togetherProvider = new TogetherImageProvider(togetherKey);
+      console.log('[ImageResolver] Using Together AI for low-cost generation');
+    } else {
+      this.togetherProvider = new MockNanoBananaProvider();
+      console.warn('[ImageResolver] No Together AI key, skipping');
+    }
+
+    // Priority 4: Gemini Imagen (premium generation)
+    const googleKey = env.GEMINI_API_KEY || env.GOOGLE_API_KEY;
+    if (googleKey) {
+      this.geminiProvider = new GeminiNanoBananaProvider(googleKey);
+      console.log('[ImageResolver] Using Gemini Imagen for premium generation');
+    } else {
+      this.geminiProvider = new MockNanoBananaProvider();
+      console.warn('[ImageResolver] No Google API key, using mock generation');
+    }
+
+    // Policy gate service
+    this.policyService = new ImagePolicyService();
   }
 
   async resolveImage(
@@ -55,48 +93,88 @@ export class ImageResolverService {
     sourceName: string,
     summary: string
   ): Promise<ResolveResult> {
-    
-    // Step A: Build Query
-    const primaryQuery = this.buildQuery(title);
-    
-    // Step B: Search with caching
-    const webResult = await this.searchWebImage(primaryQuery);
-    
-    // Step C: Validate and return if valid
-    if (webResult) {
-      try {
-        const isValid = await this.validateImage(webResult.url);
-        if (isValid) {
-          return {
-            url: webResult.url,
-            source: 'web_found',
-            metadata: {
-              sourcePageUrl: webResult.sourcePageUrl
-            }
-          };
-        }
-      } catch (e) {
-        console.warn(`[ImageResolver] Web image validation failed:`, e);
-      }
+
+    const query = this.buildQuery(title);
+
+    // Priority 2: SERP/Serper (paid web search)
+    console.log('[ImageResolver] Priority 2: Searching SERP/Serper...');
+    const serpResult = await this.searchWebImage(query);
+    if (serpResult && await this.validateImage(serpResult.url)) {
+      return {
+        url: serpResult.url,
+        source: 'web_found',
+        metadata: { sourcePageUrl: serpResult.sourcePageUrl, source: 'serp' }
+      };
     }
 
-    // Step D: Fallback to generation
-    console.log('All web candidates failed, falling back to generation...');
-    const prompt = this.buildPrompt(title, summary, category);
-    
-    const generatedUrl = await this.genProvider.generate({
-      prompt,
-      width: 1024,
-      height: 768
-    });
+    // Priority 3: Unsplash (free high-quality editorial)
+    console.log('[ImageResolver] SERP failed, trying Unsplash...');
+    try {
+      const unsplashResults = await this.unsplashProvider.search(query, 5);
+      const bestUnsplash = this.rankCandidates(unsplashResults, query)[0];
 
-    return {
-      url: generatedUrl,
-      source: 'generated',
-      prompt,
-      metadata: {
-        model: 'nano-banana-v1'
+      if (bestUnsplash && await this.validateImage(bestUnsplash.url)) {
+        return {
+          url: bestUnsplash.url,
+          source: 'web_found',
+          metadata: {
+            sourcePageUrl: bestUnsplash.sourcePageUrl,
+            source: 'unsplash',
+            attribution: bestUnsplash.attribution,
+            downloadLocation: bestUnsplash.downloadLocation
+          }
+        };
       }
+    } catch (e) {
+      console.warn('[ImageResolver] Unsplash search failed:', e);
+    }
+
+    // Priority 4-6: Generation with Policy Gate
+    console.log('[ImageResolver] Web search failed, checking policy gate...');
+    const policy = await this.policyService.checkEligibility(title, summary, category, sourceName);
+
+    if (!policy.allowed_to_generate) {
+      // Try fallback SERP queries
+      console.log(`[ImageResolver] Generation not allowed: ${policy.reason}`);
+      for (const fallbackQuery of policy.fallback_serp_queries) {
+        console.log(`[ImageResolver] Trying fallback query: ${fallbackQuery}`);
+        const result = await this.searchWebImage(fallbackQuery);
+        if (result && await this.validateImage(result.url)) {
+          return {
+            url: result.url,
+            source: 'web_found',
+            metadata: { source: 'serp-fallback', query: fallbackQuery, policy: 'denied' }
+          };
+        }
+      }
+      throw new Error(`Image generation not allowed and fallback queries failed: ${policy.reason}`);
+    }
+
+    // Generate with safe prompt
+    const safePrompt = this.buildGenerationPrompt(policy.safe_prompt!, category);
+
+    // Priority 4: Together AI (low-cost generation)
+    try {
+      console.log('[ImageResolver] Generating with Together AI...');
+      const url = await this.togetherProvider.generate({ prompt: safePrompt, width: 1024, height: 768 });
+      return {
+        url,
+        source: 'generated',
+        prompt: safePrompt,
+        metadata: { model: 'together-flux', policy: 'gated' }
+      };
+    } catch (e) {
+      console.warn('[ImageResolver] Together AI generation failed:', e);
+    }
+
+    // Priority 5: Gemini Imagen (premium generation)
+    console.log('[ImageResolver] Generating with Gemini Imagen...');
+    const url = await this.geminiProvider.generate({ prompt: safePrompt, width: 1024, height: 768 });
+    return {
+      url,
+      source: 'generated',
+      prompt: safePrompt,
+      metadata: { model: 'gemini-imagen', policy: 'gated' }
     };
   }
 
@@ -114,7 +192,7 @@ export class ImageResolverService {
     if (cached) {
       const age = Date.now() - cached.createdAt.getTime();
       const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-      
+
       if (age < thirtyDays) {
         const results = cached.resultsJson as any;
         if (results && results.length > 0) {
@@ -129,7 +207,7 @@ export class ImageResolverService {
 
     // Search via provider
     console.log(`[ImageResolver] Searching web for image: ${query}`);
-    const candidates = await this.searchProvider.search(query, 10);
+    const candidates = await this.serpProvider.search(query, 10);
 
     // Rank candidates
     const sorted = this.rankCandidates(candidates, query);
@@ -175,14 +253,14 @@ export class ImageResolverService {
     // - width >= 800
     // - file format (jpg/png > webp > other)
     // - avoid pinterest/wallpaper spam domains
-    
+
     return candidates
       .filter(c => {
         // Filter out known spam domains
         const url = c.url.toLowerCase();
-        if (url.includes('pinterest.com') || 
-            url.includes('wallpaper') ||
-            url.includes('icon')) {
+        if (url.includes('pinterest.com') ||
+          url.includes('wallpaper') ||
+          url.includes('icon')) {
           return false;
         }
         return true;
@@ -203,15 +281,15 @@ export class ImageResolverService {
 
   private async validateImage(url: string): Promise<boolean> {
     try {
-      const response = await axios.head(url, { 
+      const response = await axios.head(url, {
         timeout: 10000,
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ContentIngestion/1.0)'
         }
       });
-      
+
       if (response.status !== 200) return false;
-      
+
       const type = response.headers['content-type'];
       const length = parseInt(response.headers['content-length'] || '0', 10);
 
@@ -251,5 +329,53 @@ Constraints:
 - composition suitable for a news card
 - 16:9 aspect ratio
 - high detail, natural lighting`.trim();
+  }
+
+  /**
+   * Build generation prompt with policy-gated safe prompt and category styles
+   */
+  private buildGenerationPrompt(safePrompt: string, category: string): string {
+    const styleMap: Record<string, string> = {
+      sports: 'dynamic, energetic, action-focused',
+      technology: 'futuristic, clean, abstract',
+      tech: 'futuristic, clean, abstract',
+      business: 'professional, corporate, minimal',
+      politics: 'formal, serious, architectural',
+      entertainment: 'vibrant, creative, artistic',
+      general: 'balanced, journalistic, neutral',
+      default: 'balanced, journalistic, neutral'
+    };
+
+    const style = styleMap[category.toLowerCase()] || styleMap['default'];
+
+    return `Generate a high-quality editorial illustration-style image for a short news story.
+
+Scene (must be generic, non-factual, non-identifying):
+${safePrompt}
+
+Style: ${style}
+Mood: realistic, clean, modern
+
+Constraints:
+- do not depict any real or identifiable person
+- no flags, national symbols, political symbols
+- no brand logos, trademarks, or recognizable product branding
+- no visible text, numbers, captions, watermarks
+- do not recreate a specific real event; keep it symbolic/illustrative
+- composition suitable for a news card
+
+16:9 aspect ratio, high detail, natural lighting.`.trim();
+  }
+
+  /**
+   * Trigger Unsplash download event for compliance
+   */
+  async triggerUnsplashDownload(downloadLocation: string): Promise<void> {
+    try {
+      await axios.get(downloadLocation);
+      console.log('[ImageResolver] Triggered Unsplash download event');
+    } catch (error) {
+      console.warn('[ImageResolver] Failed to trigger Unsplash download:', error);
+    }
   }
 }

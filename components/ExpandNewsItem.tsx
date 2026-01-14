@@ -28,7 +28,7 @@ import Animated, {
 import CommentSectionModal from '@/components/comment/commentSectionModal';
 import HeroCard from '@/components/HeroCard';
 import ArticleContent from '@/components/ArticleContent';
-import { getAllCategories } from '@/api/apiCategories';
+import { getIngestionCategories } from '@/api/apiIngestion';
 import { CategoryType } from '@/types/CategoryTypes';
 import { SCREEN_DIMENSIONS } from '@/constants/expandedScreenData';
 
@@ -42,6 +42,61 @@ interface ExpandNewsItemProps {
     initialTitle?: string;
     initialImage?: string;
 }
+
+// Extracted Component to prevent Invalid Hook Call
+const ArticlePageItem = React.memo(({
+    item,
+    activeArticle,
+    mode,
+    articleScrollY,
+    categories,
+    commentProgress,
+    heroHeightSV,
+    top,
+}: {
+    item: any;
+    activeArticle: number | string;
+    mode: string;
+    articleScrollY: any;
+    categories: CategoryType[];
+    commentProgress: any;
+    heroHeightSV: any;
+    top: number;
+}) => {
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (event) => {
+            // Only sync scroll Y if this is the active item
+            if (item.id === activeArticle) {
+                articleScrollY.value = event.contentOffset.y;
+            }
+        }
+    });
+
+    const category = useMemo(() => {
+        return categories.find(c => c.id === item.category_id);
+    }, [categories, item.category_id]);
+
+    return (
+        <View style={{ width: SCREEN_DIMENSIONS.width, flex: 1 }}>
+            <Animated.ScrollView
+                scrollEnabled={mode === 'reading'}
+                showsVerticalScrollIndicator={false}
+                onScroll={scrollHandler}
+                scrollEventThrottle={16}
+                style={{ flex: 1 }}
+                contentContainerStyle={{ backgroundColor: 'transparent' }}
+            >
+                <ArticleContent
+                    item={item}
+                    category={category}
+                    commentProgress={commentProgress}
+                    heroHeightSV={heroHeightSV}
+                    topInset={top}
+                />
+            </Animated.ScrollView>
+        </View>
+    );
+});
 
 const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     items,
@@ -283,7 +338,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     useEffect(() => {
         (async () => {
             try {
-                const apiRes = await getAllCategories();
+                const apiRes = await getIngestionCategories();
                 if (apiRes) {
                     setCategories(apiRes);
                 }
@@ -347,10 +402,12 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                     {/* PLANE 0: BACKGROUND (Orchestrated) */}
                     <Animated.View style={backdropStyle} />
 
-                    {/* PLANE 1: ARTICLE CONTENT (Text and Scroll) */}
+                    {/* PLANE 1: ARTICLE CONTENT PAGER */}
+                    {/* STAFF FIX: Use a REAL FlatList wrapper instead of an invisible overlay */}
+                    {/* This ensures native handling of Horizontal (Page) vs Vertical (Scroll) gestures */}
                     <Animated.View style={[
                         { flex: 1, zIndex: 1 },
-                        containerStyle,
+                        containerStyle, // Apply dismiss transform to the whole pager
                         useAnimatedStyle(() => ({
                             opacity: entranceProgress.value,
                             transform: [
@@ -359,26 +416,44 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                             ]
                         }))
                     ]}>
-                        <Animated.ScrollView
-                            scrollEnabled={mode === 'reading'}
-                            showsVerticalScrollIndicator={false}
-                            onScroll={useAnimatedScrollHandler({
-                                onScroll: (event) => {
-                                    articleScrollY.value = event.contentOffset.y;
-                                }
-                            })}
+                        <Animated.FlatList
+                            ref={flatListRef}
+                            data={items}
+                            keyExtractor={(item) => item.id.toString()}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
                             scrollEventThrottle={16}
-                            style={{ flex: 1 }}
-                            contentContainerStyle={{ backgroundColor: 'transparent' }}
-                        >
-                            <ArticleContent
-                                item={currentItem}
-                                category={currentCategory}
-                                commentProgress={commentProgress}
-                                heroHeightSV={heroHeightSV}
-                                topInset={top}
-                            />
-                        </Animated.ScrollView>
+                            decelerationRate="fast"
+                            snapToInterval={SCREEN_DIMENSIONS.width}
+                            snapToAlignment='center'
+                            bounces={false}
+                            windowSize={3}
+                            initialNumToRender={1}
+                            maxToRenderPerBatch={2}
+                            removeClippedSubviews={Platform.OS === 'android'}
+                            initialScrollIndex={initialIndex}
+                            getItemLayout={getItemLayout}
+
+                            // Prevent horizontal scrolling when in comments mode
+                            scrollEnabled={mode === 'reading'}
+
+                            // Update Active Article on Swipe
+                            onMomentumScrollEnd={handleScroll}
+
+                            renderItem={({ item }) => (
+                                <ArticlePageItem
+                                    item={item}
+                                    activeArticle={activeArticle}
+                                    mode={mode}
+                                    articleScrollY={articleScrollY}
+                                    categories={categories}
+                                    commentProgress={commentProgress}
+                                    heroHeightSV={heroHeightSV}
+                                    top={top}
+                                />
+                            )}
+                        />
 
                         {/* Pagination Indicators - anchored to reading mode container */}
                         <Animated.View style={[
@@ -443,7 +518,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                                             strokeWidth="2.5"
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
-                                            fill="none" // STAFF FIX: Ensure no accidental fill
+                                            fill="none"
                                         />
                                     </G>
                                     <Defs>
@@ -454,31 +529,6 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                                 </Svg>
                             </TouchableOpacity>
                         </Animated.View>
-
-                        {/* Invisible FlatList for horizontal paging only */}
-                        <View style={{ position: 'absolute', opacity: 0, pointerEvents: mode === 'reading' ? 'auto' : 'none' }}>
-                            <FlatList
-                                ref={flatListRef}
-                                data={items}
-                                renderItem={renderScreen}
-                                keyExtractor={(item) => item.id.toString()}
-                                horizontal
-                                pagingEnabled
-                                showsHorizontalScrollIndicator={false}
-                                getItemLayout={getItemLayout}
-                                onMomentumScrollEnd={handleScroll}
-                                initialScrollIndex={initialIndex}
-                                scrollEventThrottle={16}
-                                scrollEnabled={mode === 'reading' && isVisible}
-                                decelerationRate="fast"
-                                snapToInterval={SCREEN_DIMENSIONS.width}
-                                snapToAlignment='center'
-                                removeClippedSubviews={Platform.OS === 'android'}
-                                bounces={false}
-                                windowSize={3}
-                                initialNumToRender={1}
-                            />
-                        </View>
                     </Animated.View>
 
                     {/* AIRBNB DIM LAYER: Only dims when writingLiftSV > 0 */}

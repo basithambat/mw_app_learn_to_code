@@ -1,8 +1,8 @@
-import { supabase } from "@/config/supabase";
+
 import APIService, { APICaller } from "./APIKit";
 import { getIngestionArticlesByCategory } from "./apiIngestion";
 
-export const getAllArticlesByCategories = async (categoryId: string,from:string, to:string) => {
+export const getAllArticlesByCategories = async (categoryId: string, from: string, to: string) => {
     try {
         if (!categoryId) throw new Error("Category ID Missing!");
 

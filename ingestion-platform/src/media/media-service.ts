@@ -19,6 +19,26 @@ export class MediaService {
     const config = getS3Config();
     this.bucket = config.bucket || 'content-bucket';
     this.publicBaseUrl = config.publicBaseUrl || 'http://localhost:9000/content-bucket';
+    // Fire and forget - don't block constructor
+    this.ensureBucket().catch(e => console.warn('[MediaService] Bucket check failed:', e.message));
+  }
+
+  /**
+   * Ensure bucket exists (especially for local MinIO)
+   */
+  async ensureBucket() {
+    try {
+      const { CreateBucketCommand } = await import('@aws-sdk/client-s3');
+      await this.s3Client.send(new CreateBucketCommand({ Bucket: this.bucket }));
+      console.log(`[MediaService] Created bucket: ${this.bucket}`);
+    } catch (e: any) {
+      const isAccessError = e.name === 'AccessDenied' || e.$metadata?.httpStatusCode === 403;
+      if (e.name !== 'BucketAlreadyExists' && e.name !== 'BucketAlreadyOwnedByYou' && e.$metadata?.httpStatusCode !== 409 && !isAccessError) {
+        console.warn(`[MediaService] Could not ensure bucket ${this.bucket}:`, e.message);
+      } else if (isAccessError) {
+        console.log(`[MediaService] Access denied checking bucket ${this.bucket}, assuming it exists.`);
+      }
+    }
   }
 
   /**
@@ -35,8 +55,8 @@ export class MediaService {
         try {
           const response = await fetch(url, {
             headers: {
-              'User-Agent':
-                'Mozilla/5.0 (compatible; ContentIngestion/1.0; +https://example.com/bot)',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
             },
             signal: AbortSignal.timeout(30000), // 30s timeout
           });

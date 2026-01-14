@@ -131,10 +131,10 @@ export async function upsertUserAndPersonas(decodedToken: any): Promise<UpsertUs
 
   if (!verifiedPersona) {
     // Generate unique handle for verified persona (can be same as displayName or different)
-    const verifiedHandle = displayName 
+    const verifiedHandle = displayName
       ? `@${displayName.toLowerCase().replace(/\s+/g, '-')}-${user.id.slice(0, 8)}`
       : `@verified-${user.id.slice(0, 8)}`;
-    
+
     verifiedPersona = await prisma.persona.create({
       data: {
         userId: user.id,
@@ -209,4 +209,22 @@ export async function setDefaultPersona(userId: string, personaId: string) {
     where: { id: personaId },
     data: { isDefault: true },
   });
+}
+
+/**
+ * Delete user and all associated personas
+ * Use with caution!
+ */
+export async function deleteUserAndPersonas(userId: string) {
+  // 1. Delete all personas
+  await prisma.persona.deleteMany({
+    where: { userId },
+  });
+
+  // 2. Delete user
+  const result = await prisma.user.delete({
+    where: { id: userId },
+  });
+
+  return result;
 }

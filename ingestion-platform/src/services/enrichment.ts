@@ -22,22 +22,17 @@ export class EnrichmentService {
         return result;
       }
     } catch (error) {
-      console.warn(`[Enrichment] HTTP failed for ${sourceUrl}, trying Playwright...`);
+      console.warn(`[Enrichment] HTTP failed for ${sourceUrl}:`, error);
+      return {}; // Skip Playwright fallback for now
     }
 
-    // Fallback to Playwright if HTTP fails or blocked
-    try {
-      return await this.enrichWithPlaywright(sourceUrl);
-    } catch (error) {
-      console.error(`[Enrichment] Playwright also failed for ${sourceUrl}:`, error);
-      return {};
-    }
+    return {};
   }
 
   private async enrichWithHTTP(url: string): Promise<EnrichmentResult> {
     const response = await axios.get(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; ContentIngestion/1.0)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
       timeout: 15000,
       maxRedirects: 5,
@@ -49,25 +44,25 @@ export class EnrichmentService {
     // Canonical URL
     const canonical = $('link[rel="canonical"]').attr('href');
     if (canonical) {
-      result.canonicalUrl = canonical.startsWith('http') 
-        ? canonical 
+      result.canonicalUrl = canonical.startsWith('http')
+        ? canonical
         : new URL(canonical, url).href;
     }
 
     // OG Image
     const ogImage = $('meta[property="og:image"]').attr('content');
     if (ogImage) {
-      result.ogImageUrl = ogImage.startsWith('http') 
-        ? ogImage 
+      result.ogImageUrl = ogImage.startsWith('http')
+        ? ogImage
         : new URL(ogImage, url).href;
     }
 
     // Twitter Image
     const twitterImage = $('meta[name="twitter:image"]').attr('content') ||
-                        $('meta[property="twitter:image"]').attr('content');
+      $('meta[property="twitter:image"]').attr('content');
     if (twitterImage) {
-      result.twitterImageUrl = twitterImage.startsWith('http') 
-        ? twitterImage 
+      result.twitterImageUrl = twitterImage.startsWith('http')
+        ? twitterImage
         : new URL(twitterImage, url).href;
     }
 
@@ -96,25 +91,25 @@ export class EnrichmentService {
       // Canonical
       const canonical = $('link[rel="canonical"]').attr('href');
       if (canonical) {
-        result.canonicalUrl = canonical.startsWith('http') 
-          ? canonical 
+        result.canonicalUrl = canonical.startsWith('http')
+          ? canonical
           : new URL(canonical, url).href;
       }
 
       // OG Image
       const ogImage = $('meta[property="og:image"]').attr('content');
       if (ogImage) {
-        result.ogImageUrl = ogImage.startsWith('http') 
-          ? ogImage 
+        result.ogImageUrl = ogImage.startsWith('http')
+          ? ogImage
           : new URL(ogImage, url).href;
       }
 
       // Twitter Image
       const twitterImage = $('meta[name="twitter:image"]').attr('content') ||
-                          $('meta[property="twitter:image"]').attr('content');
+        $('meta[property="twitter:image"]').attr('content');
       if (twitterImage) {
-        result.twitterImageUrl = twitterImage.startsWith('http') 
-          ? twitterImage 
+        result.twitterImageUrl = twitterImage.startsWith('http')
+          ? twitterImage
           : new URL(twitterImage, url).href;
       }
 

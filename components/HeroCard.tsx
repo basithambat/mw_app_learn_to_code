@@ -216,7 +216,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress, entranceProg
                     titleStyle
                 ]}
             >
-                <Text className="text-[22px] font-domine text-white">
+                <Text className="text-[24px] font-domine text-white">
                     {item?.title}
                 </Text>
             </Animated.View>

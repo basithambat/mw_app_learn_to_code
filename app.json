@@ -2,7 +2,7 @@
   "expo": {
     "name": "whatsay",
     "slug": "whatsay",
-    "version": "2.8",
+    "version": "3.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -15,11 +15,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.safwanambat.whatsay",
-      "buildNumber": "17",
+      "buildNumber": "18",
       "infoPlist": {
         "CFBundleIconName": "AppIcon",
         "UIBackgroundModes": [],
-        "NSCameraUsageDescription": "This app needs access to the camera to take photos.",
         "NSPhotoLibraryUsageDescription": "This app needs access to photos.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false,
@@ -37,33 +36,22 @@
       "requireFullScreen": true,
       "config": {
         "usesNonExemptEncryption": false
-      },
-      "icons": {
-        "app": {
-          "ios": {
-            "120": "./assets/ios-icons/icon-120x120.png",
-            "180": "./assets/ios-icons/icon-180x180.png",
-            "76": "./assets/ios-icons/icon-76x76.png",
-            "152": "./assets/ios-icons/icon-152x152.png",
-            "167": "./assets/ios-icons/icon-167x167.png",
-            "1024": "./assets/ios-icons/icon-1024x1024.png"
-          }
-        }
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/splashScreen.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "VIBRATE",
-        "INTERNET",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "android.permission.VIBRATE",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO"
       ],
       "package": "com.safwanambat.whatsay",
-      "versionCode": 11,
+      "versionCode": 14,
       "googleServicesFile": "./android/app/google-services.json"
     },
     "web": {
@@ -75,7 +63,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos."
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "cameraPermission": false
         }
       ],
       "@react-native-firebase/app",
@@ -102,9 +91,11 @@
       "router": {
         "origin": false
       },
+      "EXPO_PUBLIC_API_URL": "https://whatsay-api-jsewdobsva-el.a.run.app",
       "eas": {
-        "projectId": "36e03653-504c-4109-8021-77b24410fdb5"
+        "projectId": "50291fe4-6d63-4dd1-9230-fdd8566c2351"
       }
-    }
+    },
+    "owner": "futureflux"
   }
 }

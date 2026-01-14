@@ -2,9 +2,9 @@
 
 import { CategoryType } from '@/types/CategoryTypes';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import React, { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, View, RefreshControl, ScrollView } from 'react-native';
+// import { ScrollView } from 'react-native-gesture-handler';
 import CategoryArticles from './CategoryArticles';
 import { getCategories } from '@/api/apiCategories';
 import useLocation from '@/hooks/useLocation';
@@ -43,7 +43,9 @@ const DiscoverScreen = () => {
     const [currentGradientIndex, setCurrentGradientIndex] = useState(0);
     const { location, errorMsg } = useLocation();
     const scrollY = useSharedValue(0);
-    const isRefreshing = useSharedValue(false);
+    const isRefreshingValue = useSharedValue(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(Date.now());
 
     const loggedInUserData = useSelector(loggedInUserDataSelector);
     const userPreferredCategories = useSelector(userPreferredCategoriesDataSelector);
@@ -57,22 +59,31 @@ const DiscoverScreen = () => {
         }
     };
 
-    useEffect(() => {
-        (async () => {
-            const { from, to } = getLast48HoursRange();
-            const userId: string = loggedInUserData?.user.id as string;
-            try {
-                const response = await getCategories(from, to, userId);
-                const categoriesWithIndex = response.map((category: Omit<CategoryType, 'index'>, idx: number) => ({
-                    ...category,
-                    index: Number(idx)
-                }));
-                setCategories(categoriesWithIndex);
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-            }
-        })();
+    const fetchCategories = useCallback(async () => {
+        const { from, to } = getLast48HoursRange();
+        const userId: string = loggedInUserData?.user.id as string;
+        try {
+            const response = await getCategories(from, to, userId);
+            const categoriesWithIndex = response.map((category: Omit<CategoryType, 'index'>, idx: number) => ({
+                ...category,
+                index: Number(idx)
+            }));
+            setCategories(categoriesWithIndex);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
     }, [location, userPreferredCategories, loggedInUserData?.user?.id]);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        setRefreshKey(Date.now());
+        await fetchCategories();
+        setRefreshing(false);
+    }, [fetchCategories]);
 
     const handleGradientChange = () => {
         setCurrentGradientIndex((prevIndex) => (prevIndex + 1) % GRADIENT_COLORS.length);
@@ -84,12 +95,12 @@ const DiscoverScreen = () => {
             scrollY.value = offsetY;
 
             if (offsetY < -MAX_PULL_DISTANCE * 0.5) {
-                if (!isRefreshing.value) {
-                    isRefreshing.value = true;
+                if (!isRefreshingValue.value) {
+                    isRefreshingValue.value = true;
                     runOnJS(handleGradientChange)();
                 }
             } else if (offsetY >= 0) {
-                isRefreshing.value = false;
+                isRefreshingValue.value = false;
             }
         },
     });
@@ -140,11 +151,21 @@ const DiscoverScreen = () => {
                 scrollEventThrottle={16}
                 contentContainerStyle={styles.scrollViewContent}
                 bounces={true}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor="#000000" // iOS spinner color
+                        colors={['#000000', '#05E1D7']} // Android spinner colors
+                        progressBackgroundColor="#ffffff" // Background for Android circle
+                        progressViewOffset={88} // Align with content padding
+                    />
+                }
             >
                 {categories.map((category: CategoryType, index: number) => (
                     <CategoryArticles
                         category={category}
-                        key={category.id}
+                        key={`${category.id}-${refreshKey}`}
                     />
                 ))}
             </AnimatedScrollView>

@@ -25,7 +25,7 @@ export class InshortsAdapter implements SourceAdapter {
       }
     }
     // Default to all news
-    return ['https://inshorts.com/en/read'];
+    return [`https://inshorts.com/en/read?t=${Date.now()}`];
   }
 
   getExtractionConfig(): any {
@@ -48,9 +48,18 @@ export class InshortsAdapter implements SourceAdapter {
         }
       }
 
+      let finalCategory = category || null;
+      if (!finalCategory) {
+        // Infer category from content if scraping 'all'
+        const text = (item.title + ' ' + item.summary).toLowerCase();
+        if (text.includes('cricket') || text.includes('football') || text.includes('match') || text.includes('score')) finalCategory = 'sports';
+        else if (text.includes('ipo') || text.includes('market') || text.includes('sensex') || text.includes('stocks')) finalCategory = 'business';
+        else if (text.includes('chatgpt') || text.includes('ai') || text.includes('app') || text.includes('launch')) finalCategory = 'technology';
+      }
+
       return {
         source_id: this.id,
-        source_category: category || null,
+        source_category: finalCategory,
         title: item.title || '',
         summary: item.summary || '',
         source_url: item.sourceUrl || null,

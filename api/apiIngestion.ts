@@ -1,4 +1,5 @@
 import APIService, { APICaller } from "./APIKit";
+import * as Device from 'expo-device';
 import { truncateTo60Words } from "@/utils/textHelper";
 import { getImageUrlWithFallback } from "@/utils/categoryFallbackImages";
 
@@ -9,11 +10,19 @@ import { getImageUrlWithFallback } from "@/utils/categoryFallbackImages";
 
 // Production API URL - GCP Cloud Run (Mumbai/asia-south1)
 // This will be set automatically when API is deployed
-// To get the URL: node get-production-api-url.js
-const PRODUCTION_API_URL = 'https://whatsay-api-278662370606.asia-south1.run.app'; // Production API deployed
+// Production API URL - GCP Cloud Run (Mumbai/asia-south1)
+// This will be set automatically when API is deployed
+const PRODUCTION_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://whatsay-api-jsewdobsva-el.a.run.app';
 
 export const getIngestionApiBase = () => {
   if (__DEV__) {
+    // If running on a physical device, prefer Production API
+    // This avoids "Network Error" when trying to hit localhost from a phone
+    if (Device.isDevice) {
+      console.log('[Ingestion] Physical Device in Dev mode -> Using Production API');
+      return PRODUCTION_API_URL;
+    }
+
     // Using adb reverse proxy for reliable local development
     // Run: adb reverse tcp:3002 tcp:3002
     // This maps device's localhost:3002 to computer's localhost:3002
@@ -30,6 +39,8 @@ export const getIngestionApiBase = () => {
 };
 
 const INGESTION_API_BASE = getIngestionApiBase();
+console.log('[Ingestion] API Base URL:', INGESTION_API_BASE);
+console.log('[Ingestion] __DEV__ mode:', __DEV__);
 
 /**
  * Map Inshorts categories to UI category names
@@ -91,6 +102,11 @@ export const getIngestionFeed = async (category?: string, limit: number = 20) =>
 
     const response = await fetch(`${INGESTION_API_BASE}/api/feed?${params.toString()}`, {
       signal: controller.signal,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     });
 
     clearTimeout(timeoutId);
@@ -104,6 +120,14 @@ export const getIngestionFeed = async (category?: string, limit: number = 20) =>
     return data.items || [];
   } catch (error: any) {
     console.error('[Ingestion] Error fetching feed:', error);
+    console.error('[Ingestion] Error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      apiBase: INGESTION_API_BASE,
+      category,
+      limit
+    });
     // Return empty array instead of throwing
     return [];
   }
@@ -170,10 +194,6 @@ export const getIngestionArticlesByCategory = async (
     const toDate = new Date(to);
 
     const filteredItems = items
-      .filter((item: any) => {
-        const itemDate = item.published_at ? new Date(item.published_at) : new Date(item.created_at);
-        return itemDate >= fromDate && itemDate <= toDate;
-      })
       .map((item: any) => {
         const rawSummary = item.subtext || item.summary_rewritten || item.summary_original || '';
         const originalImageUrl = item.image_url || item.image_storage_url || null;

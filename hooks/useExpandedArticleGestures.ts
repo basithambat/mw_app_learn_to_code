@@ -115,8 +115,11 @@ export const useExpandedArticleGestures = ({
 
     const verticalPanGesture = useMemo(() => {
         return Gesture.Pan()
-            .activeOffsetY([-DIRECTION_LOCK_THRESHOLD, DIRECTION_LOCK_THRESHOLD])
-            .failOffsetX([-HORIZONTAL_FAIL_THRESHOLD, HORIZONTAL_FAIL_THRESHOLD])
+            // STAFF FIX: Increase vertical start threshold (was 8) to prevent diagonal stealing
+            // This allows the Horizontal Pager (FlatList) to claim the gesture first.
+            .activeOffsetY([-30, 30])
+            // STAFF FIX: Fail vertical EARLIER (was 50) if horizontal movement is detected
+            .failOffsetX([-20, 20])
             .enabled(mode !== 'dismissing') // Disable during dismissing transition
             .onBegin(() => {
                 'worklet';
@@ -129,15 +132,16 @@ export const useExpandedArticleGestures = ({
 
                 // Direction lock logic: First significant movement (>8px) wins
                 if (directionLock.value === 'none') {
+                    // STAFF FIX: Use tighter lock check to support the new activeOffset
                     const absDx = Math.abs(translationX);
                     const absDy = Math.abs(translationY);
 
-                    if (absDx > DIRECTION_LOCK_THRESHOLD || absDy > DIRECTION_LOCK_THRESHOLD) {
-                        if (absDx > absDy) {
-                            directionLock.value = 'horizontal'; // FlatList will handle
-                        } else {
-                            directionLock.value = 'vertical';
-                        }
+                    // If we passed the threshold (likely vertical since we are in onUpdate)
+                    // We re-confirm to be safe, but mostly relying on activeOffsetY now.
+                    if (absDx > absDy) {
+                        directionLock.value = 'horizontal';
+                    } else {
+                        directionLock.value = 'vertical';
                     }
                 }
 

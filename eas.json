@@ -18,14 +18,14 @@
       "ios": {
         "buildConfiguration": "Release",
         "image": "latest",
-        "resourceClass": "m-medium",
+        "resourceClass": "medium",
         "autoIncrement": true,
         "simulator": false
       },
       "android": {
         "buildType": "app-bundle",
         "image": "latest",
-        "resourceClass": "m-medium",
+        "resourceClass": "medium",
         "autoIncrement": true
       }
     },
@@ -33,14 +33,6 @@
       "android": {
         "buildType": "apk",
         "developmentClient": false
-      }
-    },
-    "production": {
-      "android": {
-        "buildType": "app-bundle",
-        "image": "latest",
-        "resourceClass": "m-medium",
-        "autoIncrement": true
       }
     }
   },

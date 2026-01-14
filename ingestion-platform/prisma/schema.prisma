@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
@@ -12,47 +9,38 @@ datasource db {
 }
 
 model ContentItem {
-  id              String    @id @default(uuid())
-  hash            String    @unique
-  sourceId        String    @map("source_id")
-  sourceCategory  String?   @map("source_category")
-  titleOriginal   String    @map("title_original") @db.Text
-  summaryOriginal String    @map("summary_original") @db.Text
-  sourceUrl       String?   @map("source_url") @db.Text
-  publishedAt     DateTime? @map("published_at") @db.Timestamptz(6)
-
-  // Enrichment fields
-  canonicalUrl     String? @map("canonical_url") @db.Text
-  siteName         String? @map("site_name")
-  ogImageUrl       String? @map("og_image_url") @db.Text
-  twitterImageUrl  String? @map("twitter_image_url") @db.Text
-  enrichmentStatus String  @default("pending") @map("enrichment_status") // pending, done, failed
-  enrichmentError  String? @map("enrichment_error") @db.Text
-
-  // Rewrite fields
-  titleRewritten   String? @map("title_rewritten") @db.Text
-  summaryRewritten String? @map("summary_rewritten") @db.Text
-  rewriteStatus    String  @default("pending") @map("rewrite_status") // pending, done, failed
-  rewriteModel     String? @map("rewrite_model")
-  rewritePromptVer String? @map("rewrite_prompt_version")
-  rewriteHash      String? @unique @map("rewrite_hash")
-
-  // Image fields
-  imageStatus        String  @default("pending") @map("image_status") // pending, og_used, web_found, generated, none, failed
-  imageSelectedUrl   String? @map("image_selected_url") @db.Text
-  imageSourcePageUrl String? @map("image_source_page_url") @db.Text
-  imageStorageUrl    String? @map("image_storage_url") @db.Text
-  imagePrompt        String? @map("image_prompt") @db.Text
-  imageModel         String? @map("image_model")
-  imageMetadata      Json?   @map("image_metadata")
-
-  rawJson   Json?    @map("raw_json")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  // Relations
-  editionStories  EditionStory[]
-  exploreItems    ExploreItem[]
-  userStoryStates UserStoryState[]
+  id                 String           @id @default(uuid())
+  hash               String           @unique
+  sourceId           String           @map("source_id")
+  sourceCategory     String?          @map("source_category")
+  titleOriginal      String           @map("title_original")
+  summaryOriginal    String           @map("summary_original")
+  sourceUrl          String?          @map("source_url")
+  publishedAt        DateTime?        @map("published_at") @db.Timestamptz(6)
+  canonicalUrl       String?          @map("canonical_url")
+  siteName           String?          @map("site_name")
+  ogImageUrl         String?          @map("og_image_url")
+  twitterImageUrl    String?          @map("twitter_image_url")
+  enrichmentStatus   String           @default("pending") @map("enrichment_status")
+  enrichmentError    String?          @map("enrichment_error")
+  titleRewritten     String?          @map("title_rewritten")
+  summaryRewritten   String?          @map("summary_rewritten")
+  rewriteStatus      String           @default("pending") @map("rewrite_status")
+  rewriteModel       String?          @map("rewrite_model")
+  rewritePromptVer   String?          @map("rewrite_prompt_version")
+  rewriteHash        String?          @unique @map("rewrite_hash")
+  imageStatus        String           @default("pending") @map("image_status")
+  imageSelectedUrl   String?          @map("image_selected_url")
+  imageSourcePageUrl String?          @map("image_source_page_url")
+  imageStorageUrl    String?          @map("image_storage_url")
+  imagePrompt        String?          @map("image_prompt")
+  imageModel         String?          @map("image_model")
+  imageMetadata      Json?            @map("image_metadata")
+  rawJson            Json?            @map("raw_json")
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  editionStories     EditionStory[]
+  exploreItems       ExploreItem[]
+  userStoryStates    UserStoryState[]
 
   @@index([sourceId, createdAt(sort: Desc)])
   @@index([sourceCategory, createdAt(sort: Desc)])
@@ -64,7 +52,7 @@ model ContentItem {
 model ImageSearchCache {
   id          String   @id @default(uuid())
   queryHash   String   @unique @map("query_hash")
-  queryText   String   @map("query_text") @db.Text
+  queryText   String   @map("query_text")
   provider    String
   resultsJson Json     @map("results_json")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -76,11 +64,11 @@ model ImageSearchCache {
 model IngestionRun {
   id           String    @id @default(uuid())
   sourceId     String    @map("source_id")
-  category     String?   @db.Text
+  category     String?
   runId        String    @unique @map("run_id")
-  status       String    @default("running") // running, completed, failed
+  status       String    @default("running")
   stats        Json?     @map("stats_json")
-  errorMessage String?   @map("error_message") @db.Text
+  errorMessage String?   @map("error_message")
   startedAt    DateTime  @default(now()) @map("started_at") @db.Timestamptz(6)
   completedAt  DateTime? @map("completed_at") @db.Timestamptz(6)
 
@@ -92,8 +80,8 @@ model IngestionRun {
 model SourceState {
   id         String    @id @default(uuid())
   sourceId   String    @unique @map("source_id")
-  lastCursor String?   @map("last_cursor") @db.Text
-  lastEtag   String?   @map("last_etag") @db.Text
+  lastCursor String?   @map("last_cursor")
+  lastEtag   String?   @map("last_etag")
   lastRunAt  DateTime? @map("last_run_at") @db.Timestamptz(6)
   metadata   Json?
   updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -101,36 +89,32 @@ model SourceState {
   @@map("source_state")
 }
 
-// ========== Better Inshorts: Today Edition + Explore Pool ==========
-
 model Edition {
-  editionId   String   @id @map("edition_id") // "YYYY-MM-DD"
-  dateLocal   String   @map("date_local") // "YYYY-MM-DD"
-  timezone    String
-  publishedAt DateTime @map("published_at") @db.Timestamptz(6)
-  cutoffAt    DateTime @map("cutoff_at") @db.Timestamptz(6)
-  mode        String // "semi_live" | "fixed"
-  version     Int      @default(1) // increments with breaking additions
-
-  editionStories EditionStory[]
+  editionId      String         @id @map("edition_id")
+  dateLocal      String         @map("date_local")
+  timezone       String
+  publishedAt    DateTime       @map("published_at") @db.Timestamptz(6)
+  cutoffAt       DateTime       @map("cutoff_at") @db.Timestamptz(6)
+  mode           String
+  version        Int            @default(1)
   createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  editionStories EditionStory[]
 
   @@index([dateLocal])
   @@map("editions")
 }
 
 model EditionStory {
-  editionId     String   @map("edition_id")
-  storyId       String   @map("story_id")
-  rank          Int // stable ordering in Today
-  addedAt       DateTime @map("added_at") @db.Timestamptz(6)
-  reason        String // "must_know"|"breaking"|"trending"|"personalized"|"editorial"
-  updateCount   Int      @default(0) @map("update_count")
-  lastUpdatedAt DateTime @map("last_updated_at") @db.Timestamptz(6)
-
-  edition Edition     @relation(fields: [editionId], references: [editionId], onDelete: Cascade)
-  story   ContentItem @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  editionId     String      @map("edition_id")
+  storyId       String      @map("story_id")
+  rank          Int
+  addedAt       DateTime    @map("added_at") @db.Timestamptz(6)
+  reason        String
+  updateCount   Int         @default(0) @map("update_count")
+  lastUpdatedAt DateTime    @map("last_updated_at") @db.Timestamptz(6)
+  edition       Edition     @relation(fields: [editionId], references: [editionId], onDelete: Cascade)
+  story         ContentItem @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
   @@id([editionId, storyId])
   @@index([editionId, rank])
@@ -138,14 +122,13 @@ model EditionStory {
 }
 
 model ExploreItem {
-  exploreId String   @id @default(uuid()) @map("explore_id")
-  storyId   String   @map("story_id")
+  exploreId String      @id @default(uuid()) @map("explore_id")
+  storyId   String      @map("story_id")
   category  String
-  score     Float // relevance score
-  fetchedAt DateTime @map("fetched_at") @db.Timestamptz(6)
-  source    String // "trending"|"personalized"|"recent"|"category"
-
-  story ContentItem @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  score     Float
+  fetchedAt DateTime    @map("fetched_at") @db.Timestamptz(6)
+  source    String
+  story     ContentItem @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
   @@index([category, score(sort: Desc)])
   @@index([fetchedAt])
@@ -153,18 +136,17 @@ model ExploreItem {
 }
 
 model UserStoryState {
-  userId         String    @map("user_id")
-  storyId        String    @map("story_id")
-  editionId      String?   @map("edition_id") // present only if part of Today Edition
-  status         String // "unseen"|"seen"|"read"|"saved"|"dismissed"
-  deliveredAt    DateTime? @map("delivered_at") @db.Timestamptz(6)
-  seenAt         DateTime? @map("seen_at") @db.Timestamptz(6)
-  readAt         DateTime? @map("read_at") @db.Timestamptz(6)
-  savedAt        DateTime? @map("saved_at") @db.Timestamptz(6)
-  dismissedAt    DateTime? @map("dismissed_at") @db.Timestamptz(6)
-  dismissedScope String?   @map("dismissed_scope") // "today_only"|"global"
-
-  story ContentItem @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  userId         String      @map("user_id")
+  storyId        String      @map("story_id")
+  editionId      String?     @map("edition_id")
+  status         String
+  deliveredAt    DateTime?   @map("delivered_at") @db.Timestamptz(6)
+  seenAt         DateTime?   @map("seen_at") @db.Timestamptz(6)
+  readAt         DateTime?   @map("read_at") @db.Timestamptz(6)
+  savedAt        DateTime?   @map("saved_at") @db.Timestamptz(6)
+  dismissedAt    DateTime?   @map("dismissed_at") @db.Timestamptz(6)
+  dismissedScope String?     @map("dismissed_scope")
+  story          ContentItem @relation(fields: [storyId], references: [id], onDelete: Cascade)
 
   @@id([userId, storyId])
   @@index([userId, editionId, status])
@@ -176,7 +158,7 @@ model CategoryPreference {
   userId      String  @map("user_id")
   categoryId  String  @map("category_id")
   enabled     Boolean @default(true)
-  manualOrder Int     @map("manual_order") // 1 = top
+  manualOrder Int     @map("manual_order")
   lockOrder   Boolean @default(false) @map("lock_order")
 
   @@id([userId, categoryId])
@@ -194,25 +176,24 @@ model CategoryRankingSignal {
   @@map("category_ranking_signals")
 }
 
-// ========== Reddit-like Identity Model: Users + Personas ==========
-
 model User {
-  id            String   @id @default(uuid())
-  firebaseUid   String   @unique @map("firebase_uid")
-  email         String?
-  phone         String?
-  emailVerified Boolean  @default(false) @map("email_verified")
-  phoneVerified Boolean  @default(false) @map("phone_verified")
-  status        String   @default("active") // "active" | "banned" | "shadow_banned"
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  lastSeenAt    DateTime @default(now()) @map("last_seen_at") @db.Timestamptz(6)
-
-  personas       Persona[]
-  comments       Comment[]
-  commentVotes   CommentVote[]   @relation("CommentVotes")
+  id             String          @id @default(uuid())
+  firebaseUid    String          @unique @map("firebase_uid")
+  email          String?
+  phone          String?
+  emailVerified  Boolean         @default(false) @map("email_verified")
+  phoneVerified  Boolean         @default(false) @map("phone_verified")
+  status         String          @default("active")
+  role           String          @default("USER")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  lastSeenAt     DateTime        @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+  auditLogs      AuditLog[]
   commentReports CommentReport[] @relation("CommentReports")
-  blockedUsers   UserBlock[]     @relation("Blocker")
+  commentVotes   CommentVote[]   @relation("CommentVotes")
+  comments       Comment[]
+  personas       Persona[]
   blockedBy      UserBlock[]     @relation("Blocked")
+  blockedUsers   UserBlock[]     @relation("Blocker")
   devices        UserDevice[]    @relation("UserDevices")
 
   @@index([firebaseUid])
@@ -221,18 +202,17 @@ model User {
 }
 
 model Persona {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  type        String // "anonymous" | "verified"
-  handle      String   @unique(map: "personas_handle_unique") // Unique handle for both types
-  displayName String   @map("display_name")
-  avatarUrl   String?  @map("avatar_url")
-  badge       String? // "google_verified" | "phone_verified" | null
-  isDefault   Boolean  @default(false) @map("is_default")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comments Comment[]
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  type        String
+  handle      String    @unique(map: "personas_handle_unique")
+  displayName String    @map("display_name")
+  avatarUrl   String?   @map("avatar_url")
+  badge       String?
+  isDefault   Boolean   @default(false) @map("is_default")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  comments    Comment[]
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, type])
   @@index([userId, isDefault])
@@ -240,40 +220,38 @@ model Persona {
 }
 
 model Post {
-  postId    String   @id @map("post_id") // ContentItem.id or article slug
-  storyId   String?  @map("story_id")
-  title     String?  @db.Text
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  comments Comment[]
+  postId    String    @id @map("post_id")
+  storyId   String?   @map("story_id")
+  title     String?
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  comments  Comment[]
 
   @@map("posts")
 }
 
 model Comment {
-  id            String    @id @default(uuid())
-  postId        String    @map("post_id")
-  userId        String    @map("user_id") // Internal for moderation
-  personaId     String    @map("persona_id") // Public identity
-  parentId      String?   @map("parent_id") // For replies
-  body          String    @db.Text
-  upvotes       Int       @default(0)
-  downvotes     Int       @default(0)
-  score         Int       @default(0) // upvotes - downvotes
-  state         String    @default("visible") // "visible" | "removed_user" | "removed_moderator" | "shadow_hidden" | "pending_review"
-  spamScore     Float?    @map("spam_score")
-  toxicityScore Float?    @map("toxicity_score")
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  editedAt      DateTime? @map("edited_at") @db.Timestamptz(6)
-  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
-
-  post    Post            @relation(fields: [postId], references: [postId], onDelete: Cascade)
-  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  persona Persona         @relation(fields: [personaId], references: [id], onDelete: Restrict)
-  parent  Comment?        @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies Comment[]       @relation("CommentReplies")
-  votes   CommentVote[]
-  reports CommentReport[]
+  id            String          @id @default(uuid())
+  postId        String          @map("post_id")
+  userId        String          @map("user_id")
+  personaId     String          @map("persona_id")
+  parentId      String?         @map("parent_id")
+  body          String
+  upvotes       Int             @default(0)
+  downvotes     Int             @default(0)
+  score         Int             @default(0)
+  state         String          @default("visible")
+  spamScore     Float?          @map("spam_score")
+  toxicityScore Float?          @map("toxicity_score")
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  editedAt      DateTime?       @map("edited_at") @db.Timestamptz(6)
+  deletedAt     DateTime?       @map("deleted_at") @db.Timestamptz(6)
+  reports       CommentReport[]
+  votes         CommentVote[]
+  parent        Comment?        @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       Comment[]       @relation("CommentReplies")
+  persona       Persona         @relation(fields: [personaId], references: [id])
+  post          Post            @relation(fields: [postId], references: [postId], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([postId, createdAt(sort: Desc)])
   @@index([postId, score(sort: Desc)])
@@ -285,13 +263,12 @@ model Comment {
 }
 
 model CommentVote {
-  id        String @id @default(uuid())
-  commentId String @map("comment_id")
-  userId    String @map("user_id")
-  vote      String // "up" | "down"
-
-  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User    @relation("CommentVotes", fields: [userId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid())
+  commentId String  @map("comment_id")
+  userId    String  @map("user_id")
+  vote      String
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User    @relation("CommentVotes", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([commentId, userId])
   @@index([commentId])
@@ -303,13 +280,12 @@ model CommentReport {
   id               String   @id @default(uuid())
   commentId        String   @map("comment_id")
   reportedByUserId String   @map("reported_by_user_id")
-  reason           String // "spam" | "hate" | "harassment" | "misinfo" | "other"
-  details          String?  @db.Text
-  status           String   @default("open") // "open" | "reviewed" | "dismissed" | "actioned"
+  reason           String
+  details          String?
+  status           String   @default("open")
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User    @relation("CommentReports", fields: [reportedByUserId], references: [id], onDelete: Cascade)
+  comment          Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user             User     @relation("CommentReports", fields: [reportedByUserId], references: [id], onDelete: Cascade)
 
   @@index([commentId])
   @@index([reportedByUserId])
@@ -322,9 +298,8 @@ model UserBlock {
   blockerUserId String   @map("blocker_user_id")
   blockedUserId String   @map("blocked_user_id")
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  blocker User @relation("Blocker", fields: [blockerUserId], references: [id], onDelete: Cascade)
-  blocked User @relation("Blocked", fields: [blockedUserId], references: [id], onDelete: Cascade)
+  blocked       User     @relation("Blocked", fields: [blockedUserId], references: [id], onDelete: Cascade)
+  blocker       User     @relation("Blocker", fields: [blockerUserId], references: [id], onDelete: Cascade)
 
   @@unique([blockerUserId, blockedUserId])
   @@index([blockerUserId])
@@ -338,14 +313,31 @@ model UserDevice {
   deviceInstallId String   @map("device_install_id")
   riskScore       Int      @default(0) @map("risk_score")
   isBlocked       Boolean  @default(false) @map("is_blocked")
-  deviceMeta      Json?    @map("device_meta") // { os, version, model }
+  deviceMeta      Json?    @map("device_meta")
   firstSeenAt     DateTime @default(now()) @map("first_seen_at") @db.Timestamptz(6)
   lastSeenAt      DateTime @default(now()) @map("last_seen_at") @db.Timestamptz(6)
-
-  user User @relation("UserDevices", fields: [userId], references: [id], onDelete: Cascade)
+  user            User     @relation("UserDevices", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, deviceInstallId])
   @@index([deviceInstallId])
   @@index([userId])
   @@map("user_devices")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String   @map("actor_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  before     Json?
+  after      Json?
+  metadata   Json?
+  timestamp  DateTime @default(now()) @db.Timestamptz(6)
+  actor      User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+  @@map("audit_logs")
 }

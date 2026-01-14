@@ -1,4 +1,5 @@
 import { getAdapter } from '../adapters/registry';
+import { EmbeddingService } from '../services/embeddings';
 import { FirecrawlEngine } from './firecrawl-engine';
 import { RSSExtractor } from './rss-extractor';
 import { HTMLExtractor } from './html-extractor';
@@ -105,7 +106,7 @@ export class IngestionProcessor {
           }
 
           const normalized = adapter.normalize(extracted, { category, runId });
-          
+
           console.log(`[DEBUG] Normalized ${normalized.length} items from ${url}`);
 
           stats.extracted += normalized.length;
@@ -118,7 +119,6 @@ export class IngestionProcessor {
 
               // Check if exists
               // We check DB to avoid re-enqueueing rewrites if already there
-              // However, upsert is safe.
               const existing = await this.prisma.contentItem.findUnique({
                 where: { hash },
               });
@@ -126,7 +126,8 @@ export class IngestionProcessor {
               let contentId = existing?.id;
 
               if (!existing) {
-                // Insert into DB
+                // Semantic Deduplication Check - DISABLED for now
+                // Just proceed to insert
                 const newItem = await this.prisma.contentItem.create({
                   data: {
                     id: uuidv4(),
@@ -144,16 +145,14 @@ export class IngestionProcessor {
                 stats.inserted++;
               } else {
                 stats.skipped++;
-                // Check if rewrite/image is stuck? For now, we only enqueue if NEW.
-                // Spec says: "Enqueue next stage jobs for NEW items"
               }
 
               if (contentId && !existing) {
-                  // Enqueue enrichment job (which will trigger rewrite + image)
-                  await enrichQueue.add('enrich-item', {
-                      contentId,
-                      runId
-                  });
+                // Enqueue enrichment job (which will trigger rewrite + image)
+                await enrichQueue.add('enrich-item', {
+                  contentId,
+                  runId
+                });
               }
 
             } catch (error) {

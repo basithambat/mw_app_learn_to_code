@@ -1,7 +1,9 @@
 import Fastify from 'fastify';
 import fastifyCors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import { getEnv } from './config/env';
 import { getPrismaClient } from './config/db';
+import { getRedisClient } from './config/redis';
 import { ingestionQueue } from './queue/setup';
 import { getAllAdapters, getAdapter } from './adapters/registry';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,7 +15,7 @@ import { updateUserProfile, uploadProfilePicture } from './services/profile-serv
 import { MediaService } from './media/media-service';
 import multipart from '@fastify/multipart';
 import { initFirebaseAdmin, verifyFirebaseToken } from './config/firebase-admin';
-import { upsertUserAndPersonas } from './services/persona-service';
+import { upsertUserAndPersonas, deleteUserAndPersonas } from './services/persona-service';
 import {
   createComment,
   getComments,
@@ -24,10 +26,28 @@ import {
   blockUser,
 } from './services/comment-service';
 import { requireAuth, AuthenticatedRequest } from './middleware/auth-middleware';
+import { adminRoutes } from './routes/admin';
+
+
+
 
 const app = Fastify({
   logger: true,
 });
+
+// Register CORS
+app.register(fastifyCors, {
+  origin: process.env.NODE_ENV === 'production'
+    ? [/whatsay\.app$/, /expo\.dev$/]
+    : true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+});
+
+// TODO: Rate limiting disabled - needs debugging for Cloud Run compatibility
+// @fastify/rate-limit causes container startup failures
+// See: https://github.com/fastify/fastify-rate-limit for async Redis config
+
+
 
 const prisma = getPrismaClient();
 
@@ -75,13 +95,13 @@ app.post('/api/jobs/run', async (request, reply) => {
   try {
     const body = jobRunSchema.parse(request.body);
     const adapter = getAdapter(body.sourceId);
-    
+
     if (!adapter) {
       return reply.status(404).send({ error: 'Source not found' });
     }
 
     const runId = uuidv4();
-    
+
     await ingestionQueue.add('ingest-source', {
       sourceId: body.sourceId,
       category: body.category,
@@ -112,11 +132,44 @@ app.post('/api/jobs/run', async (request, reply) => {
   }
 });
 
+// GET /api/health
+app.get('/api/health', async (request, reply) => {
+  try {
+    // Check DB
+    await prisma.$queryRaw`SELECT 1`;
+    // Check Redis
+    const redis = getRedisClient();
+    await redis.ping();
+
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      services: {
+        database: 'connected',
+        redis: 'connected',
+        server: 'online'
+      }
+    };
+  } catch (error) {
+    app.log.error(error);
+    return reply.status(503).send({
+      status: 'error',
+      message: 'Service Unavailable',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // GET /api/feed
 app.get('/api/feed', async (request, reply) => {
   try {
     const query = feedQuerySchema.parse(request.query);
-    
+
+    // Disable caching for feed
+    reply.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    reply.header('Pragma', 'no-cache');
+    reply.header('Expires', '0');
+
     const where: any = {};
     if (query.source && query.source !== 'all') {
       where.sourceId = query.source;
@@ -128,7 +181,7 @@ app.get('/api/feed', async (request, reply) => {
     // Cursor pagination
     let skip = 0;
     let cursorObj = undefined;
-    
+
     if (query.cursor) {
       skip = 1;
       cursorObj = { id: query.cursor };
@@ -170,6 +223,7 @@ app.get('/api/feed', async (request, reply) => {
         title: item.titleRewritten || item.titleOriginal,
         subtext: item.summaryRewritten || item.summaryOriginal,
         source_id: item.sourceId,
+        category: item.sourceCategory, // Map to 'category' for app compatibility
         source_category: item.sourceCategory,
         source_url: item.sourceUrl,
         image_url: item.imageStorageUrl,
@@ -186,6 +240,11 @@ app.get('/api/feed', async (request, reply) => {
   }
 });
 
+// Register Admin Routes
+app.register(adminRoutes, { prefix: '/api/admin' });
+
+
+
 // ========== Better Inshorts: v2 Discover API ==========
 
 const bootstrapQuerySchema = z.object({
@@ -197,44 +256,44 @@ app.get('/v2/discover/bootstrap', async (request, reply) => {
   try {
     const query = bootstrapQuerySchema.parse(request.query);
     const userId = (request.headers['x-user-id'] as string) || 'anonymous';
-    
+
     // Get today's date in user's timezone
     const now = new Date();
     const dateLocal = now.toISOString().split('T')[0]; // "YYYY-MM-DD"
-    
+
     // Generate or get Today Edition
     const editionResult = await generateTodayEdition(userId, query.timezone, dateLocal);
-    
+
     // Get edition record
     const edition = await prisma.edition.findUnique({
       where: { editionId: editionResult.editionId },
     });
-    
+
     if (!edition) {
       return reply.status(500).send({ error: 'Failed to create edition' });
     }
-    
+
     // Get user preferences
     const preferences = await prisma.categoryPreference.findMany({
       where: { userId },
       orderBy: { manualOrder: 'asc' },
     });
-    
+
     // Get category signals
     const categorySignals = await prisma.categoryRankingSignal.findMany({
       where: { userId },
     });
-    
+
     // Generate Explore sections
     const categoryIds = preferences
       .filter(p => p.enabled)
       .map(p => p.categoryId);
-    
+
     const exploreSections = await generateExploreSections(categoryIds);
-    
+
     // Calculate section order (manual + auto hybrid)
     const sectionOrder = calculateSectionOrder(preferences, categorySignals);
-    
+
     return {
       edition: {
         editionId: edition.editionId,
@@ -289,7 +348,7 @@ app.get('/v2/discover/refresh', async (request, reply) => {
   try {
     const query = refreshQuerySchema.parse(request.query);
     const userId = (request.headers['x-user-id'] as string) || 'anonymous';
-    
+
     const edition = await prisma.edition.findUnique({
       where: { editionId: query.editionId },
       include: {
@@ -299,11 +358,11 @@ app.get('/v2/discover/refresh', async (request, reply) => {
         },
       },
     });
-    
+
     if (!edition) {
       return reply.status(404).send({ error: 'Edition not found' });
     }
-    
+
     // Check for breaking additions (simplified: check for new high-importance items)
     const since = query.since ? new Date(query.since) : edition.publishedAt;
     const newBreakingItems = await prisma.contentItem.findMany({
@@ -315,11 +374,11 @@ app.get('/v2/discover/refresh', async (request, reply) => {
       orderBy: { createdAt: 'desc' },
       take: 5,
     });
-    
+
     // Add breaking items to edition (if not already present)
     const addedStories: any[] = [];
     const addedEditionStories: any[] = [];
-    
+
     for (const item of newBreakingItems.slice(0, MAX_DAILY_ADDITIONS)) {
       const exists = edition.editionStories.some(es => es.storyId === item.id);
       if (!exists) {
@@ -343,11 +402,11 @@ app.get('/v2/discover/refresh', async (request, reply) => {
         });
       }
     }
-    
+
     // Check for story updates (simplified)
     const updatedStories: any[] = [];
     const updatedEditionStories: any[] = [];
-    
+
     // Refresh Explore sections
     const preferences = await prisma.categoryPreference.findMany({
       where: { userId, enabled: true },
@@ -358,7 +417,7 @@ app.get('/v2/discover/refresh', async (request, reply) => {
       preferences,
       await prisma.categoryRankingSignal.findMany({ where: { userId } })
     );
-    
+
     // Increment version if breaking additions
     const newVersion = addedStories.length > 0 ? edition.version + 1 : edition.version;
     if (newVersion > edition.version) {
@@ -367,7 +426,7 @@ app.get('/v2/discover/refresh', async (request, reply) => {
         data: { version: newVersion },
       });
     }
-    
+
     return {
       editionId: query.editionId,
       editionVersion: newVersion,
@@ -425,12 +484,12 @@ function calculateSectionOrder(
   if (locked.length > 0) {
     return locked.sort((a, b) => a.manualOrder - b.manualOrder).map(p => p.categoryId);
   }
-  
+
   // Hybrid: manual weight 0.85 if user customized, else 0.3
   const hasCustomized = preferences.some(p => p.manualOrder !== 999);
   const wManual = hasCustomized ? 0.85 : 0.3;
   const wAuto = 1 - wManual;
-  
+
   const scored = preferences.map(pref => {
     const signal = signals.find(s => s.categoryId === pref.categoryId);
     const autoScore = signal?.autoScore || 0;
@@ -438,7 +497,7 @@ function calculateSectionOrder(
     const finalScore = wManual * manualScore + wAuto * autoScore;
     return { categoryId: pref.categoryId, score: finalScore };
   });
-  
+
   return scored.sort((a, b) => b.score - a.score).map(s => s.categoryId);
 }
 
@@ -454,7 +513,7 @@ const profileUpdateSchema = z.object({
 app.get('/v2/user/profile', async (request, reply) => {
   try {
     const userId = (request.headers['x-user-id'] as string) || 'anonymous';
-    
+
     // Get user preferences
     const preferences = await prisma.categoryPreference.findMany({
       where: { userId },
@@ -509,10 +568,10 @@ app.put('/v2/user/profile', async (request, reply) => {
 app.post('/v2/user/profile-picture', async (request, reply) => {
   try {
     const userId = (request.headers['x-user-id'] as string) || 'anonymous';
-    
+
     // Handle multipart form data
     const data = await (request as any).file();
-    
+
     if (!data) {
       return reply.status(400).send({ error: 'No file provided' });
     }
@@ -651,6 +710,36 @@ app.post('/auth/verify', async (request, reply) => {
   }
 });
 
+// DELETE /auth/user - Delete user account (requires auth)
+app.delete('/auth/user', async (request, reply) => {
+  try {
+    const authHeader = (request.headers.authorization as string) || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    if (!token) {
+      return reply.status(401).send({ error: 'Missing Bearer token' });
+    }
+
+    const decoded = await verifyFirebaseToken(token);
+
+    // Find user by Firebase UID
+    const user = await prisma.user.findUnique({
+      where: { firebaseUid: decoded.uid },
+    });
+
+    if (!user) {
+      return reply.status(404).send({ error: 'User not found' });
+    }
+
+    await deleteUserAndPersonas(user.id);
+
+    return { success: true };
+  } catch (error: any) {
+    app.log.error(error);
+    return reply.status(500).send({ error: error.message || 'Internal server error' });
+  }
+});
+
 // GET /auth/personas - Get user's personas (requires auth)
 app.get('/auth/personas', async (request, reply) => {
   try {
@@ -753,7 +842,7 @@ app.get<{ Params: { postId: string }; Querystring: any }>(
     try {
       const postId = (request.params as any).postId;
       const query = listCommentsQuerySchema.parse(request.query);
-      
+
       // Get userId if authenticated (for filtering blocked users)
       let userId: string | undefined;
       const authHeader = (request.headers.authorization as string) || '';
@@ -935,18 +1024,8 @@ const start = async () => {
   try {
     // Initialize Firebase Admin
     initFirebaseAdmin();
-    // Enable CORS for React Native and Flutter apps
-    try {
-      await app.register(fastifyCors, {
-        origin: true, // Allow all origins (for development)
-        credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-      });
-    } catch (error) {
-      console.error('CORS registration error:', error);
-      // Continue without CORS if it fails
-    }
+    // CORS is already registered at the top level
+
 
     // Register multipart for file uploads (optional - only if needed)
     // Note: Commented out due to Fastify version mismatch, can be enabled when Fastify is upgraded
@@ -965,12 +1044,21 @@ const start = async () => {
     console.log(`✅ API Server listening on port ${env.PORT}`);
     console.log(`📡 Feed endpoint: http://localhost:${env.PORT}/api/feed`);
     console.log(`📋 Sources endpoint: http://localhost:${env.PORT}/api/sources`);
-    
+
     // Start scheduler (optional - can be disabled)
     if (process.env.ENABLE_SCHEDULER !== 'false') {
       startScheduler();
       console.log(`⏰ Scheduler enabled - jobs will run hourly`);
     }
+
+    // Start Workers (Monolith mode - background processing)
+    // Pass false to disable inner health check server as Fastify is handling it
+    const { startWorkers } = require('./worker');
+    startWorkers(false).then(() => {
+      app.log.info('Background workers started successfully');
+    }).catch((err: any) => {
+      app.log.error(err, 'Failed to start background workers');
+    });
   } catch (err) {
     app.log.error(err);
     process.exit(1);

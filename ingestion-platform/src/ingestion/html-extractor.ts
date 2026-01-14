@@ -16,7 +16,9 @@ export class HTMLExtractor {
     try {
       const response = await axios.get(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; ContentIngestion/1.0)',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
         },
         timeout: 30000,
       });
@@ -31,14 +33,14 @@ export class HTMLExtractor {
       // Extract items based on selector
       $(selector).each((_, element) => {
         const $el = $(element);
-        
+
         // Inshorts uses schema.org markup
         // Title is in span[itemprop="headline"]
         const title = $el.find('span[itemprop="headline"]').first().text().trim();
-        
+
         // Summary is in div[itemprop="articleBody"]
         const summary = $el.find('div[itemprop="articleBody"]').first().text().trim();
-        
+
         // Source URL - look for "read more" link or article link
         let sourceUrl: string | undefined;
         const readMoreLink = $el.find('a[href*="/news/"], a[href*="/prev/"]').first();
@@ -48,12 +50,12 @@ export class HTMLExtractor {
             sourceUrl = href.startsWith('http') ? href : new URL(href, url).href;
           }
         }
-        
+
         // Published date from schema.org
         const dateEl = $el.find('span[itemprop="datePublished"]');
         const dateContent = dateEl.attr('content') || dateEl.text().trim();
         const publishedAt = dateContent || undefined;
-        
+
         if (title && summary && title.length > 5 && summary.length > 20) {
           items.push({
             title,

@@ -5,7 +5,7 @@
 
 import { Platform } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { storeUser } from '@/api/apiUser';
+
 
 // Native Imports
 import nativeAuth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
@@ -122,7 +122,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
       const user = result.user;
       const token = await user.getIdToken();
 
-      await syncUserWithBackend(mapWebUser(user), token, 'via google');
+
       return mapWebUser(user);
     } catch (error: any) {
       console.error('Web Google Sign-in Error:', error);
@@ -140,7 +140,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
       const user = userCredential.user;
       const token = await user.getIdToken();
 
-      await syncUserWithBackend(mapNativeUser(user), token, 'via google');
+
       return mapNativeUser(user);
     } catch (error: any) {
       console.error('Native Google Sign-in Error:', error);
@@ -152,23 +152,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
 /**
  * Sync user with backend
  */
-async function syncUserWithBackend(user: FirebaseUser, token: string, method: string) {
-  try {
-    await storeUser({
-      data: {
-        user: {
-          id: user.uid,
-          email: user.email,
-          name: user.displayName,
-          photo: user.photoURL,
-        },
-        idToken: token,
-      },
-    }, method);
-  } catch (error) {
-    console.warn('Failed to store user in Supabase:', error);
-  }
-}
+
 
 /**
  * Sign in with Phone Number
@@ -207,7 +191,7 @@ export async function confirmPhoneOTP(
     const user = userCredential.user;
     const token = await user.getIdToken();
 
-    await syncUserWithBackend(mapNativeUser(user), token, 'via phone');
+
     return mapNativeUser(user);
   } catch (error: any) {
     console.error('OTP Confirmation Error:', error);

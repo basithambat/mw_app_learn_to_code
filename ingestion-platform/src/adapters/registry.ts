@@ -2,6 +2,9 @@ import { SourceAdapter } from './types';
 import { InshortsAdapter } from './inshorts';
 import { RSSAdapter } from './rss';
 
+import { ToiAdapter } from './toi';
+import { HindustanTimesAdapter } from './hindustantimes';
+
 const adapters: Map<string, SourceAdapter> = new Map();
 
 export function registerAdapter(adapter: SourceAdapter): void {
@@ -18,6 +21,8 @@ export function getAllAdapters(): SourceAdapter[] {
 
 // Register built-in adapters
 registerAdapter(new InshortsAdapter());
+registerAdapter(new ToiAdapter());
+registerAdapter(new HindustanTimesAdapter());
 
 // Example: Register a generic RSS source (TechCrunch)
 // Uncomment and customize as needed:

@@ -14,10 +14,7 @@ const DiscoverScreens = () => {
                 <NavBar />
                 <SafeAreaView style={styles.container}>
                     <ExpoStatusBar style='dark' backgroundColor='transparent' translucent={true} />
-                    <GestureHandlerRootView style={styles.contentContainer}>
-
-                        <DiscoverScreen />
-                    </GestureHandlerRootView>
+                    <DiscoverScreen />
                 </SafeAreaView>
             </View>
         </>

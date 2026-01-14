@@ -123,11 +123,11 @@ const ArticleContent: React.FC<ArticleContentProps> = ({
 
             <View style={{ paddingHorizontal: 20 }}>
                 <Animated.View style={titleStyle}>
-                    <Text className="text-[20px] font-domine mb-[12px]">
+                    <Text className="text-[22px] font-domine mb-[12px]">
                         {item?.title || 'Loading...'}
                     </Text>
                 </Animated.View>
-                <Text className="font-geist font-light mb-4 text-[16px] leading-6">
+                <Text className="font-geist font-light mb-4 text-[18px] leading-[26px]">
                     {item?.summary || 'Extracting key insights...'}
                 </Text>
 

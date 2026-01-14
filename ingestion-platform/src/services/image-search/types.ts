@@ -7,6 +7,12 @@ export interface ImageSearchResult {
   source?: string;
   sourcePageUrl?: string; // SERP result page URL
   title?: string;
+  attribution?: {
+    photographerName: string;
+    photographerUrl: string;
+    unsplashUrl: string;
+  };
+  downloadLocation?: string; // Unsplash mandatory download trigger URL
 }
 
 export interface ImageSearchProvider {
@@ -109,6 +115,69 @@ export class SerperImageProvider implements ImageSearchProvider {
   private getFileFormat(url: string): string {
     const match = url.match(/\.(jpg|jpeg|png|webp|gif)/i);
     return match ? match[1].toLowerCase() : 'jpg';
+  }
+}
+
+/**
+ * Unsplash Provider (Free High-Quality Photos)
+ * Docs: https://unsplash.com/documentation#search-photos
+ */
+export class UnsplashImageProvider implements ImageSearchProvider {
+  private apiKey: string;
+  private baseUrl = 'https://api.unsplash.com/search/photos';
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+  }
+
+  async search(query: string, limit = 10): Promise<ImageSearchResult[]> {
+    if (!this.apiKey) return [];
+
+    try {
+      const response = await fetch(
+        `${this.baseUrl}?query=${encodeURIComponent(query)}&per_page=${limit}&client_id=${this.apiKey}&orientation=landscape`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Unsplash error: ${response.status}`);
+      }
+
+      const data = await response.json() as any;
+      const results = data.results || [];
+
+      return results.map((img: any) => ({
+        url: img.urls.regular,
+        width: img.width,
+        height: img.height,
+        thumbnailUrl: img.urls.thumb,
+        sourcePageUrl: img.links.html,
+        title: img.description || img.alt_description,
+        source: 'unsplash',
+        attribution: {
+          photographerName: img.user.name,
+          photographerUrl: img.user.links.html,
+          unsplashUrl: 'https://unsplash.com/?utm_source=WhatSay&utm_medium=referral'
+        },
+        downloadLocation: img.links.download_location
+      }));
+    } catch (error) {
+      console.error('[Unsplash] Search failed:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Mandatory Unsplash requirement: Trigger download event
+   * Must be called when the photo is actually used/downloaded
+   */
+  async triggerDownload(downloadLocation: string) {
+    if (!this.apiKey || !downloadLocation) return;
+    try {
+      await fetch(`${downloadLocation}${downloadLocation.includes('?') ? '&' : '?'}client_id=${this.apiKey}`);
+      console.log(`[Unsplash] Download triggered: ${downloadLocation}`);
+    } catch (e) {
+      console.warn('[Unsplash] Failed to trigger download event:', e);
+    }
   }
 }
 

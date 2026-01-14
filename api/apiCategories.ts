@@ -1,30 +1,3 @@
-import { supabase } from "@/config/supabase";
-import APIService, { APICaller } from "./APIKit";
-import { getIngestionCategories, getIngestionArticlesByCategory } from "./apiIngestion";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-export const getAllCategories = async () => {
-    try {
-        const { data: todos, error } = await supabase
-            .from("categories")
-            .select("*"); // Fetch all categories
-        // Removed .order("order") as the column doesn't exist in Supabase
-        // Categories are now managed by ingestion platform
-
-        if (error) throw new Error(error.message);
-
-        return todos || [];
-
-        // Fallback to REST API if needed (commented out)
-        // const res = await APICaller(APIService.get('/categories'))
-        // return res.data;
-
-    } catch (error: any) {
-        console.log("Fetching Error: ", error.message || error); // Log the error message
-        // Return empty array instead of throwing to prevent app crashes
-        return [];
-    }
-}
 
 // API function to fetch all categories that have associated articles
 // Now uses ingestion platform instead of Supabase
