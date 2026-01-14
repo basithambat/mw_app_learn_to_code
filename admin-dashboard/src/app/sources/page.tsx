@@ -55,6 +55,7 @@ interface ApiError {
 
 export default function SourcesPage() {
     const [sources, setSources] = useState<Source[]>([]);
+    const [health, setHealth] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<ApiError | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
@@ -64,8 +65,16 @@ export default function SourcesPage() {
         try {
             setLoading(true);
             setError(null);
-            const response = await api.get("/admin/sources");
-            setSources(response.data);
+
+            // Parallel fetch for speed
+            const [sourcesRes, healthRes] = await Promise.all([
+                api.get("/admin/sources"),
+                // Fetch health from base URL (one level up from /api)
+                api.get("/health", { baseURL: api.defaults.baseURL?.replace('/api', '') })
+            ]);
+
+            setSources(sourcesRes.data);
+            setHealth(healthRes.data);
         } catch (error: any) {
             console.error("Failed to fetch sources", error);
             setError({
@@ -146,6 +155,44 @@ export default function SourcesPage() {
                     >
                         Try Again
                     </Button>
+                </div>
+            )}
+
+            {health && (
+                <div className="grid gap-4 md:grid-cols-2 mb-6">
+                    <Card className={cn("border-l-4", health.scheduler?.enabled ? "border-l-green-500" : "border-l-amber-500")}>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium">Scheduler Service</CardTitle>
+                            <Clock className={cn("w-4 h-4", health.scheduler?.enabled ? "text-green-500" : "text-amber-500")} />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center gap-2">
+                                <div className="text-2xl font-bold">{health.scheduler?.enabled ? "ACTIVE" : "DISABLED"}</div>
+                                <Badge variant={health.scheduler?.enabled ? "default" : "secondary"}>
+                                    {health.environment?.toUpperCase()}
+                                </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {health.scheduler?.enabled
+                                    ? "Automated ingestion runs are scheduled and running."
+                                    : "Scheduler is disabled in this environment."}
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card className={cn("border-l-4", health.mediaEnabled ? "border-l-blue-500" : "border-l-red-500")}>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium">Media Pipeline</CardTitle>
+                            <RefreshCw className={cn("w-4 h-4", health.mediaEnabled ? "text-blue-500" : "text-red-500")} />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{health.mediaEnabled ? "READY" : "ERROR"}</div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {health.mediaEnabled
+                                    ? "GCS Storage and Image resolution are functional."
+                                    : "Storage is NOT configured. Image uploads will fail."}
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
             )}
 

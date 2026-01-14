@@ -1,19 +1,24 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import APIService, { APICaller } from "./APIKit";
+import { getIngestionCategories, getIngestionArticlesByCategory } from './apiIngestion';
+import { logger } from '../utils/logger';
+import { AppCategory } from '@/types/api';
 
 // API function to fetch all categories that have associated articles
 // Now uses ingestion platform instead of Supabase
-export const getCategories = async (from: string, to: string, userId: string) => {
+export const getCategories = async (from: string, to: string, userId?: string): Promise<AppCategory[]> => {
     try {
-        console.log('[Categories] Fetching categories for user:', userId);
+        logger.info('Fetching categories for user:', userId);
 
         // 1. Fetch user preferences (includes order and isPreferred flag)
-        let categoriesToFetch = [];
+        let categoriesToFetch: AppCategory[] = [];
         if (userId) {
             try {
                 const preferred = await apiGetCategoriesWithPreferences(userId);
                 if (preferred && preferred.length > 0) {
                     // Filter for only preferred categories and maintain the order from backend
-                    categoriesToFetch = preferred.filter((cat: any) => cat.isPreferred);
-                    console.log(`[Categories] Found ${categoriesToFetch.length} preferred categories`);
+                    categoriesToFetch = preferred.filter((cat: AppCategory) => cat.isPreferred);
+                    logger.info(`Found ${categoriesToFetch.length} preferred categories`);
                 }
             } catch (err) {
                 console.warn('[Categories] Failed to fetch preferences, falling back to default', err);
@@ -23,16 +28,16 @@ export const getCategories = async (from: string, to: string, userId: string) =>
         // 2. If no preferences or not logged in, fetch all default categories
         if (categoriesToFetch.length === 0) {
             categoriesToFetch = await getIngestionCategories();
-            console.log(`[Categories] Using ${categoriesToFetch.length} default categories`);
+            logger.info(`Using ${categoriesToFetch.length} default categories`);
         }
 
         if (categoriesToFetch.length === 0) {
-            return [];
+            throw new Error("No categories found. Please try again later.");
         }
 
         // 3. Fetch articles for each category in the specific order
         const categoriesWithArticles = await Promise.all(
-            categoriesToFetch.map(async (category: any) => {
+            categoriesToFetch.map(async (category: AppCategory) => {
                 try {
                     const articles = await getIngestionArticlesByCategory(category.id, from, to);
                     return {
@@ -50,7 +55,7 @@ export const getCategories = async (from: string, to: string, userId: string) =>
         );
 
         // 4. Filter categories that actually have content, but keep user order
-        const filtered = categoriesWithArticles.filter((category: any) =>
+        const filtered = categoriesWithArticles.filter((category: AppCategory) =>
             category.articles && category.articles.length > 0
         );
 
@@ -59,7 +64,7 @@ export const getCategories = async (from: string, to: string, userId: string) =>
 
     } catch (error: any) {
         console.error("[Categories] Fetching Error: ", error.message || error);
-        return [];
+        throw new Error(error.message || "Failed to load news categories");
     }
 }
 
@@ -72,14 +77,14 @@ export const apiGetCategoriesWithPreferences = async (userId: string) => {
             const parsedPrefs: string[] = JSON.parse(savedPrefs);
             // Reconstruct the list based on saved order and selection
             // Categories in parsedPrefs are preferred and come first in that order
-            const preferredOnes = parsedPrefs.map((id, index) => {
-                const found = categories.find(c => c.id === id);
+            const preferredOnes = parsedPrefs.map((id: string, index: number) => {
+                const found = categories.find((c: any) => c.id === id);
                 return found ? { ...found, isPreferred: true, order: index } : null;
             }).filter(Boolean);
 
             const remainingOnes = categories
-                .filter(c => !parsedPrefs.includes(c.id))
-                .map((c, index) => ({ ...c, isPreferred: false, order: preferredOnes.length + index }));
+                .filter((c: any) => !parsedPrefs.includes(c.id))
+                .map((c: any, index: number) => ({ ...c, isPreferred: false, order: preferredOnes.length + index }));
 
             return [...preferredOnes, ...remainingOnes];
         }

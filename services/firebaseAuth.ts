@@ -24,7 +24,8 @@ import {
   updateProfile as webUpdateProfile,
   updateEmail as webUpdateEmail,
   sendEmailVerification as webSendEmailVerification,
-  User as WebUser
+  User as WebUser,
+  Auth as WebAuth
 } from 'firebase/auth';
 
 // Web Configuration (whatsaynews)
@@ -38,7 +39,7 @@ const firebaseConfig = {
 };
 
 // Initialize for Web
-let webAuth: any = null;
+let webAuth: WebAuth | null = null;
 if (Platform.OS === 'web') {
   try {
     if (getApps().length === 0) {
@@ -117,6 +118,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
   if (Platform.OS === 'web') {
     // Web: Use Popup
     try {
+      if (!webAuth) throw new Error("Firebase Web Auth not initialized");
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(webAuth, provider);
       const user = result.user;
@@ -133,8 +135,8 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
     try {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
-      // @ts-ignore
-      const { idToken } = response;
+      const idToken = response.data?.idToken;
+      if (!idToken) throw new Error('No ID token found');
       const googleCredential = nativeAuth.GoogleAuthProvider.credential(idToken);
       const userCredential = await nativeAuth().signInWithCredential(googleCredential);
       const user = userCredential.user;
@@ -221,6 +223,7 @@ export function getCurrentUser(): FirebaseUser | null {
 export async function signOut(): Promise<void> {
   try {
     if (Platform.OS === 'web') {
+      if (!webAuth) return;
       await webSignOut(webAuth);
     } else {
       await nativeAuth().signOut();
@@ -308,9 +311,8 @@ export function onAuthStateChanged(
 ): () => void {
   if (Platform.OS === 'web') {
     if (!webAuth) return () => { };
-    // @ts-ignore
-    return webOnAuthStateChanged(webAuth, (user) => {
-      callback(user ? mapWebUser(user) : null);
+    return webOnAuthStateChanged(webAuth as WebAuth, (user) => {
+      callback(user ? mapWebUser(user as WebUser) : null);
     });
   }
 
@@ -332,11 +334,10 @@ export function onIdTokenChanged(
 ): () => void {
   if (Platform.OS === 'web') {
     if (!webAuth) return () => { };
-    // @ts-ignore
-    return webOnIdTokenChanged(webAuth, async (user) => {
+    return webOnIdTokenChanged(webAuth as WebAuth, async (user) => {
       if (user) {
         try {
-          const token = await user.getIdToken();
+          const token = await (user as WebUser).getIdToken();
           callback(token);
         } catch (e) {
           callback(null);

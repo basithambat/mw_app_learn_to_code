@@ -138,6 +138,8 @@ export class IngestionProcessor {
                     summaryOriginal: item.summary,
                     sourceUrl: item.source_url,
                     publishedAt: item.published_at,
+                    ogImageUrl: item.image_original_url,
+                    imageSelectedUrl: item.image_original_url,
                     rawJson: item.raw || null,
                   },
                 });

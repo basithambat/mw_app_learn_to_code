@@ -19,7 +19,7 @@
 ## Current Status
 
 ### ✅ API Service
-- **URL:** `https://whatsay-api-278662370606.asia-south1.run.app` (latest)
+- **URL:** `https://whatsay-api-jsewdobsva-el.a.run.app` (latest Mumbai region)
 - **Status:** ✅ Deployed and serving traffic
 - **Revision:** whatsay-api-00007-rd5 (with Prisma fix)
 

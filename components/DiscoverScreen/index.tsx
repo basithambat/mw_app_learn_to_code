@@ -7,6 +7,9 @@ import { StyleSheet, View, RefreshControl, ScrollView } from 'react-native';
 // import { ScrollView } from 'react-native-gesture-handler';
 import CategoryArticles from './CategoryArticles';
 import { getCategories } from '@/api/apiCategories';
+import Loader from '../loader';
+import { Text, TouchableOpacity } from 'react-native';
+import { logger } from '@/utils/logger';
 import useLocation from '@/hooks/useLocation';
 import Animated, {
     useAnimatedScrollHandler,
@@ -44,6 +47,8 @@ const DiscoverScreen = () => {
     const { location, errorMsg } = useLocation();
     const scrollY = useSharedValue(0);
     const isRefreshingValue = useSharedValue(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const [refreshKey, setRefreshKey] = useState(Date.now());
 
@@ -59,23 +64,41 @@ const DiscoverScreen = () => {
         }
     };
 
-    const fetchCategories = useCallback(async () => {
+    const fetchCategories = useCallback(async (signal?: AbortSignal) => {
         const { from, to } = getLast48HoursRange();
-        const userId: string = loggedInUserData?.user.id as string;
+        const userId: string | undefined = loggedInUserData?.user?.id;
+        logger.info('Fetching categories for userId:', userId || 'guest');
+
+        if (!refreshing) setLoading(true);
+        setError(null);
+
         try {
             const response = await getCategories(from, to, userId);
+
+            // Check if component is still mounted via signal
+            if (signal?.aborted) return;
+
             const categoriesWithIndex = response.map((category: Omit<CategoryType, 'index'>, idx: number) => ({
                 ...category,
                 index: Number(idx)
             }));
             setCategories(categoriesWithIndex);
-        } catch (error) {
-            console.error("Error fetching categories:", error);
+        } catch (err: any) {
+            if (signal?.aborted) return;
+            console.error("Error fetching categories:", err);
+            setError(err.message || "Failed to load discoveries. Please check your connection.");
+        } finally {
+            if (!signal?.aborted) setLoading(false);
         }
-    }, [location, userPreferredCategories, loggedInUserData?.user?.id]);
+    }, [location, userPreferredCategories, loggedInUserData?.user?.id, refreshing]);
 
     useEffect(() => {
-        fetchCategories();
+        const controller = new AbortController();
+        fetchCategories(controller.signal);
+
+        return () => {
+            controller.abort();
+        };
     }, [fetchCategories]);
 
     const onRefresh = useCallback(async () => {
@@ -162,12 +185,38 @@ const DiscoverScreen = () => {
                     />
                 }
             >
-                {categories.map((category: CategoryType, index: number) => (
-                    <CategoryArticles
-                        category={category}
-                        key={`${category.id}-${refreshKey}`}
-                    />
-                ))}
+                {loading && !refreshing ? (
+                    <View style={{ height: 400, justifyContent: 'center', alignItems: 'center' }}>
+                        <Loader />
+                    </View>
+                ) : error ? (
+                    <View style={{ padding: 40, alignItems: 'center' }}>
+                        <Text style={{ textAlign: 'center', color: '#666', marginBottom: 20 }}>{error}</Text>
+                        <TouchableOpacity
+                            onPress={() => onRefresh()}
+                            style={{ padding: 12, backgroundColor: '#05E1D7', borderRadius: 8 }}
+                        >
+                            <Text style={{ fontWeight: 'bold' }}>Try Again</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : categories.length === 0 ? (
+                    <View style={{ padding: 40, alignItems: 'center' }}>
+                        <Text style={{ textAlign: 'center', color: '#666' }}>No stories found for the last 48 hours.</Text>
+                        <TouchableOpacity
+                            onPress={() => onRefresh()}
+                            style={{ marginTop: 20, padding: 12, backgroundColor: '#f0f0f0', borderRadius: 8 }}
+                        >
+                            <Text>Refresh</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    categories.map((category: CategoryType, index: number) => (
+                        <CategoryArticles
+                            category={category}
+                            key={`${category.id}-${refreshKey}`}
+                        />
+                    ))
+                )}
             </AnimatedScrollView>
         </View>
     );

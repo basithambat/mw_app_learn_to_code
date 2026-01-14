@@ -64,7 +64,7 @@ export class InshortsAdapter implements SourceAdapter {
         summary: item.summary || '',
         source_url: item.sourceUrl || null,
         published_at: publishedAt,
-        image_original_url: null, // We don't extract images from source anymore
+        image_original_url: item.imageUrl || null,
         raw: item,
       };
     });

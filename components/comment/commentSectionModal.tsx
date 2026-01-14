@@ -29,7 +29,8 @@ import {
 import { RefreshControl } from 'react-native';
 import { useCommentSectionAnimation, commentSectionStyles as styles } from '@/hooks/useCommentsection';
 import { ExpandableInputProps, ArticleComment } from '@/types';
-import LottieView from 'lottie-react-native';
+// P0 FIX: Prevent web crash by only importing Lottie on native
+const LottieView = Platform.OS === 'web' ? null : require('lottie-react-native');
 import { ImageBackground } from 'react-native';
 import { PersonaSelector } from '@/components/PersonaSelector';
 import { useFirebaseAuth } from '@/config/firebaseAuthContext';
@@ -118,7 +119,7 @@ const CommentSectionModal: React.FC<CommentSectionModalProps> = ({
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
 
-  const animation = useRef<LottieView>(null);
+  const animation = useRef<any>(null);
 
   const [isLoading, setIsLoading] = useState(false);
 

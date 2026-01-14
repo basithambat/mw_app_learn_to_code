@@ -74,3 +74,17 @@ export function isMediaEnabled(env: Env): boolean {
     env.S3_PUBLIC_BASE_URL
   );
 }
+
+/**
+ * P1-03/P1-04 FIX: Warn loudly if S3 not configured in production
+ * This helps debugging "images not working" issues in production.
+ */
+export function assertProdMediaConfig(env: Env): void {
+  if (env.NODE_ENV === 'production' && !isMediaEnabled(env)) {
+    console.warn(
+      '[WARN] S3/Media not configured in production. Image uploads will be disabled. ' +
+      'Run: scripts/setup-gcs-pipeline.sh to configure GCS storage.'
+    );
+  }
+}
+

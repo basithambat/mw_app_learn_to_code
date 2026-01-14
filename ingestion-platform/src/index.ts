@@ -27,18 +27,28 @@ import {
 } from './services/comment-service';
 import { requireAuth, AuthenticatedRequest } from './middleware/auth-middleware';
 import { adminRoutes } from './routes/admin';
+import { registerFallbackImageRoute } from './routes/fallback-image';
 
 
 
 
 const app = Fastify({
   logger: true,
+  trustProxy: true,
 });
+
+console.log('--- DEPLOYMENT VERIFICATION ID: 1768407400 ---');
 
 // Register CORS
 app.register(fastifyCors, {
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://whatsay.app', 'https://studio.whatsay.app', 'https://whatsay-app-three.vercel.app']
+    ? [
+      'https://whatsay.app',
+      'https://studio.whatsay.app',
+      'https://whatsay-app-three.vercel.app',
+      'http://localhost:8081',  // Expo web dev server
+      'http://localhost:8082',  // Alternative dev server port
+    ]
     : true,
   credentials: true,
 });
@@ -89,10 +99,22 @@ app.get('/health', async () => {
   try {
     // Quick DB check
     await prisma.$queryRaw`SELECT 1`;
+
+    // P1-05: Get last run stats for visibility
+    const lastRuns = await prisma.sourceState.findMany({
+      select: {
+        sourceId: true,
+        lastRunAt: true,
+      }
+    });
+
     return {
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      schedulerEnabled,
+      scheduler: {
+        enabled: schedulerEnabled,
+        sources: lastRuns,
+      },
       mediaEnabled,
       environment: currentEnv.NODE_ENV,
     };
@@ -238,6 +260,8 @@ app.get('/api/feed', async (request, reply) => {
         sourceUrl: true,
         publishedAt: true,
         imageStorageUrl: true,
+        ogImageUrl: true,
+        imageSelectedUrl: true,
         imageStatus: true,
         createdAt: true,
       },
@@ -258,7 +282,9 @@ app.get('/api/feed', async (request, reply) => {
         category: item.sourceCategory, // Map to 'category' for app compatibility
         source_category: item.sourceCategory,
         source_url: item.sourceUrl,
-        image_url: item.imageStorageUrl,
+        image_url: item.imageStorageUrl || item.ogImageUrl || item.imageSelectedUrl || null,
+        image_storage_url: item.imageStorageUrl,
+        og_image_url: item.ogImageUrl,
         published_at: item.publishedAt || item.createdAt,
         is_rewritten: !!item.titleRewritten,
       })),
@@ -274,6 +300,9 @@ app.get('/api/feed', async (request, reply) => {
 
 // Register Admin Routes
 app.register(adminRoutes, { prefix: '/api/admin' });
+
+// Register Smart Fallback Image Route
+registerFallbackImageRoute(app);
 
 
 

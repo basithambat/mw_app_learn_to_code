@@ -49,7 +49,9 @@ async function seedAdmin() {
     console.log('Seed complete!');
 }
 
-main()
+const prisma = getPrismaClient();
+
+seedAdmin()
     .catch((e) => {
         console.error(e);
         process.exit(1);

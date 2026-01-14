@@ -8,6 +8,7 @@ export interface HTMLExtractionResult {
     summary: string;
     sourceUrl?: string;
     publishedAt?: string;
+    imageUrl?: string;
   }>;
 }
 
@@ -56,12 +57,41 @@ export class HTMLExtractor {
         const dateContent = dateEl.attr('content') || dateEl.text().trim();
         const publishedAt = dateContent || undefined;
 
+        // Image URL - look for image in schema.org or background-image
+        let imageUrl: string | undefined;
+
+        // Option 1: Meta tag inside the card
+        const metaImage = $el.find('meta[itemprop="image"]').attr('content');
+        if (metaImage) {
+          imageUrl = metaImage;
+        }
+
+        // Option 2: Background image on the image div
+        if (!imageUrl) {
+          const style = $el.find('.news-card-image').attr('style');
+          if (style) {
+            const match = style.match(/background-image:\s*url\(['"]?([^'")]+)['"]?\)/);
+            if (match && match[1]) {
+              imageUrl = match[1];
+            }
+          }
+        }
+
+        // Option 3: Standard img tag fallback
+        if (!imageUrl) {
+          const img = $el.find('img').first().attr('src');
+          if (img) {
+            imageUrl = img.startsWith('http') ? img : new URL(img, url).href;
+          }
+        }
+
         if (title && summary && title.length > 5 && summary.length > 20) {
           items.push({
             title,
             summary: summary.substring(0, 2000), // Limit length
             sourceUrl,
             publishedAt,
+            imageUrl,
           });
         }
       });

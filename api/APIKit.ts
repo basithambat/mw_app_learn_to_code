@@ -3,7 +3,7 @@ import { getIngestionApiBase } from "./apiIngestion";
 
 let APIService = axios.create({
     baseURL: `${getIngestionApiBase()}/api`,
-    timeout: 10000, // Reduced to 10s as per P0 plan (fail fast)
+    timeout: 20000, // Increased to 20s for better reliability on mobile networks
     headers: {
         "Content-Type": "application/json",
     },

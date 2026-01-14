@@ -1,7 +1,9 @@
 import APIService, { APICaller } from "./APIKit";
 import * as Device from 'expo-device';
 import { truncateTo60Words } from "@/utils/textHelper";
-import { getImageUrlWithFallback } from "@/utils/categoryFallbackImages";
+import { logger } from "@/utils/logger";
+import { getSmartFallbackImage } from "@/utils/smartFallbackImage";
+import { IngestionFeedItem, IngestionFeedResponse, IngestionSourcesResponse, Article, AppCategory, IngestionSource, IngestionCategory } from "@/types/api";
 
 // Ingestion Platform API Base URL
 // For local development, use your computer's IP address for physical devices
@@ -19,7 +21,7 @@ export const getIngestionApiBase = () => {
     // If running on a physical device, prefer Production API
     // This avoids "Network Error" when trying to hit localhost from a phone
     if (Device.isDevice) {
-      console.log('[Ingestion] Physical Device in Dev mode -> Using Production API');
+      logger.info('Physical Device in Dev mode -> Using Production API');
       return PRODUCTION_API_URL;
     }
 
@@ -85,7 +87,7 @@ const CATEGORY_ICON_IDS: Record<string, string> = {
 /**
  * Get feed items from ingestion platform
  */
-export const getIngestionFeed = async (category?: string, limit: number = 20) => {
+export const getIngestionFeed = async (category?: string, limit: number = 20): Promise<IngestionFeedItem[]> => {
   try {
     const params = new URLSearchParams();
     params.append('source', 'inshorts');
@@ -94,11 +96,11 @@ export const getIngestionFeed = async (category?: string, limit: number = 20) =>
     }
     params.append('limit', limit.toString());
 
-    console.log(`[Ingestion] Fetching feed from: ${INGESTION_API_BASE}/api/feed?${params.toString()}`);
+    logger.debug(`Fetching feed from: ${INGESTION_API_BASE}/api/feed?${params.toString()}`);
 
     // Add timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // Increased to 20s
 
     const response = await fetch(`${INGESTION_API_BASE}/api/feed?${params.toString()}`, {
       signal: controller.signal,
@@ -115,21 +117,12 @@ export const getIngestionFeed = async (category?: string, limit: number = 20) =>
       throw new Error(`Ingestion API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log(`[Ingestion] Received ${data.items?.length || 0} items`);
+    const data: IngestionFeedResponse = await response.json();
+    logger.info(`Received ${data.items?.length || 0} items`);
     return data.items || [];
   } catch (error: any) {
     console.error('[Ingestion] Error fetching feed:', error);
-    console.error('[Ingestion] Error details:', {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-      apiBase: INGESTION_API_BASE,
-      category,
-      limit
-    });
-    // Return empty array instead of throwing
-    return [];
+    throw new Error(error.message || 'Failed to fetch feed from ingestion platform');
   }
 };
 
@@ -137,7 +130,7 @@ export const getIngestionFeed = async (category?: string, limit: number = 20) =>
  * Get categories from ingestion platform sources
  * Maps to UI category format
  */
-export const getIngestionCategories = async () => {
+export const getIngestionCategories = async (): Promise<AppCategory[]> => {
   try {
     const response = await fetch(`${INGESTION_API_BASE}/api/sources`);
 
@@ -145,18 +138,18 @@ export const getIngestionCategories = async () => {
       throw new Error(`Ingestion API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: IngestionSourcesResponse = await response.json();
     const sources = data.sources || [];
 
     // For now, we only support Inshorts
-    const inshortsSource = sources.find((s: any) => s.id === 'inshorts');
+    const inshortsSource = sources.find((s: IngestionSource) => s.id === 'inshorts');
 
     if (!inshortsSource) {
       return [];
     }
 
     // Map Inshorts categories to UI category format
-    const categories = (inshortsSource.categories || []).map((cat: any, index: number) => ({
+    const categories: AppCategory[] = (inshortsSource.categories || []).map((cat: IngestionCategory, index: number) => ({
       id: cat.id,
       name: CATEGORY_MAP[cat.id] || cat.name,
       description: `News from ${cat.name}`,
@@ -183,9 +176,9 @@ export const getIngestionArticlesByCategory = async (
   categoryId: string,
   from: string,
   to: string
-) => {
+): Promise<Article[]> => {
   try {
-    console.log(`[Ingestion] Fetching articles for category: ${categoryId}`);
+    logger.info(`Fetching articles for category: ${categoryId}`);
     const limit = 20;
     const items = await getIngestionFeed(categoryId === 'all' ? undefined : categoryId, limit);
 
@@ -193,30 +186,38 @@ export const getIngestionArticlesByCategory = async (
     const fromDate = new Date(from);
     const toDate = new Date(to);
 
-    const filteredItems = items
-      .map((item: any) => {
+    const filteredItems = items.filter((item: IngestionFeedItem) => {
+      const itemDate = new Date(item.published_at || item.created_at || "");
+      return itemDate >= fromDate && itemDate <= toDate;
+    });
+
+    // Use Promise.all for async smart fallback on each article
+    const articlesWithSmartImages = await Promise.all(
+      filteredItems.map(async (item: IngestionFeedItem): Promise<Article> => {
         const rawSummary = item.subtext || item.summary_rewritten || item.summary_original || '';
-        const originalImageUrl = item.image_url || item.image_storage_url || null;
-        // Use fallback image if original is not available
-        const imageUrl = getImageUrlWithFallback(originalImageUrl, categoryId);
+        // Prioritize: Processed Image > Original Image > OG Image
+        const originalImageUrl = item.image_url || item.image_storage_url || item.og_image_url || null;
+        const title = item.title || item.title_original || item.title_rewritten || '';
+
+        // Async smart fallback: Topic-specific Unsplash > Category fallback
+        const imageUrl = await getSmartFallbackImage(originalImageUrl, title, categoryId);
 
         return {
           id: item.id,
-          title: item.title || item.title_original || '',
+          title,
           summary: truncateTo60Words(rawSummary), // Enforce 60-word limit
-          image_url: imageUrl, // Always provide an image (original or fallback)
-          published_at: item.published_at || item.created_at,
+          image_url: imageUrl, // Smart fallback with topic awareness
+          published_at: item.published_at || item.created_at || "",
           source_url: item.source_url,
           category_id: categoryId,
         };
-      });
+      })
+    );
 
-    console.log(`[Ingestion] Returning ${filteredItems.length} articles`);
-    return filteredItems;
+    logger.info(`Returning ${articlesWithSmartImages.length} articles`);
+    return articlesWithSmartImages;
   } catch (error: any) {
     console.error('[Ingestion] Error fetching articles:', error);
-    // Return empty array instead of throwing to prevent app from hanging
-    console.warn('[Ingestion] Returning empty articles array due to error');
-    return [];
+    throw new Error(error.message || 'Failed to fetch articles from ingestion platform');
   }
 };
