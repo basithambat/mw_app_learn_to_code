@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { getS3Client, getS3Config } from '../config/s3';
+import { isMediaEnabled, getEnv } from '../config/env';
 import pLimit from 'p-limit';
 
 export interface DownloadResult {
@@ -9,24 +10,44 @@ export interface DownloadResult {
 }
 
 export class MediaService {
-  private s3Client: S3Client;
+  private s3Client: S3Client | null;
   private bucket: string;
   private publicBaseUrl: string;
   private downloadLimit = pLimit(3); // Max 3 concurrent downloads
+  private mediaEnabled: boolean;
 
   constructor() {
+    const env = getEnv();
+    this.mediaEnabled = isMediaEnabled(env);
     this.s3Client = getS3Client();
     const config = getS3Config();
-    this.bucket = config.bucket || 'content-bucket';
-    this.publicBaseUrl = config.publicBaseUrl || 'http://localhost:9000/content-bucket';
-    // Fire and forget - don't block constructor
-    this.ensureBucket().catch(e => console.warn('[MediaService] Bucket check failed:', e.message));
+
+    if (config) {
+      this.bucket = config.bucket;
+      this.publicBaseUrl = config.publicBaseUrl;
+      // Fire and forget - don't block constructor
+      this.ensureBucket().catch(e => console.warn('[MediaService] Bucket check failed:', e.message));
+    } else {
+      // P1-03/P1-04 FIX: No localhost defaults. Warn loudly.
+      console.warn('[MediaService] S3 not configured. Media uploads will be disabled.');
+      this.bucket = '';
+      this.publicBaseUrl = '';
+    }
+  }
+
+  /**
+   * Check if media uploading is available
+   */
+  isEnabled(): boolean {
+    return this.mediaEnabled && !!this.s3Client;
   }
 
   /**
    * Ensure bucket exists (especially for local MinIO)
    */
   async ensureBucket() {
+    if (!this.s3Client) return;
+
     try {
       const { CreateBucketCommand } = await import('@aws-sdk/client-s3');
       await this.s3Client.send(new CreateBucketCommand({ Bucket: this.bucket }));
@@ -100,6 +121,10 @@ export class MediaService {
     buffer: Buffer,
     contentType: string
   ): Promise<string> {
+    if (!this.s3Client) {
+      throw new Error('[MediaService] S3 not configured. Cannot upload.');
+    }
+
     const command = new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
@@ -118,6 +143,10 @@ export class MediaService {
    * Check if object exists in S3 (for dedupe)
    */
   async objectExists(key: string): Promise<boolean> {
+    if (!this.s3Client) {
+      return false; // If S3 not configured, treat as doesn't exist
+    }
+
     try {
       const command = new HeadObjectCommand({
         Bucket: this.bucket,

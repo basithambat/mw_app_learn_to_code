@@ -633,6 +633,112 @@ export async function adminRoutes(app: FastifyInstance) {
             return reply.status(500).send({ error: 'Failed to fetch analytics' });
         }
     });
+
+    // ========== P2-01: DLQ ENDPOINTS ==========
+
+    // GET /admin/dlq - List DLQ jobs
+    app.get('/dlq', async (request: AuthenticatedRequest, reply) => {
+        try {
+            const { limit = 50, offset = 0 } = request.query as any;
+            const { dlq } = await import('../queue/setup');
+
+            const jobs = await dlq.getJobs(['waiting', 'delayed', 'failed', 'completed'], Number(offset), Number(offset) + Number(limit) - 1, true);
+
+            return {
+                jobs: jobs.map(j => ({
+                    id: j.id,
+                    name: j.name,
+                    data: j.data,
+                    failedReason: j.failedReason,
+                    attemptsMade: j.attemptsMade,
+                    timestamp: j.timestamp,
+                })),
+                total: await dlq.getJobCounts(),
+            };
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({ error: 'Failed to fetch DLQ jobs' });
+        }
+    });
+
+    // POST /admin/dlq/:id/requeue - Requeue a DLQ job back to its original queue
+    app.post('/dlq/:id/requeue', async (request: AuthenticatedRequest, reply) => {
+        try {
+            const { id } = request.params as { id: string };
+            const { dlq, getQueueByName } = await import('../queue/setup');
+
+            const job = await dlq.getJob(id);
+            if (!job) {
+                return reply.status(404).send({ error: 'DLQ job not found' });
+            }
+
+            const originalQueue = job.data?.originalQueue;
+            if (!originalQueue) {
+                return reply.status(400).send({ error: 'Cannot determine original queue' });
+            }
+
+            const targetQueue = getQueueByName(originalQueue);
+            if (!targetQueue) {
+                return reply.status(400).send({ error: `Unknown target queue: ${originalQueue}` });
+            }
+
+            // Add to original queue with fresh retry attempts
+            await targetQueue.add(job.data.jobName || job.name, job.data.originalData || job.data, {
+                attempts: 3,
+                backoff: { type: 'exponential', delay: 5000 }
+            });
+
+            // Remove from DLQ
+            await job.remove();
+
+            // Audit log
+            await prisma.auditLog.create({
+                data: {
+                    actorId: request.user!.userId,
+                    action: 'REQUEUE_DLQ_JOB',
+                    entityType: 'Job',
+                    entityId: `dlq:${id}`,
+                    metadata: { originalQueue, jobName: job.name }
+                }
+            });
+
+            return { ok: true, requeuedTo: originalQueue };
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({ error: 'Failed to requeue job' });
+        }
+    });
+
+    // DELETE /admin/dlq/:id - Remove a job from DLQ permanently
+    app.delete('/dlq/:id', async (request: AuthenticatedRequest, reply) => {
+        try {
+            const { id } = request.params as { id: string };
+            const { dlq } = await import('../queue/setup');
+
+            const job = await dlq.getJob(id);
+            if (!job) {
+                return reply.status(404).send({ error: 'DLQ job not found' });
+            }
+
+            await job.remove();
+
+            // Audit log
+            await prisma.auditLog.create({
+                data: {
+                    actorId: request.user!.userId,
+                    action: 'DELETE_DLQ_JOB',
+                    entityType: 'Job',
+                    entityId: `dlq:${id}`,
+                    metadata: { jobName: job.name }
+                }
+            });
+
+            return { ok: true };
+        } catch (error) {
+            request.log.error(error);
+            return reply.status(500).send({ error: 'Failed to delete DLQ job' });
+        }
+    });
 }
 
 

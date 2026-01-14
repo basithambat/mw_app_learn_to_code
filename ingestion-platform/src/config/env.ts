@@ -44,3 +44,29 @@ export function getEnv(): Env {
   }
   return env;
 }
+
+/**
+ * P1-02 FIX: Fail fast if Firebase credentials missing in production
+ */
+export function assertProdFirebaseConfig(env: Env): void {
+  if (env.NODE_ENV === 'production' && !env.FIREBASE_SERVICE_ACCOUNT) {
+    throw new Error(
+      '[FATAL] Missing FIREBASE_SERVICE_ACCOUNT in production. ' +
+      'Authentication will not work. Set this secret before deploying.'
+    );
+  }
+}
+
+/**
+ * P1-03/P1-04 FIX: Check if media/S3 is properly configured
+ * If false, image processing should be skipped and source_image_url used instead
+ */
+export function isMediaEnabled(env: Env): boolean {
+  return Boolean(
+    env.S3_ENDPOINT &&
+    env.S3_BUCKET &&
+    env.S3_ACCESS_KEY &&
+    env.S3_SECRET_KEY &&
+    env.S3_PUBLIC_BASE_URL
+  );
+}

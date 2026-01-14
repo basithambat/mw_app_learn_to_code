@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import fastifyCors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
-import { getEnv } from './config/env';
+import { getEnv, assertProdFirebaseConfig, isMediaEnabled } from './config/env';
 import { getPrismaClient } from './config/db';
 import { getRedisClient } from './config/redis';
 import { ingestionQueue } from './queue/setup';
@@ -43,9 +43,21 @@ app.register(fastifyCors, {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 });
 
-// TODO: Rate limiting disabled - needs debugging for Cloud Run compatibility
-// @fastify/rate-limit causes container startup failures
-// See: https://github.com/fastify/fastify-rate-limit for async Redis config
+// P1-01 FIX: Rate limiting enabled with Redis
+// Uses existing Redis connection for distributed rate limiting
+const env = getEnv();
+app.register(rateLimit, {
+  global: true,
+  max: 120,
+  timeWindow: '1 minute',
+  redis: getRedisClient(),
+  // Cloud Run proxy correctness - use X-Forwarded-For
+  keyGenerator: (req) => {
+    const xff = req.headers['x-forwarded-for'];
+    const ip = Array.isArray(xff) ? xff[0] : xff?.toString().split(',')[0]?.trim();
+    return ip || req.ip;
+  },
+});
 
 
 
@@ -66,12 +78,23 @@ const feedQuerySchema = z.object({
 
 // Routes
 
-// Health check endpoint
+// Health check endpoint - P1-05: Now includes scheduler and media status
 app.get('/health', async () => {
+  const currentEnv = getEnv();
+  const isProd = currentEnv.NODE_ENV === 'production';
+  const schedulerEnabled = isProd ? true : process.env.ENABLE_SCHEDULER !== 'false';
+  const mediaEnabled = isMediaEnabled(currentEnv);
+
   try {
     // Quick DB check
     await prisma.$queryRaw`SELECT 1`;
-    return { status: 'healthy', timestamp: new Date().toISOString() };
+    return {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      schedulerEnabled,
+      mediaEnabled,
+      environment: currentEnv.NODE_ENV,
+    };
   } catch (error) {
     app.log.error({ err: error }, 'Health check failed');
     throw new Error('Unhealthy');
@@ -1022,31 +1045,32 @@ app.post<{ Params: { userId: string } }>(
 const start = async () => {
   const env = getEnv();
   try {
+    // P1-02 FIX: Fail fast if Firebase credentials missing in production
+    assertProdFirebaseConfig(env);
+
     // Initialize Firebase Admin
     initFirebaseAdmin();
-    // CORS is already registered at the top level
 
-
-    // Register multipart for file uploads (optional - only if needed)
-    // Note: Commented out due to Fastify version mismatch, can be enabled when Fastify is upgraded
-    // try {
-    //   await app.register(multipart, {
-    //     limits: {
-    //       fileSize: 10 * 1024 * 1024, // 10MB max
-    //     },
-    //   });
-    // } catch (error) {
-    //   console.error('Multipart registration error:', error);
-    //   // Continue without multipart if it fails
-    // }
+    // Log media status at startup
+    const mediaEnabled = isMediaEnabled(env);
+    if (!mediaEnabled) {
+      console.warn('⚠️  Media/S3 not configured. Image processing disabled. source_image_url will be used.');
+    } else {
+      console.log('✅ Media/S3 configured and enabled.');
+    }
 
     await app.listen({ port: env.PORT, host: '0.0.0.0' });
     console.log(`✅ API Server listening on port ${env.PORT}`);
     console.log(`📡 Feed endpoint: http://localhost:${env.PORT}/api/feed`);
     console.log(`📋 Sources endpoint: http://localhost:${env.PORT}/api/sources`);
 
-    // Start scheduler (optional - can be disabled)
-    if (process.env.ENABLE_SCHEDULER !== 'false') {
+    // P1-05 FIX: Scheduler always on in production, optional in dev/test
+    const isProd = env.NODE_ENV === 'production';
+    const schedulerEnabled = isProd ? true : process.env.ENABLE_SCHEDULER !== 'false';
+
+    if (!schedulerEnabled) {
+      console.warn('⚠️  Scheduler disabled (non-prod only). Set ENABLE_SCHEDULER=true to enable.');
+    } else {
       startScheduler();
       console.log(`⏰ Scheduler enabled - jobs will run hourly`);
     }

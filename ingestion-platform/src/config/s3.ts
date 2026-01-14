@@ -1,23 +1,27 @@
 import { S3Client } from '@aws-sdk/client-s3';
-import { getEnv } from './env';
+import { getEnv, isMediaEnabled } from './env';
 
-let s3Client: S3Client;
+let s3Client: S3Client | null = null;
 
-export function getS3Client(): S3Client {
+/**
+ * Get S3 client - returns null if S3 is not configured
+ * P1-03/P1-04 FIX: No localhost defaults. Returns null if not configured.
+ */
+export function getS3Client(): S3Client | null {
+  const env = getEnv();
+
+  // If media is not enabled, don't create client
+  if (!isMediaEnabled(env)) {
+    return null;
+  }
+
   if (!s3Client) {
-    const env = getEnv();
-
-    // Provide defaults if S3 not configured (for development/testing)
-    const endpoint = env.S3_ENDPOINT || 'http://localhost:9000';
-    const accessKey = env.S3_ACCESS_KEY || 'minioadmin';
-    const secretKey = env.S3_SECRET_KEY || 'minioadmin';
-
     s3Client = new S3Client({
-      endpoint: endpoint,
+      endpoint: env.S3_ENDPOINT!,
       region: env.S3_REGION,
       credentials: {
-        accessKeyId: accessKey,
-        secretAccessKey: secretKey,
+        accessKeyId: env.S3_ACCESS_KEY!,
+        secretAccessKey: env.S3_SECRET_KEY!,
       },
       forcePathStyle: true, // Required for MinIO and R2
     });
@@ -25,10 +29,20 @@ export function getS3Client(): S3Client {
   return s3Client;
 }
 
-export function getS3Config() {
+/**
+ * Get S3 config - returns null if not configured
+ * P1-03/P1-04 FIX: No localhost defaults
+ */
+export function getS3Config(): { bucket: string; publicBaseUrl: string } | null {
   const env = getEnv();
-  const bucket = env.S3_BUCKET_NAME || env.S3_BUCKET || 'content-bucket';
-  const endpoint = env.S3_ENDPOINT || 'http://localhost:9000';
+
+  // If media is not enabled, return null
+  if (!isMediaEnabled(env)) {
+    return null;
+  }
+
+  const bucket = env.S3_BUCKET_NAME || env.S3_BUCKET!;
+  const endpoint = env.S3_ENDPOINT!;
 
   // Prefer explicit S3_PUBLIC_BASE_URL if set
   if (env.S3_PUBLIC_BASE_URL) {

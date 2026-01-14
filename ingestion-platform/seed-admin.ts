@@ -1,9 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { getPrismaClient } from './src/config/db';
 
-const prisma = new PrismaClient();
+async function seedAdmin() {
+    const prisma = getPrismaClient();
 
-async function main() {
-    const firebaseUid = 'admin-demo-uid'; // For local dev
+    // P3-01 FIX: Require env var, no hardcoded backdoor UID
+    const firebaseUid = process.env.SEED_ADMIN_UID;
+    if (!firebaseUid) {
+        throw new Error('SEED_ADMIN_UID is required to seed admin user. Set it as an environment variable.');
+    }
     const email = 'admin@whatsay.app';
 
     console.log('Seeding admin user...');
