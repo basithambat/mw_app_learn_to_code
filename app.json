@@ -51,8 +51,7 @@
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.safwanambat.whatsay",
-      "versionCode": 14,
-      "googleServicesFile": "./android/app/google-services.json"
+      "versionCode": 14
     },
     "web": {
       "bundler": "metro",
@@ -67,8 +66,6 @@
           "cameraPermission": false
         }
       ],
-      "@react-native-firebase/app",
-      "@react-native-firebase/auth",
       "expo-router",
       "expo-font",
       [
