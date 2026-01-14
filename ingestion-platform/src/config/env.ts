@@ -47,12 +47,16 @@ export function getEnv(): Env {
 
 /**
  * P1-02 FIX: Fail fast if Firebase credentials missing in production
+ * Updated to allow Application Default Credentials (ADC) on Google Cloud
  */
 export function assertProdFirebaseConfig(env: Env): void {
-  if (env.NODE_ENV === 'production' && !env.FIREBASE_SERVICE_ACCOUNT) {
+  const isGcp = !!process.env.K_SERVICE || !!process.env.GOOGLE_CLOUD_PROJECT;
+
+  if (env.NODE_ENV === 'production' && !env.FIREBASE_SERVICE_ACCOUNT && !isGcp) {
     throw new Error(
       '[FATAL] Missing FIREBASE_SERVICE_ACCOUNT in production. ' +
-      'Authentication will not work. Set this secret before deploying.'
+      'Authentication will not work. Set this secret before deploying, ' +
+      'or ensure you are running in a GCP environment with Application Default Credentials.'
     );
   }
 }

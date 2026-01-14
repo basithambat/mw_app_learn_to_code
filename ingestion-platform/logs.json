@@ -1,0 +1,1600 @@
+[
+  {
+    "insertId": "69670e9400038fbef8c7b270",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-g",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 5.5438100000610575,
+      "time": 1768361620234
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.548729375Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.233406Z"
+  },
+  {
+    "insertId": "69670e94000379bbd88dc067",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31588,
+        "url": "/api/feed?source=inshorts&category=business&limit=20"
+      },
+      "reqId": "req-g",
+      "time": 1768361620228
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.548729375Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.227771Z"
+  },
+  {
+    "insertId": "69670e94000370d894a150fa",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-e",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 7.0273619999643415,
+      "time": 1768361620226
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.548729375Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.225496Z"
+  },
+  {
+    "insertId": "69670e9400036afa31999a5e",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-f",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 4.599623999907635,
+      "time": 1768361620224
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.548729375Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.223994Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.009455209s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "402",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=business&limit=20",
+      "responseSize": "7971",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e94000391397b2029d3",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.548026111Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "cca4bed04465f77a",
+    "timestamp": "2026-01-14T03:33:40.222675Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/139a95c4aa2aaa1a2656288af0957eeb"
+  },
+  {
+    "insertId": "69670e940003589e55d2706a",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31586,
+        "url": "/api/feed?source=inshorts&category=sports&limit=20"
+      },
+      "reqId": "req-f",
+      "time": 1768361620220
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.548729375Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.219294Z"
+  },
+  {
+    "insertId": "69670e94000354fe0c62fce5",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31582,
+        "url": "/api/feed?source=inshorts&limit=20"
+      },
+      "reqId": "req-e",
+      "time": 1768361620219
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.548729375Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.218366Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.007782039s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "399",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=sports&limit=20",
+      "responseSize": "1961",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e9400036d5b9999b661",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.548026111Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "d32ef1a2cb58e3f0",
+    "timestamp": "2026-01-14T03:33:40.215226Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/e02fe020417e8c8b2656288af095712a"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.009370309s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "385",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&limit=20",
+      "responseSize": "15867",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e940003723d363cef30",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.548026111Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "3cb701c10d970287",
+    "timestamp": "2026-01-14T03:33:40.214881Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/493619694469e83e2656288af0957369"
+  },
+  {
+    "insertId": "69670e94000322ce3de4288c",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-d",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 6.029978999984451,
+      "time": 1768361620206
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.205518Z"
+  },
+  {
+    "insertId": "69670e9400030a791474bbf9",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31574,
+        "url": "/api/feed?source=inshorts&category=technology&limit=20"
+      },
+      "reqId": "req-d",
+      "time": 1768361620200
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.199289Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.007961080s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "403",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=technology&limit=20",
+      "responseSize": "5523",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e94000323930c47ae17",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.213613563Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "97453778edf965e6",
+    "timestamp": "2026-01-14T03:33:40.196241Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/aa433aa456c0a14f2656288af09570e3"
+  },
+  {
+    "insertId": "69670e940001e069a5fcab69",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-c",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 4.113291000016034,
+      "time": 1768361620123
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.122985Z"
+  },
+  {
+    "insertId": "69670e940001cf9cbf69f297",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31572,
+        "url": "/api/feed?source=inshorts&category=world&limit=20"
+      },
+      "reqId": "req-c",
+      "time": 1768361620119
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.118684Z"
+  },
+  {
+    "insertId": "69670e940001c8cc733e92cf",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-b",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 4.30792300007306,
+      "time": 1768361620117
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.116940Z"
+  },
+  {
+    "insertId": "69670e940001c56d8f76b14e",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-a",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 4.825630999985151,
+      "time": 1768361620117
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.116077Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.005620050s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "399",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=world&limit=20",
+      "responseSize": "234",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e940001e194849ac3ec",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.213613563Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "b8da4208eae1dfe5",
+    "timestamp": "2026-01-14T03:33:40.115577Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/295bc1665f8809592656288af0957f80"
+  },
+  {
+    "insertId": "69670e940001b7f569aee18c",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31570,
+        "url": "/api/feed?source=inshorts&category=science&limit=20"
+      },
+      "reqId": "req-b",
+      "time": 1768361620113
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.112629Z"
+  },
+  {
+    "insertId": "69670e940001b250bd7fdb27",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31562,
+        "url": "/api/feed?source=inshorts&category=health&limit=20"
+      },
+      "reqId": "req-a",
+      "time": 1768361620112
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.111184Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.006443260s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "402",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=science&limit=20",
+      "responseSize": "234",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e940001ca5272f85573",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.213613563Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "ff94af53bc634ca2",
+    "timestamp": "2026-01-14T03:33:40.109212Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/a23ce5c2f0c064592656288af09573fe"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.007075679s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "400",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=health&limit=20",
+      "responseSize": "234",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e940001c6d5f88978f9",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.213613563Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "ce5359b01ec99400",
+    "timestamp": "2026-01-14T03:33:40.107443Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/02fa6e3a7ac28f3e2656288af09571bf"
+  },
+  {
+    "insertId": "69670e940000c7a63164820f",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-8",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 72.64773900003638,
+      "time": 1768361620051
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.051110Z"
+  },
+  {
+    "insertId": "69670e940000ba9df5d8fd25",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-9",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 68.26203500002157,
+      "time": 1768361620048
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.047773Z"
+  },
+  {
+    "insertId": "69670e940000b019c6ef7098",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-7",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 77.66893199994229,
+      "time": 1768361620045
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.045081Z"
+  },
+  {
+    "insertId": "69670e940000919535e75222",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-5",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 83.44368799997028,
+      "time": 1768361620038
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.037269Z"
+  },
+  {
+    "insertId": "69670e94000089c0fd77a93d",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-6",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 78.72002400003839,
+      "time": 1768361620035
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:40.035264Z"
+  },
+  {
+    "insertId": "69670e93000ef55bc028449a",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31546,
+        "url": "/api/feed?source=inshorts&category=business&limit=20"
+      },
+      "reqId": "req-9",
+      "time": 1768361619980
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:39.980315Z"
+  },
+  {
+    "insertId": "69670e93000ef4e3b0787c6d",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31540,
+        "url": "/api/feed?source=inshorts&category=sports&limit=20"
+      },
+      "reqId": "req-8",
+      "time": 1768361619978
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:39.980195Z"
+  },
+  {
+    "insertId": "69670e93000ec31ec4502137",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31526,
+        "url": "/api/feed?source=inshorts&category=entertainment&limit=20"
+      },
+      "reqId": "req-7",
+      "time": 1768361619967
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:39.967454Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.089267066s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "403",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=business&limit=20",
+      "responseSize": "7971",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e940000bd7f4e837512",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.213613563Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "037f238e9d142449",
+    "timestamp": "2026-01-14T03:33:39.957694Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/04b51151733630632656288af0957138"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.092899805s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "401",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=sports&limit=20",
+      "responseSize": "1961",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e940000ca11fcfcbbae",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.213613563Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "19df6c5c9bb01914",
+    "timestamp": "2026-01-14T03:33:39.957322Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/59652ec7e5d57f9f2656288af0957cba"
+  },
+  {
+    "insertId": "69670e93000e9737c80a5d27",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31524,
+        "url": "/api/feed?source=inshorts&limit=20"
+      },
+      "reqId": "req-6",
+      "time": 1768361619957
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:39.956215Z"
+  },
+  {
+    "insertId": "69670e93000e8dd17752554d",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31510,
+        "url": "/api/feed?source=inshorts&category=technology&limit=20"
+      },
+      "reqId": "req-5",
+      "time": 1768361619954
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:39.953809Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.082390736s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "385",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&limit=20",
+      "responseSize": "15867",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e9400008a207c929d3a",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.213613563Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "15c35a9f28615f85",
+    "timestamp": "2026-01-14T03:33:39.951541Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/24567fa27c9262962656288af0957377"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.092636306s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "408",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=entertainment&limit=20",
+      "responseSize": "234",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e940000b2d6d5d56a20",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.213613563Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "a4673a1c2233a4c6",
+    "timestamp": "2026-01-14T03:33:39.951412Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/f61c9d85579f2a242656288af0957a7b"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.085463746s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "404",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&category=technology&limit=20",
+      "responseSize": "5523",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e94000092b00a0f3d6e",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:40.213613563Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "32b6437da1dd0564",
+    "timestamp": "2026-01-14T03:33:39.950272Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/1524968a1494f9012656288af0957ef9"
+  },
+  {
+    "insertId": "69670e93000d67f16b296355",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-4",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 0.6738400000613183,
+      "time": 1768361619879
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:40.215439821Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:39.878577Z"
+  },
+  {
+    "insertId": "69670e93000d64233349166a",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 31496,
+        "url": "/api/sources"
+      },
+      "reqId": "req-4",
+      "time": 1768361619878
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:33:39.880552760Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:33:39.877603Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.002893889s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "49.205.202.25",
+      "requestMethod": "GET",
+      "requestSize": "331",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/sources",
+      "responseSize": "2456",
+      "serverIp": "34.143.73.2",
+      "status": 200,
+      "userAgent": "okhttp/4.9.2"
+    },
+    "insertId": "69670e93000d6761b2d0045c",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:33:39.881454441Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "10942f5c47392cc2",
+    "timestamp": "2026-01-14T03:33:39.869718Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/16bd5ea1d007d95f2656288af095749a",
+    "traceSampled": true
+  },
+  {
+    "insertId": "69670d390003e1cfa87f8ef9",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-3",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 58.56067199999234,
+      "time": 1768361273254
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:27:53.530968285Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:27:53.254415Z"
+  },
+  {
+    "insertId": "69670d390002fba55fb38734",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 27106,
+        "url": "/api/feed?source=inshorts&limit=3"
+      },
+      "reqId": "req-3",
+      "time": 1768361273196
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:27:53.198930342Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:27:53.195493Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.062667957s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2406:7400:11d:abe6:797e:d7f0:6705:a539",
+      "requestMethod": "GET",
+      "requestSize": "313",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/feed?source=inshorts&limit=3",
+      "responseSize": "2587",
+      "serverIp": "2600:1900:4243:200::",
+      "status": 200,
+      "userAgent": "curl/8.7.1"
+    },
+    "insertId": "69670d390003e49ec46c788b",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:27:53.258237620Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "f9c8d31a31a99a20",
+    "timestamp": "2026-01-14T03:27:53.186316Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/a91cc76873f577c05052e4df0c53a6a3",
+    "traceSampled": true
+  },
+  {
+    "insertId": "69670b580001ef1a06a2c1cb",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-2",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 0.8008859999999913,
+      "time": 1768360792127
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:19:52.194813714Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:19:52.126746Z"
+  },
+  {
+    "insertId": "69670b580001eb84d471d036",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "incoming request",
+      "pid": 1,
+      "req": {
+        "hostname": "whatsay-api-278662370606.asia-south1.run.app",
+        "method": "GET",
+        "remoteAddress": "169.254.169.126",
+        "remotePort": 57754,
+        "url": "/api/sources"
+      },
+      "reqId": "req-2",
+      "time": 1768360792126
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:19:52.194813714Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:19:52.125828Z"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.002933939s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2406:7400:11d:abe6:797e:d7f0:6705:a539",
+      "requestMethod": "GET",
+      "requestSize": "291",
+      "requestUrl": "https://whatsay-api-278662370606.asia-south1.run.app/api/sources",
+      "responseSize": "2456",
+      "serverIp": "2600:1900:4240:200::",
+      "status": 200,
+      "userAgent": "curl/8.7.1"
+    },
+    "insertId": "69670b580001f02962bcaa38",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-01-14T03:19:52.380251419Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "83f4b90ba3255126",
+    "timestamp": "2026-01-14T03:19:52.122713Z",
+    "trace": "projects/gen-lang-client-0803362165/traces/062bd73ffb9b1f2e2df342471a7fb7a7"
+  },
+  {
+    "insertId": "69670b57000ac9306f458a44",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "request completed",
+      "pid": 1,
+      "reqId": "req-1",
+      "res": {
+        "statusCode": 200
+      },
+      "responseTime": 229.0939989999997,
+      "time": 1768360791707
+    },
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-14T03:19:51.861008607Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-14T03:19:51.706864Z"
+  },
+  {
+    "insertId": "69670b570007c8dd0af34cf3",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-14T03:19:51.843511775Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "IMPORTANT! Eviction policy is volatile-lru. It should be \"noeviction\"",
+    "timestamp": "2026-01-14T03:19:51.510173Z"
+  },
+  {
+    "insertId": "69670b570007c85c1f940139",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-14T03:19:51.843511775Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "IMPORTANT! Eviction policy is volatile-lru. It should be \"noeviction\"",
+    "timestamp": "2026-01-14T03:19:51.510044Z"
+  },
+  {
+    "insertId": "69670b570007c02b3a62aa2b",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-14T03:19:51.843511775Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "IMPORTANT! Eviction policy is volatile-lru. It should be \"noeviction\"",
+    "timestamp": "2026-01-14T03:19:51.507947Z"
+  },
+  {
+    "insertId": "69670b570007bf03e1a2d484",
+    "labels": {
+      "instanceId": "005eb6974c67f030ac2543a06a31933b0875f3310b6e46a0934357ec4ac5cc201811517ef60faa6b4ae7983d6c75ce370ad234887c71e574ca5541f1733e51933bfbb61720ac4a32eeb7fe1c6f"
+    },
+    "logName": "projects/gen-lang-client-0803362165/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-14T03:19:51.511043944Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "whatsay-api",
+        "location": "asia-south1",
+        "project_id": "gen-lang-client-0803362165",
+        "revision_name": "whatsay-api-00053-rrb",
+        "service_name": "whatsay-api"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "IMPORTANT! Eviction policy is volatile-lru. It should be \"noeviction\"",
+    "timestamp": "2026-01-14T03:19:51.507651Z"
+  }
+]
