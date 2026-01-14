@@ -91,7 +91,7 @@
       "router": {
         "origin": false
       },
-      "EXPO_PUBLIC_API_URL": "https://whatsay-api-jsewdobsva-el.a.run.app",
+      "EXPO_PUBLIC_API_URL": "https://whatsay-api-278662370606.asia-south1.run.app",
       "eas": {
         "projectId": "50291fe4-6d63-4dd1-9230-fdd8566c2351"
       }
