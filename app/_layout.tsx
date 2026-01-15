@@ -16,7 +16,14 @@ import FONTS from "@/assets/fonts";
 import useLocation from "@/hooks/useLocation";
 import { configureMoment } from "@/config/momentConfig";
 import * as RNLocalize from 'react-native-localize';
+import * as Sentry from '@sentry/react-native';
 
+// Initialize Sentry for production-grade crash reporting
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || "https://placeholder-dsn@sentry.io/0",
+  debug: __DEV__,
+  tracesSampleRate: 1.0,
+});
 
 let persistor = persistStore(store);
 
@@ -25,7 +32,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
 });
 
-export default function RootLayout() {
+function RootLayout() {
   // Track splash screen visibility for version display
   const [splashVisible, setSplashVisible] = useState(true);
 
@@ -183,6 +190,9 @@ export default function RootLayout() {
     </Provider>
   );
 }
+
+// Wrap with Sentry for high-grade observability
+export default Sentry.wrap(RootLayout);
 
 const styles = StyleSheet.create({
   versionOverlay: {

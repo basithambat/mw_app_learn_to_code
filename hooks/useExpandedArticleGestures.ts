@@ -9,6 +9,7 @@ import {
     runOnJS,
     interpolate,
     Extrapolate,
+    Easing,
 } from 'react-native-reanimated';
 import { SPRING_CONFIG_SNAPPY, SPRING_CONFIG_SMOOTH } from '@/constants/springConfigs';
 
@@ -41,6 +42,7 @@ type DirectionLock = 'none' | 'horizontal' | 'vertical';
 interface UseExpandedArticleGesturesProps {
     onDismiss: () => void; // Navigation callback to close detail screen
     isWritingSV?: any; // SharedValue<number> (0/1)
+    entranceProgress?: any; // SharedValue<number> (0 -> 1)
 }
 
 /**
@@ -60,6 +62,7 @@ interface UseExpandedArticleGesturesProps {
 export const useExpandedArticleGestures = ({
     onDismiss,
     isWritingSV,
+    entranceProgress,
 }: UseExpandedArticleGesturesProps) => {
     // ============================================================================
     // JS State (mode)
@@ -102,7 +105,10 @@ export const useExpandedArticleGestures = ({
     const dismissDetail = useCallback(() => {
         setMode('dismissing');
         // activeModeSV.value stays at 0
-        dismissY.value = withSpring(SCREEN_HEIGHT, SPRING_CONFIG_SMOOTH, (finished) => {
+        dismissY.value = withTiming(SCREEN_HEIGHT, {
+            duration: 300,
+            easing: Easing.out(Easing.quad)
+        }, (finished) => {
             if (finished) {
                 runOnJS(onDismiss)();
             }
@@ -230,7 +236,10 @@ export const useExpandedArticleGestures = ({
                     else if (dismissY.value > DISMISS_THRESHOLD || velocityY > VELOCITY_DISMISS) {
                         // Dismiss detail screen
                         runOnJS(setMode)('dismissing');
-                        dismissY.value = withSpring(SCREEN_HEIGHT, SPRING_CONFIG_SMOOTH, (finished) => {
+                        dismissY.value = withTiming(SCREEN_HEIGHT, {
+                            duration: 300,
+                            easing: Easing.out(Easing.quad)
+                        }, (finished) => {
                             if (finished) {
                                 runOnJS(onDismiss)();
                             }
@@ -257,12 +266,31 @@ export const useExpandedArticleGestures = ({
     // Container style (for ExpandNewsItem root)
     // Combines reading AND dismiss transformations
     const containerStyle = useAnimatedStyle(() => {
+        // Entrance: Fades in from 0 to 1
+        // Dismissal: Fades out from current opacity to 0
+        const entranceOpacity = entranceProgress ? entranceProgress.value : 1;
+        const dismissOpacity = interpolate(
+            dismissY.value,
+            [0, SCREEN_HEIGHT * 0.4],
+            [1, 0],
+            Extrapolate.CLAMP
+        );
+
+        const opacity = entranceOpacity * dismissOpacity;
+
+        // Entrance: Translates up from 30px to 0
+        // Dismissal: Translates down by dismissY.value
+        const entranceY = entranceProgress
+            ? interpolate(entranceProgress.value, [0, 1], [30, 0], Extrapolate.CLAMP)
+            : 0;
+
         return {
             transform: [
-                { translateY: dismissY.value },
+                { translateY: dismissY.value + entranceY },
             ],
+            opacity,
         };
-    }, [dismissY]);
+    }, [dismissY, entranceProgress]);
 
     // Comments sheet style (bottom sheet modal)
     const commentsSheetStyle = useAnimatedStyle(() => {

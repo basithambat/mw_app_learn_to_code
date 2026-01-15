@@ -119,6 +119,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     } = useKeyboardController();
 
     const { top, bottom } = useSafeAreaInsets();
+    const entranceProgress = useSharedValue(0);
     const {
         mode,
         verticalPanGesture,
@@ -132,9 +133,8 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
     } = useExpandedArticleGestures({
         onDismiss: onClose,
         isWritingSV: keyboardVisibleSV,
+        entranceProgress: entranceProgress,
     });
-
-    const entranceProgress = useSharedValue(0);
     const [activeArticle, setActiveArticle] = useState(initialArticleId);
 
     // Calculate initial index based on the ID
@@ -407,14 +407,7 @@ const ExpandNewsItem: React.FC<ExpandNewsItemProps> = ({
                     {/* This ensures native handling of Horizontal (Page) vs Vertical (Scroll) gestures */}
                     <Animated.View style={[
                         { flex: 1, zIndex: 1 },
-                        containerStyle, // Apply dismiss transform to the whole pager
-                        useAnimatedStyle(() => ({
-                            opacity: entranceProgress.value,
-                            transform: [
-                                ...(containerStyle ? (Array.isArray(containerStyle) ? containerStyle[0].transform || [] : []) : []),
-                                { translateY: interpolate(entranceProgress.value, [0, 1], [30, 0], Extrapolate.CLAMP) }
-                            ]
-                        }))
+                        containerStyle, // Apply unified entrance + dismiss style
                     ]}>
                         <Animated.FlatList
                             ref={flatListRef}

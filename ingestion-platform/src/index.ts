@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import pino from 'pino';
 import fastifyCors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import { getEnv, assertProdFirebaseConfig, isMediaEnabled } from './config/env';
@@ -28,12 +29,31 @@ import {
 import { requireAuth, AuthenticatedRequest } from './middleware/auth-middleware';
 import { adminRoutes } from './routes/admin';
 import { registerFallbackImageRoute } from './routes/fallback-image';
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || "https://placeholder-dsn@sentry.io/0",
+  integrations: [
+    nodeProfilingIntegration(),
+  ],
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+});
 
 
 
 
 const app = Fastify({
-  logger: true,
+  logger: {
+    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+    transport: process.env.NODE_ENV !== 'production' ? {
+      target: 'pino-pretty',
+      options: {
+        colorize: true
+      }
+    } : undefined
+  },
   trustProxy: true,
 });
 
@@ -144,8 +164,8 @@ app.post('/api/admin/system/reset-semaphore', async (request, reply) => {
   return { status: 'success', message: 'DbSemaphore reset' };
 });
 
-// POST /api/jobs/run
-app.post('/api/jobs/run', async (request, reply) => {
+// POST /api/jobs/run (Protected)
+app.post('/api/jobs/run', { preHandler: [requireAuth] }, async (request, reply) => {
   try {
     const body = jobRunSchema.parse(request.body);
     const adapter = getAdapter(body.sourceId);
@@ -274,7 +294,7 @@ app.get('/api/feed', async (request, reply) => {
     }
 
     return {
-      items: items.map(item => ({
+      items: items.map((item: any) => ({
         id: item.id,
         title: item.titleRewritten || item.titleOriginal,
         subtext: item.summaryRewritten || item.summaryOriginal,
@@ -347,8 +367,8 @@ app.get('/v2/discover/bootstrap', async (request, reply) => {
 
     // Generate Explore sections
     const categoryIds = preferences
-      .filter(p => p.enabled)
-      .map(p => p.categoryId);
+      .filter((p: any) => p.enabled)
+      .map((p: any) => p.categoryId);
 
     const exploreSections = await generateExploreSections(categoryIds);
 
@@ -366,23 +386,23 @@ app.get('/v2/discover/bootstrap', async (request, reply) => {
         version: edition.version,
       },
       today: {
-        stories: editionResult.stories.map(mapStory),
+        stories: editionResult.stories.map((s: any) => mapStory(s)),
         editionStories: editionResult.editionStories,
       },
       explore: {
         sections: exploreSections.map((s: { categoryId: string; items: any[] }) => ({
           categoryId: s.categoryId,
-          items: s.items.map(mapStory),
+          items: s.items.map((item: any) => mapStory(item)),
         })),
         sectionOrder,
       },
-      preferences: preferences.map(p => ({
+      preferences: preferences.map((p: any) => ({
         categoryId: p.categoryId,
         enabled: p.enabled,
         manualOrder: p.manualOrder,
         lockOrder: p.lockOrder,
       })),
-      categorySignals: categorySignals.map(s => ({
+      categorySignals: categorySignals.map((s: any) => ({
         categoryId: s.categoryId,
         autoScore: s.autoScore,
         lastUpdatedAt: s.lastUpdatedAt.getTime(),
@@ -430,20 +450,20 @@ app.get('/v2/discover/refresh', async (request, reply) => {
       where: {
         sourceId: 'inshorts',
         createdAt: { gt: since },
-        // In real implementation, filter by importance >= BREAKING_THRESHOLD
       },
       orderBy: { createdAt: 'desc' },
       take: 5,
     });
 
-    // Add breaking items to edition (if not already present)
+    // Add breaking items to edition
     const addedStories: any[] = [];
     const addedEditionStories: any[] = [];
 
     for (const item of newBreakingItems.slice(0, MAX_DAILY_ADDITIONS)) {
-      const exists = edition.editionStories.some(es => es.storyId === item.id);
+      const exists = edition.editionStories.some((es: any) => es.storyId === item.id);
       if (!exists) {
-        const maxRank = Math.max(...edition.editionStories.map(es => es.rank), 0);
+        const ranks = edition.editionStories.map((es: any) => es.rank);
+        const maxRank = ranks.length > 0 ? Math.max(...ranks) : 0;
         await prisma.editionStory.create({
           data: {
             editionId: query.editionId,
@@ -472,7 +492,7 @@ app.get('/v2/discover/refresh', async (request, reply) => {
     const preferences = await prisma.categoryPreference.findMany({
       where: { userId, enabled: true },
     });
-    const categoryIds = preferences.map(p => p.categoryId);
+    const categoryIds = preferences.map((p: any) => p.categoryId);
     const exploreSections = await generateExploreSections(categoryIds);
     const sectionOrder = calculateSectionOrder(
       preferences,
@@ -505,7 +525,7 @@ app.get('/v2/discover/refresh', async (request, reply) => {
       explore: {
         sections: exploreSections.map((s: { categoryId: string; items: any[] }) => ({
           categoryId: s.categoryId,
-          items: s.items.map(mapStory),
+          items: s.items.map((item: any) => mapStory(item)),
         })),
       },
       sectionOrder,
@@ -588,13 +608,13 @@ app.get('/v2/user/profile', async (request, reply) => {
 
     return {
       userId,
-      preferences: preferences.map(p => ({
+      preferences: preferences.map((p: any) => ({
         categoryId: p.categoryId,
         enabled: p.enabled,
         manualOrder: p.manualOrder,
         lockOrder: p.lockOrder,
       })),
-      categorySignals: signals.map(s => ({
+      categorySignals: signals.map((s: any) => ({
         categoryId: s.categoryId,
         autoScore: s.autoScore,
         lastUpdatedAt: s.lastUpdatedAt.getTime(),
@@ -756,7 +776,7 @@ app.post('/auth/verify', async (request, reply) => {
         emailVerified: result.user.emailVerified,
         phoneVerified: result.user.phoneVerified,
       },
-      personas: result.personas.map(p => ({
+      personas: result.personas.map((p: any) => ({
         id: p.id,
         type: p.type,
         displayName: p.displayName,

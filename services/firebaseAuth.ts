@@ -30,12 +30,12 @@ import {
 
 // Web Configuration (whatsaynews)
 const firebaseConfig = {
-  apiKey: "AIzaSyC_KbvE24c4PRAp6_Tl2L7-7laALwgGupA",
-  authDomain: "whatsaynews.firebaseapp.com",
-  projectId: "whatsaynews",
-  storageBucket: "whatsaynews.firebasestorage.app",
-  messagingSenderId: "92160441398",
-  appId: "1:92160441398:android:086e8d338f74e5fef66c97"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID
 };
 
 // Initialize for Web
@@ -69,7 +69,7 @@ if (Platform.OS !== 'web') {
 // Configure Google Sign-in (Mobile Only)
 if (Platform.OS !== 'web') {
   GoogleSignin.configure({
-    webClientId: '92160441398-mueier229usc3firqpt6sed1b09c8io0.apps.googleusercontent.com', // From whatsaynews project
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     scopes: ['https://www.googleapis.com/auth/drive.readonly'],
     offlineAccess: true,
   });

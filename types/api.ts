@@ -67,6 +67,8 @@ export interface AppCategory {
     order: number;
     active: boolean;
     index: number;
+    created_at?: string;
+    updated_at?: string;
     articles?: Article[];
     isPreferred?: boolean;
 }

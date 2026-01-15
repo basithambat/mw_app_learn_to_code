@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styled } from 'nativewind';
 import Animated, {
@@ -9,33 +10,15 @@ import Animated, {
     SharedValue,
     useDerivedValue,
 } from 'react-native-reanimated';
-import { CategoryType } from '@/types/CategoryTypes';
 import {
     SCREEN_DIMENSIONS,
     CATEGORY_STYLES,
     DEFAULT_CATEGORY_STYLE
 } from '@/constants/expandedScreenData';
+import { LAYOUT } from '@/constants/layout';
 
 const StyledView = styled(View);
-const StyledImage = styled(Image);
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
-
-const getCategoryStyleClasses = (categoryName: string) => {
-    const styles = CATEGORY_STYLES[categoryName] || DEFAULT_CATEGORY_STYLE;
-    return {
-        container: `mb-4 mr-auto border rounded-full`,
-        text: `text-sm px-4 py-1 rounded-full inline-block`,
-        style: {
-            backgroundColor: styles.backgroundColor,
-            borderColor: styles.borderColor,
-        },
-        textStyle: {
-            color: styles.textColor,
-        }
-    };
-};
-
-import { LAYOUT } from '@/constants/layout';
 
 interface HeroCardProps {
     item: any;
@@ -178,7 +161,9 @@ const HeroCard: React.FC<HeroCardProps> = ({ item, commentProgress, entranceProg
                     <Image
                         source={{ uri: item.image_url }}
                         style={StyleSheet.absoluteFillObject}
-                        resizeMode="cover"
+                        contentFit="cover"
+                        transition={300}
+                        cachePolicy="memory-disk"
                     />
                 ) : (
                     <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>

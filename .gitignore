@@ -95,3 +95,5 @@ docker-compose.override.yml
 expo-env.d.ts
 # @end expo-cliandroid/
 /android
+/android
+/ios

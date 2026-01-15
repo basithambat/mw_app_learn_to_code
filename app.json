@@ -51,7 +51,8 @@
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.safwanambat.whatsay",
-      "versionCode": 14
+      "versionCode": 14,
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -59,6 +60,8 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
       [
         "expo-image-picker",
         {
@@ -78,6 +81,13 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Whatsay to use your location."
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "whatsay",
+          "project": "whatsay-app"
         }
       ]
     ],

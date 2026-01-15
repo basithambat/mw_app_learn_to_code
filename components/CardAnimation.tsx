@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
-import { StyleSheet, Text, View, Image, useWindowDimensions, TouchableOpacity, ViewStyle, ImageStyle, TextStyle } from 'react-native';
+import { StyleSheet, Text, View, useWindowDimensions, TouchableOpacity, ViewStyle, ImageStyle, TextStyle } from 'react-native';
+import { Image } from 'expo-image';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -12,6 +13,8 @@ import Animated, {
   Extrapolate,
   SharedValue,
 } from 'react-native-reanimated';
+
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 interface CardProps {
   card: {
@@ -305,9 +308,11 @@ export const Card: React.FC<CardProps> = ({
     <GestureDetector gesture={combinedGesture}>
       <Animated.View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT }, animatedCardStyle]}>
         {card.image ? (
-          <Animated.Image
+          <AnimatedImage
             source={{ uri: card.image }}
             style={[styles.cardImage, animatedImageStyle]}
+            contentFit="cover"
+            cachePolicy="memory-disk"
           />
         ) : (
           <View style={[styles.cardImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
