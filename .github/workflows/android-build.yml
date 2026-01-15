@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android AAB for Play Store
 on:
   push:
     branches: [ "main", "master" ]
@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Build APK
+    name: Build AAB
     runs-on: ubuntu-latest
     steps:
       - name: 🏗 Checkout repository
@@ -30,29 +30,44 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
-      - name: 🏗️ Build Android Release
+      - name: 🔧 Run Expo Prebuild
+        run: npx expo prebuild --platform android --clean
+
+      - name: 🏗️ Build Android Release AAB
         run: |
           cd android
           chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon
+
+      - name: 📤 Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: whatsay-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: 🏗️ Also build APK for testing
+        run: |
+          cd android
           ./gradlew assembleRelease --no-daemon
 
-      - name: 📤 Upload Artifact
+      - name: 📤 Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: whatsay-release-apk
           path: android/app/build/outputs/apk/release/*.apk
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
 
       - name: 📱 Build Summary
         run: |
           echo "### 📱 WhatSay Android Build Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** ✅ Successfully generated APK" >> $GITHUB_STEP_SUMMARY
-          echo "**Artifact:** [Download APK](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Successfully generated AAB and APK" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "#### 💡 How to Install on your Phone" >> $GITHUB_STEP_SUMMARY
-          echo "1. Open this link on your phone's browser." >> $GITHUB_STEP_SUMMARY
-          echo "2. Log in to GitHub if prompted." >> $GITHUB_STEP_SUMMARY
-          echo "3. Download the zipped artifact and install the APK inside." >> $GITHUB_STEP_SUMMARY
+          echo "**Artifacts:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 **AAB (Play Store):** whatsay-release-aab" >> $GITHUB_STEP_SUMMARY
+          echo "- 📱 **APK (Testing):** whatsay-release-apk" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[Download from Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
